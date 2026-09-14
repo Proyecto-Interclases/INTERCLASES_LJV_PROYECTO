@@ -1,3 +1,7 @@
+const dns = require('dns');
+dns.setDefaultResultOrder('ipv4first');
+dns.setServers(['8.8.8.8', '8.8.4.4']);
+
 const fs = require('fs');
 const path = require('path');
 const mongoose = require('mongoose');
@@ -27,7 +31,7 @@ async function connectDB() {
       serverSelectionTimeoutMS: 10000
     });
 
-    console.log(`MongoDB conectado correctamente: ${connection.connection.host}`);
+    console.log(`MongoDB conectado correctamente: ${connection.connection.host}/${connection.connection.name}`);
     return connection;
   } catch (error) {
     console.error('Error al conectar con MongoDB Atlas:', error);

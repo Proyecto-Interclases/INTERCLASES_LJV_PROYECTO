@@ -2,6 +2,7 @@ const Team = require('../models/Team');
 const Player = require('../models/Player');
 const Match = require('../models/Match');
 const Announcement = require('../models/Announcement');
+const User = require('../models/User');
 
 const MATCH_STATUSES = ['Pendiente', 'En Vivo', 'Finalizado'];
 
@@ -72,6 +73,12 @@ async function listPlayers() {
   }));
 }
 
+async function listUsers() {
+  return User.find({}, 'nombre email role creado_en teamName')
+    .sort({ creado_en: 1 })
+    .lean();
+}
+
 async function updateMatch({ matchId, equipoLocalId, equipoVisitanteId, fechaPartido, horaPartido, cancha, estado }) {
   if (!equipoLocalId || !equipoVisitanteId || equipoLocalId === equipoVisitanteId || !fechaPartido || !horaPartido || !cancha) {
     throw new Error('Completa todos los datos del partido y usa equipos diferentes.');
@@ -126,6 +133,7 @@ module.exports = {
   listAdminTeams,
   updateTeamStats,
   listPlayers,
+  listUsers,
   updateMatch,
   deleteMatch,
   deletePlayer

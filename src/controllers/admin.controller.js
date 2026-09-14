@@ -1,15 +1,16 @@
 const { createEquipo, addJugador, createPartido, actualizarResultadoPartido, listarPartidos } = require('../services/gestion.service');
-const { listAdminTeams, MATCH_STATUSES, getPopup, updatePopup, listPlayers, updateTeamStats, updateMatch, deleteMatch, deletePlayer } = require('../services/admin.service');
+const { listAdminTeams, MATCH_STATUSES, getPopup, updatePopup, listPlayers, listUsers, updateTeamStats, updateMatch, deleteMatch, deletePlayer } = require('../services/admin.service');
 
 async function dashboardData() {
-  const [equipos, partidos, popup, jugadores] = await Promise.all([
+  const [equipos, partidos, popup, jugadores, usuarios] = await Promise.all([
     listAdminTeams(),
     listarPartidos(),
     getPopup(),
-    listPlayers()
+    listPlayers(),
+    listUsers()
   ]);
 
-  return { equipos, partidos, popup, jugadores, estadosPartido: MATCH_STATUSES };
+  return { equipos, partidos, popup, jugadores, usuarios, estadosPartido: MATCH_STATUSES };
 }
 
 async function renderDashboard(req, res, { error = null, success = null } = {}) {
@@ -30,6 +31,7 @@ async function renderDashboard(req, res, { error = null, success = null } = {}) 
       partidos: [],
       popup: { titulo: '', mensaje: '', activo: 0 },
       jugadores: [],
+      usuarios: [],
       estadosPartido: MATCH_STATUSES,
       error: loadError.message,
       success: null

@@ -37,6 +37,7 @@
         <nav aria-label="Secciones de administración">
           <a href="/admin/dashboard">Resumen</a>
           <a href="#popup">Ventana emergente</a>
+          <a href="#usuarios">Usuarios</a>
           <a href="#equipos">Equipos y posiciones</a>
           <a href="#plantillas">Plantillas</a>
           <a href="#partidos">Fixture</a>
@@ -50,6 +51,24 @@
         <% if (success) { %>
           <div class="auth-alert success"><%= success %></div>
         <% } %>
+
+        <section class="panel-card" id="usuarios">
+          <h2>Usuarios registrados</h2>
+          <div class="result-list dashboard-list">
+            <% if (!usuarios.length) { %>
+              <p>No hay usuarios registrados.</p>
+            <% } else { %>
+              <% usuarios.forEach((usuario) => { %>
+                <div class="result-item">
+                  <div>
+                    <strong><%= usuario.nombre %></strong>
+                    <small><%= usuario.email %> · <%= usuario.role %><%= usuario.teamName ? ` · ${usuario.teamName}` : '' %></small>
+                  </div>
+                </div>
+              <% }) %>
+            <% } %>
+          </div>
+        </section>
 
         <section class="panel-card" id="popup">
           <h2>Gestión de ventana emergente</h2>
