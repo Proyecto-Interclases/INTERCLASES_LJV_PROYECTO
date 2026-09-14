@@ -1,4 +1,6 @@
-require('dotenv').config();
+const path = require('path');
+
+require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 
 // Carga las variables definidas en el archivo .env antes de importar módulos locales.
 
