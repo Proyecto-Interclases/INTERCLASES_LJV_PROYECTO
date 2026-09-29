@@ -19,15 +19,16 @@ if (process.env.DEBUG_ENV === 'true') {
 }
 
 async function connectDB() {
-  if (!process.env.MONGO_URI) {
-    const error = new Error('MONGO_URI no está definido. Verifica que exista .env en la raíz del proyecto, junto a package.json y server.js.');
+  const mongoUri = process.env.MONGO_URI?.trim();
+  if (!mongoUri) {
+    const error = new Error('Falta MONGO_URI. Verifica que el archivo .env exista en la raíz del proyecto, junto a package.json y server.js.');
     console.error(error.message);
     throw error;
   }
 
   try {
     mongoose.set('bufferCommands', false);
-    const connection = await mongoose.connect(process.env.MONGO_URI, {
+    const connection = await mongoose.connect(mongoUri, {
       serverSelectionTimeoutMS: 10000
     });
 

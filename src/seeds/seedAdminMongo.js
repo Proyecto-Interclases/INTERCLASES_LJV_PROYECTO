@@ -36,13 +36,26 @@ async function seedAdminMongo() {
 if (require.main === module) {
   require('dotenv').config();
 
-  connectDB()
-    .then(seedAdminMongo)
-    .then(() => mongoose.disconnect())
-    .catch((error) => {
+  async function runSeedAdmin() {
+    try {
+      await connectDB();
+      await seedAdminMongo();
+    } catch (error) {
       console.error('Error al sembrar administrador:', error);
       process.exitCode = 1;
-    });
+    } finally {
+      if (mongoose.connection.readyState !== 0) {
+        try {
+          await mongoose.disconnect();
+        } catch (error) {
+          console.error('No se pudo cerrar la conexión con MongoDB:', error);
+          process.exitCode = 1;
+        }
+      }
+    }
+  }
+
+  runSeedAdmin();
 }
 
 module.exports = seedAdminMongo;
