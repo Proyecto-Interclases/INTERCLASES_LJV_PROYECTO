@@ -8,9 +8,23 @@ const MATCH_STATUSES = ['Por jugar', 'Jugando', 'Finalizado'];
 async function createEquipo({ nombre, categoria, emailCapitan, escudoUrl }) {
   const trimmedNombre = String(nombre || '').trim();
   const trimmedCategoria = String(categoria || '').trim();
+  const captainEmail = String(emailCapitan || '').trim().toLowerCase();
 
   if (!trimmedNombre || !trimmedCategoria) {
     throw new Error('El nombre y la categoría del equipo son obligatorios.');
+  }
+
+  let captain = null;
+  if (captainEmail) {
+    captain = await User.findOne({ email: captainEmail, role: 'student' });
+    if (!captain) throw new Error('El capitán debe ser un estudiante con cuenta registrada.');
+    if (captain.teamName && captain.teamName !== trimmedNombre) {
+      throw new Error('Ese estudiante ya está asignado a otro equipo.');
+    }
+    const teamWithCaptain = await Team.findOne({ capitanEmail: captainEmail });
+    if (teamWithCaptain && teamWithCaptain.nombre !== trimmedNombre) {
+      throw new Error('Ese estudiante ya es capitán de otro equipo.');
+    }
   }
 
   const existing = await Team.findOne({ nombre: trimmedNombre });
@@ -27,11 +41,11 @@ async function createEquipo({ nombre, categoria, emailCapitan, escudoUrl }) {
     nombre: trimmedNombre,
     categoria: trimmedCategoria,
     escudoUrl: String(escudoUrl || '').trim(),
-    capitanEmail: emailCapitan ? String(emailCapitan).trim().toLowerCase() : null
+    capitanEmail: captainEmail || null
   });
 
-  if (emailCapitan) {
-    await User.updateOne({ email: String(emailCapitan).trim().toLowerCase() }, { $set: { teamName: trimmedNombre } });
+  if (captain) {
+    await User.updateOne({ _id: captain._id }, { $set: { teamName: trimmedNombre } });
   }
 
   return {

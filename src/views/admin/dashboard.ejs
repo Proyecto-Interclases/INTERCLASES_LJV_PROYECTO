@@ -34,11 +34,12 @@
 
     <main class="dashboard-shell">
       <aside class="dashboard-sidebar">
-        <nav aria-label="Secciones de administración">
-          <a href="#partidos">Partidos y resultados</a>
-          <a href="#equipos">Equipos y plantilla</a>
-          <a href="#posiciones">Tabla de posiciones</a>
-          <a href="#anuncios">Noticias y avisos</a>
+        <nav class="admin-section-nav" aria-label="Secciones de administración" role="tablist" aria-orientation="vertical">
+          <button type="button" role="tab" id="admin-tab-teams" aria-controls="equipos" aria-selected="true" tabindex="0" data-admin-tab="teams">Equipos y jugadores</button>
+          <button type="button" role="tab" id="admin-tab-matches" aria-controls="partidos" aria-selected="false" tabindex="-1" data-admin-tab="matches">Partidos y resultados</button>
+          <button type="button" role="tab" id="admin-tab-standings" aria-controls="posiciones" aria-selected="false" tabindex="-1" data-admin-tab="standings">Tabla de posiciones</button>
+          <button type="button" role="tab" id="admin-tab-announcements" aria-controls="anuncios" aria-selected="false" tabindex="-1" data-admin-tab="announcements">Anuncios y noticias</button>
+          <button type="button" role="tab" id="admin-tab-gallery" aria-controls="galeria" aria-selected="false" tabindex="-1" data-admin-tab="gallery">Galería / Carrusel</button>
         </nav>
       </aside>
 
@@ -50,7 +51,7 @@
           <div class="auth-alert success" role="status"><%= success %></div>
         <% } %>
 
-        <section class="panel-card" id="partidos">
+        <section class="panel-card admin-tab-panel" id="partidos" data-admin-panel="matches" role="tabpanel" aria-labelledby="admin-tab-matches" hidden>
           <p class="eyebrow">PROGRAMACIÓN</p>
           <h2>Partidos y resultados</h2>
           <form class="dashboard-form" action="/admin/partidos" method="post">
@@ -70,7 +71,7 @@
           </form>
         </section>
 
-        <section class="panel-card" aria-labelledby="fixture-title">
+        <section class="panel-card admin-tab-panel" data-admin-panel="matches" role="tabpanel" aria-labelledby="admin-tab-matches" hidden>
           <h2 id="fixture-title">Partidos registrados</h2>
           <div class="result-list dashboard-list">
             <% if (!partidos.length) { %>
@@ -104,23 +105,70 @@
           </div>
         </section>
 
-        <section class="panel-card" id="equipos">
-          <p class="eyebrow">PLANTILLAS DEL TORNEO</p>
-          <h2>Equipos y jugadores</h2>
-          <form class="dashboard-form" action="/admin/equipos" method="post" enctype="multipart/form-data">
-            <div class="field-row">
-              <label>Nombre del equipo<input type="text" name="nombre" required></label>
-              <label>Curso o categoría<input type="text" name="categoria" required></label>
+        <section class="panel-card admin-tab-panel" id="equipos" data-admin-panel="teams" role="tabpanel" aria-labelledby="admin-tab-teams">
+          <div class="admin-section-toolbar">
+            <div>
+              <p class="eyebrow">PLANTILLAS DEL TORNEO</p>
+              <h2>Equipos y jugadores</h2>
             </div>
-            <div class="field-row">
-              <label>Subir escudo (JPG, PNG o WebP)<input type="file" name="escudo" accept="image/jpeg,image/png,image/webp"></label>
-              <label>URL del escudo<input type="url" name="escudoUrl" placeholder="https://..." inputmode="url"></label>
+            <button class="btn btn-primary" type="button" data-modal-open="team-create-modal">+ Crear equipo</button>
+          </div>
+
+          <dialog class="admin-modal" id="team-create-modal" aria-labelledby="team-create-title">
+            <div class="admin-modal__surface">
+              <div class="admin-modal__heading">
+                <div><p class="eyebrow">TORNEO</p><h2 id="team-create-title">Crear equipo</h2></div>
+                <button class="icon-action" type="button" data-modal-close aria-label="Cerrar formulario">&times;</button>
+              </div>
+              <form class="dashboard-form admin-modal__form" action="/admin/equipos" method="post" enctype="multipart/form-data">
+                <div class="field-row">
+                  <label>Nombre del equipo<input type="text" name="nombre" required></label>
+                  <label>Curso o categoría<input type="text" name="categoria" required></label>
+                </div>
+                <div class="field-row">
+                  <label>Subir escudo (JPG, PNG o WebP)<input type="file" name="escudo" accept="image/jpeg,image/png,image/webp"></label>
+                  <label>URL del escudo<input type="url" name="escudoUrl" placeholder="https://..." inputmode="url"></label>
+                </div>
+                <label>Capitán del equipo
+                  <select name="emailCapitan">
+                    <option value="">Sin asignar</option>
+                    <% usuarios.filter((usuario) => usuario.role === 'student' && !usuario.teamName).forEach((usuario) => { %>
+                      <option value="<%= usuario.email %>"><%= usuario.nombre %> · <%= usuario.email %></option>
+                    <% }) %>
+                  </select>
+                </label>
+                <div class="admin-modal__actions">
+                  <button class="admin-quiet-button" type="button" data-modal-close>Cancelar</button>
+                  <button type="submit" class="btn btn-primary">Guardar equipo</button>
+                </div>
+              </form>
             </div>
-            <div class="field-row">
-              <label>Correo del capitán<input type="email" name="emailCapitan" placeholder="capitan@colegio.edu.co"></label>
+          </dialog>
+
+          <dialog class="admin-modal" id="captain-editor-modal" aria-labelledby="captain-editor-title">
+            <div class="admin-modal__surface">
+              <div class="admin-modal__heading">
+                <div><p class="eyebrow" id="captain-editor-team">EQUIPO</p><h2 id="captain-editor-title">Asignar capitán</h2></div>
+                <button class="icon-action" type="button" data-modal-close aria-label="Cerrar formulario">&times;</button>
+              </div>
+              <form class="dashboard-form admin-modal__form" id="captain-editor-form" action="#" method="post">
+                <label>Estudiante responsable
+                  <select name="emailCapitan" id="captain-editor-select">
+                    <option value="">Sin asignar capitán</option>
+                    <% usuarios.filter((usuario) => usuario.role === 'student').forEach((usuario) => { %>
+                      <option value="<%= usuario.email %>" data-assigned-team="<%= usuario.teamName || '' %>"><%= usuario.nombre %> · <%= usuario.email %><%= usuario.teamName ? ` · Asignado a ${usuario.teamName}` : '' %></option>
+                    <% }) %>
+                  </select>
+                </label>
+                <p class="form-hint">Solo se puede asignar un estudiante que todavía no sea capitán de otro equipo.</p>
+                <div class="admin-modal__actions">
+                  <button class="admin-quiet-button" type="button" data-modal-close>Cancelar</button>
+                  <button type="submit" class="btn btn-primary">Guardar capitán</button>
+                </div>
+              </form>
             </div>
-            <button type="submit" class="btn btn-primary">+ Agregar nuevo equipo</button>
-          </form>
+          </dialog>
+
           <div class="result-list dashboard-list">
             <% if (!equipos.length) { %>
               <p>Aún no hay equipos creados.</p>
@@ -133,51 +181,85 @@
                     <% } else { %>
                       <span class="admin-team-crest admin-team-crest--empty" aria-hidden="true"><%= equipo.nombre.slice(0, 1).toUpperCase() %></span>
                     <% } %>
-                    <div><strong><%= equipo.nombre %></strong><small><%= equipo.categoria %> · Capitán: <%= equipo.capitanEmail || 'Por asignar' %></small></div>
+                    <div><strong><%= equipo.nombre %></strong><small><%= equipo.categoria %> · Capitán: <%= equipo.capitanNombre || 'Sin asignar' %></small><% if (equipo.capitanEmail) { %><small><%= equipo.capitanEmail %></small><% } %></div>
+                  </div>
+                  <div class="admin-team-actions">
+                    <button class="admin-change-captain" type="button" data-modal-open="captain-editor-modal" data-team-id="<%= equipo.id %>" data-team-name="<%= equipo.nombre %>" data-captain-email="<%= equipo.capitanEmail || '' %>"><%= equipo.capitanEmail ? 'Cambiar capitán' : 'Asignar capitán' %></button>
+                    <button class="admin-add-player" type="button" data-modal-open="player-editor-modal" data-team-id="<%= equipo.id %>" data-team-name="<%= equipo.nombre %>">+ Agregar jugador</button>
                   </div>
                   <div class="admin-roster">
-                    <strong>Plantilla</strong>
                     <% const teamPlayers = jugadores.filter((jugador) => jugador.equipo_id === equipo.id); %>
+                    <div class="admin-roster-heading"><strong>Plantilla</strong><span><%= teamPlayers.length %> jugadores</span></div>
                     <% if (!teamPlayers.length) { %>
                       <p class="form-hint">Todavía no hay jugadores para este equipo.</p>
                     <% } else { %>
-                      <% teamPlayers.forEach((jugador) => { %>
-                        <div class="admin-roster-player">
-                          <span class="roster-number"><%= jugador.numero_camiseta %></span>
-                          <span><strong><%= jugador.nombre %></strong><small><%= jugador.posicion %></small></span>
-                          <form class="goal-update-form" action="/admin/jugadores/<%= jugador.id %>/goles" method="post">
-                            <label>Goles<input type="number" name="goles" min="0" step="1" value="<%= jugador.goles %>" required></label>
-                            <button type="submit" class="btn btn-secondary dark">Guardar</button>
-                          </form>
-                          <form action="/admin/jugadores/<%= jugador.id %>/eliminar" method="post"><button type="submit" class="btn btn-danger">Eliminar</button></form>
-                        </div>
-                      <% }) %>
+                      <div class="admin-roster-table-wrap">
+                        <table class="admin-roster-table">
+                          <thead><tr><th>Jugador</th><th>Posición</th><th>Camiseta</th><th>Goles</th><th>Acciones</th></tr></thead>
+                          <tbody>
+                            <% teamPlayers.forEach((jugador) => { %>
+                              <tr>
+                                <td data-label="Jugador">
+                                  <span class="admin-player-avatar" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="8" r="3.2"></circle><path d="M5.5 20c.8-3.2 3-5 6.5-5s5.7 1.8 6.5 5"></path></svg></span>
+                                  <strong><%= jugador.nombre %></strong>
+                                </td>
+                                <td data-label="Posición"><%= jugador.posicion || 'Sin definir' %></td>
+                                <td data-label="Camiseta"><%= jugador.numero_camiseta %></td>
+                                <td data-label="Goles">
+                                  <form class="goal-update-form" action="/admin/jugadores/<%= jugador.id %>/goles" method="post">
+                                    <input type="number" name="goles" min="0" step="1" value="<%= jugador.goles %>" aria-label="Goles de <%= jugador.nombre %>" required>
+                                    <button class="icon-action" type="submit" aria-label="Guardar goles de <%= jugador.nombre %>" title="Guardar goles">
+                                      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m5 12 4 4L19 6"></path></svg>
+                                    </button>
+                                  </form>
+                                </td>
+                                <td data-label="Acciones">
+                                  <div class="admin-player-actions">
+                                    <button class="icon-action" type="button" data-modal-open="player-editor-modal" data-player-id="<%= jugador.id %>" data-team-id="<%= equipo.id %>" data-team-name="<%= equipo.nombre %>" data-player-name="<%= jugador.nombre %>" data-player-position="<%= jugador.posicion %>" data-player-number="<%= jugador.numero_camiseta %>" data-player-goals="<%= jugador.goles %>" aria-label="Editar a <%= jugador.nombre %>" title="Editar jugador">
+                                      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"></path></svg>
+                                    </button>
+                                    <form action="/admin/jugadores/<%= jugador.id %>/eliminar" method="post" onsubmit="return confirm('¿Eliminar a <%= jugador.nombre %> de la plantilla?')">
+                                      <button class="icon-action icon-action--danger" type="submit" aria-label="Eliminar a <%= jugador.nombre %>" title="Eliminar jugador">
+                                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 6h18M8 6V4h8v2m3 0-1 14H6L5 6m4 4v6m6-6v6"></path></svg>
+                                      </button>
+                                    </form>
+                                  </div>
+                                </td>
+                              </tr>
+                            <% }) %>
+                          </tbody>
+                        </table>
+                      </div>
                     <% } %>
                   </div>
                 </article>
               <% }) %>
             <% } %>
           </div>
-          <div class="admin-player-create" id="plantillas">
-            <h3>Agregar jugador a una plantilla</h3>
-            <form class="dashboard-form" action="/admin/jugadores" method="post">
-              <div class="field-row">
-                <label>Equipo<select name="equipo_id" required><option value="">Selecciona un equipo</option><% equipos.forEach((equipo) => { %><option value="<%= equipo.id %>"><%= equipo.nombre %> · <%= equipo.categoria %></option><% }) %></select></label>
-                <label>Jugador<input type="text" name="nombre" required></label>
+          <dialog class="admin-modal" id="player-editor-modal" aria-labelledby="player-editor-title">
+            <div class="admin-modal__surface">
+              <div class="admin-modal__heading">
+                <div><p class="eyebrow" id="player-editor-team">PLANTILLA</p><h2 id="player-editor-title">Agregar jugador</h2></div>
+                <button class="icon-action" type="button" data-modal-close aria-label="Cerrar formulario">&times;</button>
               </div>
-              <div class="field-row">
-                <label>Número de camiseta<input type="number" name="numero_camiseta" min="0" max="99" value="0" required></label>
-                <label>Posición<input type="text" name="posicion" placeholder="Defensa, delantero..."></label>
-              </div>
-              <div class="field-row">
-                <label>Goles iniciales<input type="number" name="goles" min="0" value="0" required></label>
-              </div>
-              <button type="submit" class="btn btn-primary">+ Agregar jugador</button>
-            </form>
-          </div>
+              <form class="dashboard-form admin-modal__form" id="player-editor-form" action="/admin/jugadores" method="post">
+                <input type="hidden" name="equipo_id" id="player-editor-team-id">
+                <label>Jugador<input type="text" name="nombre" id="player-editor-name" required></label>
+                <div class="field-row">
+                  <label>Número de camiseta<input type="number" name="numero_camiseta" id="player-editor-number" min="0" max="99" value="0" required></label>
+                  <label>Posición<input type="text" name="posicion" id="player-editor-position" placeholder="Defensa, delantero..."></label>
+                </div>
+                <label>Goles<input type="number" name="goles" id="player-editor-goals" min="0" value="0" required></label>
+                <div class="admin-modal__actions">
+                  <button class="admin-quiet-button" type="button" data-modal-close>Cancelar</button>
+                  <button class="btn btn-primary" type="submit" id="player-editor-submit">Agregar jugador</button>
+                </div>
+              </form>
+            </div>
+          </dialog>
         </section>
 
-        <section class="panel-card" id="posiciones">
+        <section class="panel-card admin-tab-panel" id="posiciones" data-admin-panel="standings" role="tabpanel" aria-labelledby="admin-tab-standings" hidden>
           <p class="eyebrow">CÁLCULO AUTOMÁTICO</p>
           <h2>Tabla de posiciones</h2>
           <div class="sports-table-wrap">
@@ -196,7 +278,7 @@
           </div>
         </section>
 
-        <section class="panel-card" id="anuncios">
+        <section class="panel-card admin-tab-panel" id="anuncios" data-admin-panel="announcements" role="tabpanel" aria-labelledby="admin-tab-announcements" hidden>
           <p class="eyebrow">COMUNICACIÓN</p>
           <h2>Noticias y avisos</h2>
           <form class="dashboard-form" action="/admin/popup" method="post">
@@ -206,7 +288,37 @@
             <button type="submit" class="btn btn-primary">Publicar aviso</button>
           </form>
         </section>
-        <details class="panel-card admin-users" id="usuarios">
+        <section class="panel-card admin-tab-panel" id="galeria" data-admin-panel="gallery" role="tabpanel" aria-labelledby="admin-tab-gallery" hidden>
+          <p class="eyebrow">FOTOS DEL TORNEO</p>
+          <h2>Galería / Carrusel</h2>
+          <form class="dashboard-form gallery-upload-form" action="/admin/galeria" method="post" enctype="multipart/form-data">
+            <div class="field-row">
+              <label>Seleccionar foto (JPG, PNG o WebP)<input type="file" name="imagen" accept="image/jpeg,image/png,image/webp" required></label>
+              <label>Título o descripción (opcional)<input type="text" name="titulo" maxlength="140" placeholder="Ej. Celebración del equipo ganador"></label>
+            </div>
+            <button type="submit" class="btn btn-primary">+ Añadir foto al carrusel</button>
+          </form>
+
+          <h3 class="gallery-admin-heading">Fotos del carrusel</h3>
+          <% if (!galleryImages.length) { %>
+            <p class="gallery-admin-empty">Todavía no hay fotos en la galería.</p>
+          <% } else { %>
+            <div class="gallery-admin-grid">
+              <% galleryImages.forEach((image) => { %>
+                <article class="gallery-admin-card">
+                  <img src="<%= image.url %>" alt="<%= image.alt %>" loading="lazy">
+                  <div class="gallery-admin-card__details">
+                    <div><strong><%= image.title || 'Foto de las Interclases' %></strong><small><%= image.filename %></small></div>
+                    <form action="/admin/galeria/<%= encodeURIComponent(image.id) %>/eliminar" method="post" onsubmit="return confirm('¿Eliminar esta foto de la galería?')">
+                      <button class="btn btn-danger" type="submit" aria-label="Eliminar <%= image.title || 'foto de las Interclases' %>">Eliminar</button>
+                    </form>
+                  </div>
+                </article>
+              <% }) %>
+            </div>
+          <% } %>
+        </section>
+        <details class="panel-card admin-users admin-tab-panel" id="usuarios" data-admin-panel="teams" role="tabpanel" aria-labelledby="admin-tab-teams">
           <summary>Usuarios registrados</summary>
           <div class="result-list dashboard-list">
             <% if (!usuarios.length) { %>
@@ -226,5 +338,6 @@
       </section>
     </main>
     <%- include('../partials/accessibility-settings') %>
+    <script src="/js/admin-dashboard.js" defer></script>
   </body>
 </html>

@@ -59,50 +59,38 @@
       <div class="match-carousel__dots" data-carousel-dots aria-label="Seleccionar partido"></div>
     </section>
 
-    <section class="hero">
-      <div>
-        <p class="eyebrow section-eyebrow">Comunidad deportiva</p>
-        <h2>El colegio se encuentra en la cancha.</h2>
-        <p>Consulta equipos, horarios y resultados de las interclases del LJV.</p>
-      </div>
-    </section>
-
-    <section class="stats" id="standings" aria-label="Resumen del torneo">
-      <article><strong><%= summary.teamCount %></strong><span>Equipos inscritos</span></article>
-      <article><strong><%= summary.matchCount %></strong><span>Partidos programados</span></article>
-    </section>
-
-    <section class="schedule" id="top-scorers">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow section-eyebrow">Agenda</p>
-          <h2>Proximos partidos</h2>
+    <section class="gallery-hero" aria-label="Galería de las Interclases LJV">
+      <% if (galleryImages.length) { %>
+        <div class="gallery-carousel" data-gallery-carousel aria-roledescription="carrusel">
+          <div class="gallery-carousel__viewport" data-gallery-viewport>
+            <% galleryImages.forEach((image, index) => { %>
+              <figure class="gallery-slide <%= index === 0 ? 'is-active' : '' %>" data-gallery-slide aria-hidden="<%= index === 0 ? 'false' : 'true' %>" role="group" aria-roledescription="diapositiva" aria-label="Imagen <%= index + 1 %> de <%= galleryImages.length %>">
+                <img src="<%= image.url %>" alt="<%= image.alt %>" <%= index === 0 ? 'fetchpriority=high' : 'loading=lazy' %>>
+                <figcaption class="gallery-slide__overlay">
+                  <span class="gallery-slide__eyebrow">Interclases LJV · Temporada 2026</span>
+                  <% if (image.title) { %><h2><%= image.title %></h2><% } %>
+                </figcaption>
+              </figure>
+            <% }) %>
+          </div>
+          <% if (galleryImages.length > 1) { %>
+            <button class="gallery-carousel__arrow gallery-carousel__arrow--previous" type="button" data-gallery-previous aria-label="Foto anterior">&#8592;</button>
+            <button class="gallery-carousel__arrow gallery-carousel__arrow--next" type="button" data-gallery-next aria-label="Foto siguiente">&#8594;</button>
+            <div class="gallery-carousel__indicators" role="group" aria-label="Seleccionar foto">
+              <% galleryImages.forEach((image, index) => { %>
+                <button class="gallery-carousel__indicator <%= index === 0 ? 'is-active' : '' %>" type="button" data-gallery-indicator="<%= index %>" aria-label="Mostrar foto <%= index + 1 %>" aria-current="<%= index === 0 ? 'true' : 'false' %>"></button>
+              <% }) %>
+            </div>
+          <% } %>
         </div>
-      </div>
-      <% if (matches.length === 0) { %>
-        <p>No hay partidos programados.</p>
       <% } else { %>
-        <div class="matches">
-          <% matches.forEach((match) => { %>
-            <article class="match">
-              <time datetime="<%= match.date %>"><%= match.date %> · <%= match.time %></time>
-              <div>
-                <strong><%= match.homeTeam %></strong>
-                <span>vs.</span>
-                <strong><%= match.awayTeam %></strong>
-              </div>
-              <small>
-                <%= match.status %>
-                <% if (match.result) { %>
-                  <br>
-                  <span><%= match.result %></span>
-                <% } %>
-              </small>
-            </article>
-          <% }) %>
+        <div class="gallery-empty">
+          <p class="eyebrow section-eyebrow">Interclases LJV · Temporada 2026</p>
+          <h2>La galería se está preparando</h2>
         </div>
       <% } %>
     </section>
+
   </main>
 
   <footer class="institution-footer">
@@ -170,6 +158,7 @@
       <nav class="institution-links" aria-label="Enlaces institucionales">
         <a href="#politica-datos">Política de tratamiento de datos</a>
         <a href="#mapa-sitio">Mapa del sitio</a>
+        <a class="teacher-access" href="/login">Acceso Docente</a>
       </nav>
     </div>
   </footer>
@@ -208,6 +197,7 @@
     }
   </script>
   <script src="/js/match-carousel.js" defer></script>
+  <script src="/js/gallery-carousel.js" defer></script>
   <script src="/js/navigation.js" defer></script>
   <%- include('partials/accessibility-settings') %>
 </body>

@@ -1,18 +1,20 @@
 const { createEquipo, addJugador, createPartido, actualizarResultadoPartido, listarPartidos } = require('../services/gestion.service');
-const { listAdminTeams, MATCH_STATUSES, getPopup, updatePopup, listPlayers, listUsers, updateTeamStats, updateMatch, updatePlayerGoals, deleteMatch, deletePlayer } = require('../services/admin.service');
+const { listAdminTeams, MATCH_STATUSES, getPopup, updatePopup, listPlayers, listUsers, updateTeamStats, updateTeamCaptain, updateMatch, updatePlayerGoals, updatePlayerData, deleteMatch, deletePlayer } = require('../services/admin.service');
+const { listGalleryImages, saveGalleryImage, deleteGalleryImage } = require('../services/gallery.service');
 const tournamentService = require('../services/tournament.service');
 
 async function dashboardData() {
-  const [equipos, partidos, popup, jugadores, usuarios, posiciones] = await Promise.all([
+  const [equipos, partidos, popup, jugadores, usuarios, posiciones, galleryImages] = await Promise.all([
     listAdminTeams(),
     listarPartidos(),
     getPopup(),
     listPlayers(),
     listUsers(),
-    tournamentService.getStandings()
+    tournamentService.getStandings(),
+    listGalleryImages()
   ]);
 
-  return { equipos, partidos, popup, jugadores, usuarios, posiciones, estadosPartido: MATCH_STATUSES };
+  return { equipos, partidos, popup, jugadores, usuarios, posiciones, galleryImages, estadosPartido: MATCH_STATUSES };
 }
 
 async function renderDashboard(req, res, { error = null, success = null } = {}) {
@@ -35,6 +37,7 @@ async function renderDashboard(req, res, { error = null, success = null } = {}) 
       jugadores: [],
       usuarios: [],
       posiciones: [],
+      galleryImages: [],
       estadosPartido: MATCH_STATUSES,
       error: loadError.message,
       success: null
@@ -116,6 +119,15 @@ async function guardarEstadisticasEquipo(req, res) {
   }
 }
 
+async function actualizarCapitanEquipo(req, res) {
+  try {
+    await updateTeamCaptain(req.params.id, req.body.emailCapitan);
+    return renderDashboard(req, res, { success: 'Capitán del equipo actualizado.' });
+  } catch (error) {
+    return renderDashboard(req, res, { error: error.message });
+  }
+}
+
 async function guardarJugador(req, res) {
   try {
     await addJugador(req.body);
@@ -125,10 +137,37 @@ async function guardarJugador(req, res) {
   }
 }
 
+async function editarJugador(req, res) {
+  try {
+    await updatePlayerData(req.params.id, req.body);
+    return renderDashboard(req, res, { success: 'Datos del jugador actualizados.' });
+  } catch (error) {
+    return renderDashboard(req, res, { error: error.message });
+  }
+}
+
 async function eliminarJugador(req, res) {
   try {
     await deletePlayer(req.params.id);
     return renderDashboard(req, res, { success: 'Jugador eliminado de la plantilla.' });
+  } catch (error) {
+    return renderDashboard(req, res, { error: error.message });
+  }
+}
+
+async function subirImagenGaleria(req, res) {
+  try {
+    await saveGalleryImage(req.file, req.body.titulo);
+    return renderDashboard(req, res, { success: 'Imagen añadida al carrusel.' });
+  } catch (error) {
+    return renderDashboard(req, res, { error: error.message });
+  }
+}
+
+async function eliminarImagenGaleria(req, res) {
+  try {
+    await deleteGalleryImage(req.params.id);
+    return renderDashboard(req, res, { success: 'Imagen eliminada de la galería.' });
   } catch (error) {
     return renderDashboard(req, res, { error: error.message });
   }
@@ -152,7 +191,11 @@ module.exports = {
   guardarResultado,
   guardarEquipo,
   guardarEstadisticasEquipo,
+  actualizarCapitanEquipo,
   guardarJugador,
+  editarJugador,
   guardarGolesJugador,
-  eliminarJugador
+  eliminarJugador,
+  subirImagenGaleria,
+  eliminarImagenGaleria
 };

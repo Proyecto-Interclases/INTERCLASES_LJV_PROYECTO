@@ -3,6 +3,7 @@ const Player = require('../models/Player');
 const Match = require('../models/Match');
 const Announcement = require('../models/Announcement');
 const User = require('../models/User');
+const mongoose = require('mongoose');
 
 const MATCH_STATUSES = ['Por jugar', 'Jugando', 'Finalizado'];
 
@@ -28,7 +29,54 @@ async function updatePopup({ titulo, mensaje, activo }) {
 
 async function listAdminTeams() {
   const teams = await Team.find({}).sort({ categoria: 1, nombre: 1 }).lean();
-  return teams.map((team) => ({ ...team, id: team._id.toString() }));
+  const captainEmails = teams.map((team) => team.capitanEmail).filter(Boolean);
+  const captains = captainEmails.length
+    ? await User.find({ email: { $in: captainEmails } }, 'nombre email').lean()
+    : [];
+  const captainsByEmail = new Map(captains.map((captain) => [captain.email, captain]));
+
+  return teams.map((team) => ({
+    ...team,
+    id: team._id.toString(),
+    capitanNombre: captainsByEmail.get(team.capitanEmail)?.nombre || null
+  }));
+}
+
+async function updateTeamCaptain(teamId, requestedEmail) {
+  if (!mongoose.isValidObjectId(teamId)) throw new Error('El equipo seleccionado no es válido.');
+
+  const team = await Team.findById(teamId);
+  if (!team) throw new Error('No existe ese equipo.');
+
+  const nextEmail = String(requestedEmail || '').trim().toLowerCase();
+  let nextCaptain = null;
+
+  if (nextEmail) {
+    nextCaptain = await User.findOne({ email: nextEmail, role: 'student' });
+    if (!nextCaptain) throw new Error('Selecciona un estudiante con cuenta registrada.');
+
+    const otherTeam = await Team.findOne({ capitanEmail: nextEmail, _id: { $ne: team._id } });
+    if ((nextCaptain.teamName && nextCaptain.teamName !== team.nombre) || otherTeam) {
+      throw new Error('Ese estudiante ya es capitán de otro equipo.');
+    }
+  }
+
+  const previousEmail = team.capitanEmail;
+  team.capitanEmail = nextEmail || null;
+  await team.save();
+
+  if (previousEmail && previousEmail !== nextEmail) {
+    await User.updateOne(
+      { email: previousEmail, teamName: team.nombre },
+      { $set: { teamName: null } }
+    );
+  }
+
+  if (nextCaptain) {
+    await User.updateOne({ _id: nextCaptain._id }, { $set: { teamName: team.nombre } });
+  }
+
+  return team.toObject();
 }
 
 async function updateTeamStats({ teamId, puntos, golesFavor, golesContra }) {
@@ -76,6 +124,40 @@ async function updatePlayerGoals(playerId, goals) {
 
   player.goles = goalCount;
   await player.save();
+  return player.toObject();
+}
+
+async function updatePlayerData(playerId, { equipo_id, nombre, numero_camiseta, posicion, goles }) {
+  if (!mongoose.isValidObjectId(playerId) || !mongoose.isValidObjectId(equipo_id)) {
+    throw new Error('Selecciona un equipo y un jugador válidos.');
+  }
+
+  const cleanName = String(nombre || '').trim();
+  const shirtNumber = Number(numero_camiseta);
+  const goalCount = Number(goles);
+
+  if (!cleanName) throw new Error('El nombre del jugador es obligatorio.');
+  if (!Number.isInteger(shirtNumber) || shirtNumber < 0 || shirtNumber > 99) {
+    throw new Error('El número de camiseta debe ser un entero entre 0 y 99.');
+  }
+  if (!Number.isInteger(goalCount) || goalCount < 0) {
+    throw new Error('Los goles deben ser un número entero no negativo.');
+  }
+
+  const [player, team] = await Promise.all([
+    Player.findById(playerId),
+    Team.findById(equipo_id)
+  ]);
+
+  if (!player || !team) throw new Error('No se encontró el jugador o el equipo seleccionado.');
+
+  player.equipo_id = team._id;
+  player.nombre = cleanName;
+  player.numero_camiseta = shirtNumber;
+  player.posicion = String(posicion || '').trim() || 'Sin definir';
+  player.goles = goalCount;
+  await player.save();
+
   return player.toObject();
 }
 
@@ -137,9 +219,11 @@ module.exports = {
   getPopup,
   updatePopup,
   listAdminTeams,
+  updateTeamCaptain,
   updateTeamStats,
   listPlayers,
   updatePlayerGoals,
+  updatePlayerData,
   listUsers,
   updateMatch,
   deleteMatch,
