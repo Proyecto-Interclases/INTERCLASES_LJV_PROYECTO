@@ -16,6 +16,20 @@ Copy-Item .env.example .env
 
 En macOS o Linux, usa `cp .env.example .env`. Edita `.env` y configura `MONGO_URI` con la URI de MongoDB Atlas, además de cambiar `ADMIN_PASSWORD` y `SESSION_SECRET`. El archivo `.env` contiene secretos y no se sube a Git; `.env.example` sí se comparte.
 
+### MongoDB Atlas y correo
+
+En `.env`, configura `MONGO_URI` con la URI de conexión de Atlas y las variables SMTP para recuperación de contraseñas. Usa tus credenciales locales; no pegues contraseñas reales en este README ni en `.env.example`:
+
+```dotenv
+MONGO_URI=mongodb+srv://<usuario>:<contraseña>@<cluster>.mongodb.net/interclases_db?retryWrites=true&w=majority&appName=<nombre-cluster>
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=465
+EMAIL_USER=<correo-de-notificaciones>
+EMAIL_PASS=<clave-de-aplicacion-de-google>
+```
+
+Reemplaza los valores entre `<...>` por los de tu proyecto. Mantén `.env` en tu equipo y verifica que permanezca excluido por `.gitignore`.
+
 En Atlas, agrega la IP pública de cada computadora en **Network Access** y confirma que el usuario de base de datos tenga acceso al cluster.
 
 Luego inicia el servidor:
