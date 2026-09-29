@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body class="sports-page standings-page">
+  <%- include('../partials/navbar', { user }) %>
+
+  <main class="container sports-main" id="main-content">
+    <header class="sports-heading">
+      <div>
+        <p class="eyebrow section-eyebrow">TORNEO · CLASIFICACIÓN OFICIAL</p>
+        <h1>Tabla de posiciones</h1>
+        <p>La clasificación se calcula automáticamente con los partidos finalizados.</p>
+      </div>
+      <form class="sports-filter" action="/posiciones" method="get">
+        <label for="standings-category">Categoría</label>
+        <select id="standings-category" name="categoria" onchange="this.form.submit()">
+          <option value="">Todas</option>
+          <% categories.forEach((category) => { %>
+            <option value="<%= category %>" <%= selectedCategory === category ? 'selected' : '' %>><%= category %></option>
+          <% }) %>
+        </select>
+      </form>
+    </header>
+
+    <section class="sports-table-wrap" aria-label="Clasificación de equipos">
+      <table class="sports-table standings-table">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Equipo</th>
+            <th scope="col">PJ</th>
+            <th scope="col">PG</th>
+            <th scope="col">PE</th>
+            <th scope="col">PP</th>
+            <th scope="col">GF</th>
+            <th scope="col">GC</th>
+            <th scope="col">DG</th>
+            <th scope="col">Pts</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (!standings.length) { %>
+            <tr><td colspan="10" class="sports-empty">Aún no hay equipos para mostrar.</td></tr>
+          <% } else { %>
+            <% standings.forEach((team, index) => { %>
+              <tr>
+                <td class="standings-rank"><%= String(index + 1).padStart(2, '0') %></td>
+                <th scope="row"><a href="/equipos?categoria=<%= encodeURIComponent(team.category || '') %>"><%= team.name %></a><small><%= team.category %></small></th>
+                <td><%= team.played %></td>
+                <td><%= team.won %></td>
+                <td><%= team.drawn %></td>
+                <td><%= team.lost %></td>
+                <td><%= team.goalsFor %></td>
+                <td><%= team.goalsAgainst %></td>
+                <td><%= team.goalDifference > 0 ? '+' : '' %><%= team.goalDifference %></td>
+                <td class="standings-points"><%= team.points %></td>
+              </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </section>
+    <p class="sports-legend">PJ jugados · PG ganados · PE empatados · PP perdidos · GF goles a favor · GC goles en contra · DG diferencia · Pts puntos</p>
+  </main>
+
+  <%- include('../partials/accessibility-settings') %>
+</body>
+</html>

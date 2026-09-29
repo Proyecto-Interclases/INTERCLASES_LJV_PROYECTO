@@ -15,6 +15,8 @@ const calendarRoutes = ['/calendario', '/calendar'];
 // Asocia la URL raiz con el controlador del home.
 router.get('/', homeController.showHome);
 calendarRoutes.forEach((route) => router.get(route, homeController.showCalendar));
+router.get('/posiciones', homeController.showStandings);
+router.get('/equipos', homeController.showTeams);
 loginRoutes.forEach((route) => router.get(route, homeController.showLogin));
 registerRoutes.forEach((route) => router.get(route, homeController.showRegister));
 loginRoutes.forEach((route) => router.post(route, authController.login));

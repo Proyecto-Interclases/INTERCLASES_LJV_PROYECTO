@@ -9,8 +9,8 @@
   <body class="dashboard-page">
     <header class="dashboard-header">
       <div>
-        <p class="eyebrow">ADMINISTRACIÓN PRIVADA</p>
-        <h1>Panel del administrador</h1>
+        <p class="eyebrow">GESTIÓN DOCENTE</p>
+        <h1>Panel del profesor</h1>
       </div>
       <div class="header-actions">
         <% const displayName = user.nombre || user.name || ''; %>
@@ -35,119 +35,24 @@
     <main class="dashboard-shell">
       <aside class="dashboard-sidebar">
         <nav aria-label="Secciones de administración">
-          <a href="/admin/dashboard">Resumen</a>
-          <a href="#popup">Ventana emergente</a>
-          <a href="#usuarios">Usuarios</a>
-          <a href="#equipos">Equipos y posiciones</a>
-          <a href="#plantillas">Plantillas</a>
-          <a href="#partidos">Fixture</a>
+          <a href="#partidos">Partidos y resultados</a>
+          <a href="#equipos">Equipos y plantilla</a>
+          <a href="#posiciones">Tabla de posiciones</a>
+          <a href="#anuncios">Noticias y avisos</a>
         </nav>
       </aside>
 
       <section class="dashboard-content">
         <% if (error) { %>
-          <div class="auth-alert error"><%= error %></div>
+          <div class="auth-alert error" role="alert"><%= error %></div>
         <% } %>
         <% if (success) { %>
-          <div class="auth-alert success"><%= success %></div>
+          <div class="auth-alert success" role="status"><%= success %></div>
         <% } %>
 
-        <section class="panel-card" id="usuarios">
-          <h2>Usuarios registrados</h2>
-          <div class="result-list dashboard-list">
-            <% if (!usuarios.length) { %>
-              <p>No hay usuarios registrados.</p>
-            <% } else { %>
-              <% usuarios.forEach((usuario) => { %>
-                <div class="result-item">
-                  <div>
-                    <strong><%= usuario.nombre %></strong>
-                    <small><%= usuario.email %> · <%= usuario.role %><%= usuario.teamName ? ` · ${usuario.teamName}` : '' %></small>
-                  </div>
-                </div>
-              <% }) %>
-            <% } %>
-          </div>
-        </section>
-
-        <section class="panel-card" id="popup">
-          <h2>Gestión de ventana emergente</h2>
-          <form class="dashboard-form" action="/admin/popup" method="post">
-            <label>
-              Título
-              <input type="text" name="titulo" value="<%= popup.titulo %>" required>
-            </label>
-            <label>
-              Mensaje
-              <textarea name="mensaje" rows="4" required><%= popup.mensaje %></textarea>
-            </label>
-            <label class="check-field">
-              <input type="checkbox" name="activo" value="1" <%= popup.activo ? 'checked' : '' %>>
-              Mostrar ventana emergente en la página principal
-            </label>
-            <button type="submit" class="btn btn-primary">Guardar pop-up</button>
-          </form>
-        </section>
-
-        <section class="panel-card" id="equipos">
-          <h2>Equipos y posiciones</h2>
-          <form class="dashboard-form" action="/admin/equipos" method="post">
-            <div class="field-row">
-              <label>Nombre del equipo<input type="text" name="nombre" required></label>
-              <label>Curso o categoría<input type="text" name="categoria" required></label>
-            </div>
-            <button type="submit" class="btn btn-primary">Crear equipo</button>
-          </form>
-          <div class="result-list dashboard-list">
-            <% if (!equipos.length) { %>
-              <p>Aún no hay equipos creados.</p>
-            <% } else { %>
-              <% equipos.forEach((equipo) => { %>
-                <form class="result-item" action="/admin/equipos/<%= equipo.id %>/estadisticas" method="post">
-                  <div>
-                    <strong><%= equipo.nombre %></strong>
-                    <small><%= equipo.categoria %></small>
-                  </div>
-                  <div class="inline-fields">
-                    <label>Pts<input type="number" name="puntos" min="0" value="<%= equipo.puntos %>" required></label>
-                    <label>GF<input type="number" name="golesFavor" min="0" value="<%= equipo.goles_favor %>" required></label>
-                    <label>GC<input type="number" name="golesContra" min="0" value="<%= equipo.goles_contra %>" required></label>
-                    <button type="submit" class="btn btn-secondary dark">Actualizar</button>
-                  </div>
-                </form>
-              <% }) %>
-            <% } %>
-          </div>
-        </section>
-
-        <section class="panel-card" id="plantillas">
-          <h2>Plantillas por curso</h2>
-          <form class="dashboard-form" action="/admin/jugadores" method="post">
-            <div class="field-row">
-              <label>Equipo<select name="equipoId" required><option value="">Selecciona</option><% equipos.forEach((equipo) => { %><option value="<%= equipo.id %>"><%= equipo.nombre %></option><% }) %></select></label>
-              <label>Jugador<input type="text" name="nombre" required></label>
-            </div>
-            <div class="field-row">
-              <label>Posición<input type="text" name="posicion" placeholder="Defensa, delantero..." required></label>
-            </div>
-            <button type="submit" class="btn btn-primary">Agregar jugador</button>
-          </form>
-          <ul class="list-grid dashboard-list">
-            <% if (!jugadores.length) { %>
-              <li>No hay jugadores registrados.</li>
-            <% } else { %>
-              <% jugadores.forEach((jugador) => { %>
-                <li>
-                  <span><strong><%= jugador.nombre %></strong> · <%= jugador.posicion %> · <%= jugador.equipo_nombre %></span>
-                  <form action="/admin/jugadores/<%= jugador.id %>/eliminar" method="post"><button class="btn btn-secondary dark" type="submit">Eliminar</button></form>
-                </li>
-              <% }) %>
-            <% } %>
-          </ul>
-        </section>
-
         <section class="panel-card" id="partidos">
-          <h2>Fixture: crear partido</h2>
+          <p class="eyebrow">PROGRAMACIÓN</p>
+          <h2>Partidos y resultados</h2>
           <form class="dashboard-form" action="/admin/partidos" method="post">
             <div class="field-row">
               <label>Equipo local<select name="equipoLocalId" required><option value="">Selecciona</option><% equipos.forEach((equipo) => { %><option value="<%= equipo.id %>"><%= equipo.nombre %></option><% }) %></select></label>
@@ -161,7 +66,7 @@
               <label>Cancha<input type="text" name="cancha" placeholder="Cancha principal" required></label>
               <label>Estado<select name="estado"><% estadosPartido.forEach((estado) => { %><option value="<%= estado %>"><%= estado %></option><% }) %></select></label>
             </div>
-            <button type="submit" class="btn btn-primary">Crear partido</button>
+            <button type="submit" class="btn btn-primary">+ Programar partido</button>
           </form>
         </section>
 
@@ -198,6 +103,126 @@
             <% } %>
           </div>
         </section>
+
+        <section class="panel-card" id="equipos">
+          <p class="eyebrow">PLANTILLAS DEL TORNEO</p>
+          <h2>Equipos y jugadores</h2>
+          <form class="dashboard-form" action="/admin/equipos" method="post" enctype="multipart/form-data">
+            <div class="field-row">
+              <label>Nombre del equipo<input type="text" name="nombre" required></label>
+              <label>Curso o categoría<input type="text" name="categoria" required></label>
+            </div>
+            <div class="field-row">
+              <label>Subir escudo (JPG, PNG o WebP)<input type="file" name="escudo" accept="image/jpeg,image/png,image/webp"></label>
+              <label>URL del escudo<input type="url" name="escudoUrl" placeholder="https://..." inputmode="url"></label>
+            </div>
+            <div class="field-row">
+              <label>Correo del capitán<input type="email" name="emailCapitan" placeholder="capitan@colegio.edu.co"></label>
+            </div>
+            <button type="submit" class="btn btn-primary">+ Agregar nuevo equipo</button>
+          </form>
+          <div class="result-list dashboard-list">
+            <% if (!equipos.length) { %>
+              <p>Aún no hay equipos creados.</p>
+            <% } else { %>
+              <% equipos.forEach((equipo) => { %>
+                <article class="result-item admin-team-item">
+                  <div class="admin-team-heading">
+                    <% if (equipo.escudoUrl) { %>
+                      <img class="admin-team-crest" src="<%= equipo.escudoUrl %>" alt="Escudo de <%= equipo.nombre %>" loading="lazy">
+                    <% } else { %>
+                      <span class="admin-team-crest admin-team-crest--empty" aria-hidden="true"><%= equipo.nombre.slice(0, 1).toUpperCase() %></span>
+                    <% } %>
+                    <div><strong><%= equipo.nombre %></strong><small><%= equipo.categoria %> · Capitán: <%= equipo.capitanEmail || 'Por asignar' %></small></div>
+                  </div>
+                  <div class="admin-roster">
+                    <strong>Plantilla</strong>
+                    <% const teamPlayers = jugadores.filter((jugador) => jugador.equipo_id === equipo.id); %>
+                    <% if (!teamPlayers.length) { %>
+                      <p class="form-hint">Todavía no hay jugadores para este equipo.</p>
+                    <% } else { %>
+                      <% teamPlayers.forEach((jugador) => { %>
+                        <div class="admin-roster-player">
+                          <span class="roster-number"><%= jugador.numero_camiseta %></span>
+                          <span><strong><%= jugador.nombre %></strong><small><%= jugador.posicion %></small></span>
+                          <form class="goal-update-form" action="/admin/jugadores/<%= jugador.id %>/goles" method="post">
+                            <label>Goles<input type="number" name="goles" min="0" step="1" value="<%= jugador.goles %>" required></label>
+                            <button type="submit" class="btn btn-secondary dark">Guardar</button>
+                          </form>
+                          <form action="/admin/jugadores/<%= jugador.id %>/eliminar" method="post"><button type="submit" class="btn btn-danger">Eliminar</button></form>
+                        </div>
+                      <% }) %>
+                    <% } %>
+                  </div>
+                </article>
+              <% }) %>
+            <% } %>
+          </div>
+          <div class="admin-player-create" id="plantillas">
+            <h3>Agregar jugador a una plantilla</h3>
+            <form class="dashboard-form" action="/admin/jugadores" method="post">
+              <div class="field-row">
+                <label>Equipo<select name="equipo_id" required><option value="">Selecciona un equipo</option><% equipos.forEach((equipo) => { %><option value="<%= equipo.id %>"><%= equipo.nombre %> · <%= equipo.categoria %></option><% }) %></select></label>
+                <label>Jugador<input type="text" name="nombre" required></label>
+              </div>
+              <div class="field-row">
+                <label>Número de camiseta<input type="number" name="numero_camiseta" min="0" max="99" value="0" required></label>
+                <label>Posición<input type="text" name="posicion" placeholder="Defensa, delantero..."></label>
+              </div>
+              <div class="field-row">
+                <label>Goles iniciales<input type="number" name="goles" min="0" value="0" required></label>
+              </div>
+              <button type="submit" class="btn btn-primary">+ Agregar jugador</button>
+            </form>
+          </div>
+        </section>
+
+        <section class="panel-card" id="posiciones">
+          <p class="eyebrow">CÁLCULO AUTOMÁTICO</p>
+          <h2>Tabla de posiciones</h2>
+          <div class="sports-table-wrap">
+            <table class="sports-table standings-table">
+              <thead><tr><th scope="col">#</th><th scope="col">Equipo</th><th scope="col">PJ</th><th scope="col">PG</th><th scope="col">PE</th><th scope="col">PP</th><th scope="col">GF</th><th scope="col">GC</th><th scope="col">DG</th><th scope="col">Pts</th></tr></thead>
+              <tbody>
+                <% if (!posiciones.length) { %>
+                  <tr><td colspan="10" class="sports-empty">Se calculará cuando se registren equipos y resultados finales.</td></tr>
+                <% } else { %>
+                  <% posiciones.forEach((equipo, index) => { %>
+                    <tr><td class="standings-rank"><%= index + 1 %></td><th scope="row"><%= equipo.name %><small><%= equipo.category %></small></th><td><%= equipo.played %></td><td><%= equipo.won %></td><td><%= equipo.drawn %></td><td><%= equipo.lost %></td><td><%= equipo.goalsFor %></td><td><%= equipo.goalsAgainst %></td><td><%= equipo.goalDifference %></td><td class="standings-points"><%= equipo.points %></td></tr>
+                  <% }) %>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel-card" id="anuncios">
+          <p class="eyebrow">COMUNICACIÓN</p>
+          <h2>Noticias y avisos</h2>
+          <form class="dashboard-form" action="/admin/popup" method="post">
+            <label>Título<input type="text" name="titulo" value="<%= popup.titulo %>" required></label>
+            <label>Mensaje<textarea name="mensaje" rows="4" required><%= popup.mensaje %></textarea></label>
+            <label class="check-field"><input type="checkbox" name="activo" value="1" <%= popup.activo ? 'checked' : '' %>>Mostrar aviso destacado en la página principal</label>
+            <button type="submit" class="btn btn-primary">Publicar aviso</button>
+          </form>
+        </section>
+        <details class="panel-card admin-users" id="usuarios">
+          <summary>Usuarios registrados</summary>
+          <div class="result-list dashboard-list">
+            <% if (!usuarios.length) { %>
+              <p>No hay usuarios registrados.</p>
+            <% } else { %>
+              <% usuarios.forEach((usuario) => { %>
+                <div class="result-item">
+                  <div>
+                    <strong><%= usuario.nombre %></strong>
+                    <small><%= usuario.email %> · <%= usuario.role %><%= usuario.teamName ? ` · ${usuario.teamName}` : '' %></small>
+                  </div>
+                </div>
+              <% }) %>
+            <% } %>
+          </div>
+        </details>
       </section>
     </main>
     <%- include('../partials/accessibility-settings') %>

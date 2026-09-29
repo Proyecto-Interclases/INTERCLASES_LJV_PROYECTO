@@ -1,6 +1,7 @@
 // Importa el servicio que contiene la logica del torneo.
 const tournamentService = require('../services/tournament.service');
 const { getPopup } = require('../services/admin.service');
+const Team = require('../models/Team');
 
 // Atiende la solicitud de la pagina principal.
 async function showHome(req, res, next) {
@@ -66,5 +67,46 @@ async function showCalendar(req, res, next) {
   }
 }
 
+async function showStandings(req, res, next) {
+  try {
+    const selectedCategory = String(req.query.categoria || '').trim();
+    const [standings, categories] = await Promise.all([
+      tournamentService.getStandings(selectedCategory),
+      Team.distinct('categoria')
+    ]);
+
+    res.render('pages/standings', {
+      title: 'Posiciones | Interclases LJV',
+      standings,
+      categories: categories.sort(),
+      selectedCategory,
+      user: req.session?.user || null
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function showTeams(req, res, next) {
+  try {
+    const selectedCategory = String(req.query.categoria || '').trim();
+    const [{ teams, categories }, topScorers] = await Promise.all([
+      tournamentService.getTeamsPageData(selectedCategory),
+      tournamentService.getTopScorers(10, selectedCategory)
+    ]);
+
+    res.render('pages/teams', {
+      title: 'Equipos y goleadores | Interclases LJV',
+      teams,
+      categories,
+      selectedCategory,
+      topScorers,
+      user: req.session?.user || null
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 // Exporta el controlador para conectarlo con las rutas web.
-module.exports = { showHome, showLogin, showRegister, showCalendar };
+module.exports = { showHome, showLogin, showRegister, showCalendar, showStandings, showTeams };

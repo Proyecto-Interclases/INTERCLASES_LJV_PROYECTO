@@ -3,7 +3,9 @@ const Player = require('../models/Player');
 const Match = require('../models/Match');
 const User = require('../models/User');
 
-async function createEquipo({ nombre, categoria, emailCapitan }) {
+const MATCH_STATUSES = ['Por jugar', 'Jugando', 'Finalizado'];
+
+async function createEquipo({ nombre, categoria, emailCapitan, escudoUrl }) {
   const trimmedNombre = String(nombre || '').trim();
   const trimmedCategoria = String(categoria || '').trim();
 
@@ -24,6 +26,7 @@ async function createEquipo({ nombre, categoria, emailCapitan }) {
   const equipo = await Team.create({
     nombre: trimmedNombre,
     categoria: trimmedCategoria,
+    escudoUrl: String(escudoUrl || '').trim(),
     capitanEmail: emailCapitan ? String(emailCapitan).trim().toLowerCase() : null
   });
 
@@ -38,15 +41,21 @@ async function createEquipo({ nombre, categoria, emailCapitan }) {
   };
 }
 
-async function addJugador({ equipoId, nombre, posicion }) {
+async function addJugador({ equipoId, equipo_id, nombre, numero_camiseta, numeroCamiseta, posicion, goles = 0 }) {
+  const teamId = equipoId || equipo_id;
   const trimmedNombre = String(nombre || '').trim();
-  const trimmedPosicion = String(posicion || '').trim();
+  const trimmedPosicion = String(posicion || '').trim() || 'Sin definir';
+  const shirtNumber = Number(numero_camiseta ?? numeroCamiseta ?? 0);
+  const goalCount = Number(goles);
 
-  if (!equipoId || !trimmedNombre || !trimmedPosicion) {
-    throw new Error('Todos los campos del jugador son obligatorios.');
+  if (!teamId || !trimmedNombre) {
+    throw new Error('Selecciona un equipo e ingresa el nombre del jugador.');
+  }
+  if (!Number.isInteger(shirtNumber) || shirtNumber < 0 || shirtNumber > 99 || !Number.isInteger(goalCount) || goalCount < 0) {
+    throw new Error('El número de camiseta debe estar entre 0 y 99 y los goles deben ser un entero no negativo.');
   }
 
-  const equipo = await Team.findById(equipoId);
+  const equipo = await Team.findById(teamId);
 
   if (!equipo) {
     throw new Error('No existe ese equipo.');
@@ -55,20 +64,27 @@ async function addJugador({ equipoId, nombre, posicion }) {
   const jugador = await Player.create({
     equipo_id: equipo._id,
     nombre: trimmedNombre,
-    posicion: trimmedPosicion
+    posicion: trimmedPosicion,
+    numero_camiseta: shirtNumber,
+    goles: goalCount
   });
 
   return {
     id: jugador._id.toString(),
     equipoId: jugador.equipo_id.toString(),
     nombre: jugador.nombre,
-    posicion: jugador.posicion
+    posicion: jugador.posicion,
+    numero_camiseta: jugador.numero_camiseta,
+    goles: jugador.goles
   };
 }
 
-async function createPartido({ equipoLocalId, equipoVisitanteId, fechaPartido, horaPartido, cancha, estado = 'Pendiente' }) {
+async function createPartido({ equipoLocalId, equipoVisitanteId, fechaPartido, horaPartido, cancha, estado = 'Por jugar' }) {
   if (!equipoLocalId || !equipoVisitanteId || equipoLocalId === equipoVisitanteId || !fechaPartido || !horaPartido || !cancha) {
     throw new Error('Faltan datos para crear el partido.');
+  }
+  if (!MATCH_STATUSES.includes(estado)) {
+    throw new Error('El estado del partido no es válido.');
   }
 
   const local = await Team.findById(equipoLocalId);
@@ -87,8 +103,8 @@ async function createPartido({ equipoLocalId, equipoVisitanteId, fechaPartido, h
     hora: horaPartido,
     cancha: String(cancha).trim(),
     estado,
-    goles_local: 0,
-    goles_visitante: 0
+    goles_a: 0,
+    goles_b: 0
   });
 
   return {
@@ -103,16 +119,22 @@ async function createPartido({ equipoLocalId, equipoVisitanteId, fechaPartido, h
 }
 
 async function actualizarResultadoPartido({ partidoId, golesLocal, golesVisitante }) {
+  const homeScore = Number(golesLocal);
+  const awayScore = Number(golesVisitante);
+  if (!Number.isInteger(homeScore) || homeScore < 0 || !Number.isInteger(awayScore) || awayScore < 0) {
+    throw new Error('Los marcadores deben ser números enteros no negativos.');
+  }
+
   const partido = await Match.findById(partidoId);
 
   if (!partido) {
     throw new Error('No existe ese partido.');
   }
 
-  const resultado = `${partido.equipo_a} ${Number(golesLocal)} - ${Number(golesVisitante)} ${partido.equipo_b}`;
+  const resultado = `${partido.equipo_a} ${homeScore} - ${awayScore} ${partido.equipo_b}`;
 
-  partido.goles_local = Number(golesLocal);
-  partido.goles_visitante = Number(golesVisitante);
+  partido.goles_a = homeScore;
+  partido.goles_b = awayScore;
   partido.estado = 'Finalizado';
   partido.resultado = resultado;
   await partido.save();
@@ -132,10 +154,14 @@ async function listarPartidos() {
     fecha_partido: partido.fecha,
     hora_partido: partido.hora,
     cancha: partido.cancha,
-    estado: partido.estado,
-    goles_local: partido.goles_local,
-    goles_visitante: partido.goles_visitante,
-    resultado: partido.resultado || `${partido.equipo_a} ${partido.goles_local ?? 0} - ${partido.goles_visitante ?? 0} ${partido.equipo_b}`
+    estado: ['Pendiente', 'Programado'].includes(partido.estado)
+      ? 'Por jugar'
+      : ['En Vivo', 'En vivo'].includes(partido.estado)
+        ? 'Jugando'
+        : partido.estado || 'Por jugar',
+    goles_local: partido.goles_a ?? partido.goles_local ?? 0,
+    goles_visitante: partido.goles_b ?? partido.goles_visitante ?? 0,
+    resultado: partido.resultado || `${partido.equipo_a} ${partido.goles_a ?? partido.goles_local ?? 0} - ${partido.goles_b ?? partido.goles_visitante ?? 0} ${partido.equipo_b}`
   }));
 }
 

@@ -1,16 +1,18 @@
 const { createEquipo, addJugador, createPartido, actualizarResultadoPartido, listarPartidos } = require('../services/gestion.service');
-const { listAdminTeams, MATCH_STATUSES, getPopup, updatePopup, listPlayers, listUsers, updateTeamStats, updateMatch, deleteMatch, deletePlayer } = require('../services/admin.service');
+const { listAdminTeams, MATCH_STATUSES, getPopup, updatePopup, listPlayers, listUsers, updateTeamStats, updateMatch, updatePlayerGoals, deleteMatch, deletePlayer } = require('../services/admin.service');
+const tournamentService = require('../services/tournament.service');
 
 async function dashboardData() {
-  const [equipos, partidos, popup, jugadores, usuarios] = await Promise.all([
+  const [equipos, partidos, popup, jugadores, usuarios, posiciones] = await Promise.all([
     listAdminTeams(),
     listarPartidos(),
     getPopup(),
     listPlayers(),
-    listUsers()
+    listUsers(),
+    tournamentService.getStandings()
   ]);
 
-  return { equipos, partidos, popup, jugadores, usuarios, estadosPartido: MATCH_STATUSES };
+  return { equipos, partidos, popup, jugadores, usuarios, posiciones, estadosPartido: MATCH_STATUSES };
 }
 
 async function renderDashboard(req, res, { error = null, success = null } = {}) {
@@ -32,6 +34,7 @@ async function renderDashboard(req, res, { error = null, success = null } = {}) 
       popup: { titulo: '', mensaje: '', activo: 0 },
       jugadores: [],
       usuarios: [],
+      posiciones: [],
       estadosPartido: MATCH_STATUSES,
       error: loadError.message,
       success: null
@@ -46,7 +49,7 @@ function dashboard(req, res) {
 async function guardarPopup(req, res) {
   try {
     await updatePopup(req.body);
-    return renderDashboard(req, res, { success: 'Configuración del pop-up actualizada.' });
+    return renderDashboard(req, res, { success: 'Aviso publicado en la página principal.' });
   } catch (error) {
     return renderDashboard(req, res, { error: error.message });
   }
@@ -94,7 +97,10 @@ async function guardarResultado(req, res) {
 
 async function guardarEquipo(req, res) {
   try {
-    await createEquipo(req.body);
+    const escudoUrl = req.file
+      ? `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`
+      : req.body.escudoUrl;
+    await createEquipo({ ...req.body, escudoUrl });
     return renderDashboard(req, res, { success: 'Equipo creado correctamente.' });
   } catch (error) {
     return renderDashboard(req, res, { error: error.message });
@@ -128,6 +134,15 @@ async function eliminarJugador(req, res) {
   }
 }
 
+async function guardarGolesJugador(req, res) {
+  try {
+    await updatePlayerGoals(req.params.id, req.body.goles);
+    return renderDashboard(req, res, { success: 'Goles del jugador actualizados.' });
+  } catch (error) {
+    return renderDashboard(req, res, { error: error.message });
+  }
+}
+
 module.exports = {
   dashboard,
   guardarPopup,
@@ -138,5 +153,6 @@ module.exports = {
   guardarEquipo,
   guardarEstadisticasEquipo,
   guardarJugador,
+  guardarGolesJugador,
   eliminarJugador
 };

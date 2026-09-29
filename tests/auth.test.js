@@ -1,51 +1,58 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const { after, before } = require('node:test');
+const { randomUUID } = require('node:crypto');
+const mongoose = require('mongoose');
 
-const { initDatabase, registerUser, loginUser } = require('../src/services/auth.service');
+const { connectDB } = require('../src/config/db');
+const User = require('../src/models/User');
+const { registerUser, loginUser } = require('../src/services/auth.service');
 
-(async () => {
-  test('registerUser guarda un usuario y loginUser valida la contraseña', async () => {
-    const dbPath = ':memory:';
-    await initDatabase(dbPath);
+const testEmails = [];
 
-    const user = await registerUser({
-      name: 'Ana',
-      email: 'ana@ejemplo.com',
-      password: 'PruebaSegura1!',
-      role: 'student',
-      teamName: 'Los Halcones'
-    }, dbPath);
+before(async () => {
+  await connectDB();
+});
 
-    assert.equal(user.name, 'Ana');
-    assert.equal(user.role, 'student');
-    assert.ok(user.id > 0);
+after(async () => {
+  if (mongoose.connection.readyState === 1) {
+    await User.deleteMany({ email: { $in: testEmails } });
+    await mongoose.disconnect();
+  }
+});
 
-    const sessionUser = await loginUser({
-      email: 'ana@ejemplo.com',
-      password: 'PruebaSegura1!',
-      role: 'capitan'
-    }, dbPath);
-
-    assert.equal(sessionUser.email, 'ana@ejemplo.com');
-    assert.equal(sessionUser.role, 'student');
+test('registerUser guarda un usuario y loginUser valida la contraseña', async () => {
+  const email = `ana-${randomUUID()}@ejemplo.com`;
+  testEmails.push(email);
+  const user = await registerUser({
+    name: 'Ana Ejemplo',
+    email,
+    password: 'PruebaSegura1!',
+    role: 'student',
+    teamName: 'Los Halcones'
   });
 
-  test('loginUser infiere el rol desde la cuenta registrada', async () => {
-    const dbPath = ':memory:';
-    await initDatabase(dbPath);
+  assert.equal(user.name, 'Ana Ejemplo');
+  assert.equal(user.role, 'student');
+  assert.ok(user.id);
 
-    await registerUser({
-      name: 'Admin Test',
-      email: 'admin@ejemplo.com',
-      password: 'PruebaSegura1!',
-      role: 'admin'
-    }, dbPath);
+  const sessionUser = await loginUser({ email, password: 'PruebaSegura1!' });
 
-    const sessionUser = await loginUser({
-      email: 'admin@ejemplo.com',
-      password: 'PruebaSegura1!'
-    }, dbPath);
+  assert.equal(sessionUser.email, email);
+  assert.equal(sessionUser.role, 'student');
+});
 
-    assert.equal(sessionUser.role, 'admin');
+test('loginUser infiere el rol desde la cuenta registrada', async () => {
+  const email = `admin-${randomUUID()}@ejemplo.com`;
+  testEmails.push(email);
+  await registerUser({
+    name: 'Admin Ejemplo',
+    email,
+    password: 'PruebaSegura1!',
+    role: 'admin'
   });
-})();
+
+  const sessionUser = await loginUser({ email, password: 'PruebaSegura1!' });
+
+  assert.equal(sessionUser.role, 'admin');
+});

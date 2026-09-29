@@ -11,10 +11,21 @@ const playerSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  numero_camiseta: {
+    type: Number,
+    default: 0,
+    min: 0,
+    max: 99
+  },
   posicion: {
     type: String,
-    required: true,
+    default: 'Sin definir',
     trim: true
+  },
+  goles: {
+    type: Number,
+    default: 0,
+    min: 0
   }
 }, {
   timestamps: {

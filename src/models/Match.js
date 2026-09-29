@@ -45,8 +45,8 @@ const matchSchema = new mongoose.Schema({
   },
   estado: {
     type: String,
-    enum: ['Pendiente', 'En Vivo', 'Finalizado'],
-    default: 'Pendiente'
+    enum: ['Por jugar', 'Jugando', 'Finalizado'],
+    default: 'Por jugar'
   }
 }, {
   timestamps: {

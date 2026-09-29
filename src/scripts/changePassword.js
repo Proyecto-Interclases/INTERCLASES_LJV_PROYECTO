@@ -7,15 +7,22 @@ const { connectDB } = require('../config/db');
 const User = require('../models/User');
 
 const ADMIN_EMAIL = 'anjelitoxk@gmail.com';
-const NEW_PASSWORD = 'HolamegustaJuanita55*';
+const NEW_PASSWORD = process.env.NEW_ADMIN_PASSWORD;
 
 async function changePassword() {
+  if (!NEW_PASSWORD || !/^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/.test(NEW_PASSWORD)) {
+    throw new Error('Define NEW_ADMIN_PASSWORD con al menos 8 caracteres, una mayúscula, un número y un carácter especial.');
+  }
+
   await connectDB();
 
   const user = await User.findOne({ email: ADMIN_EMAIL });
 
   if (!user) {
     throw new Error(`No existe un usuario con el correo ${ADMIN_EMAIL}.`);
+  }
+  if (user.role !== 'admin') {
+    throw new Error(`La cuenta ${ADMIN_EMAIL} no tiene rol de administrador.`);
   }
 
   user.password = await bcrypt.hash(NEW_PASSWORD, 10);

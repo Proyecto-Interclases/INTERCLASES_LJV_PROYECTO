@@ -4,7 +4,7 @@ const Match = require('../models/Match');
 const Announcement = require('../models/Announcement');
 const User = require('../models/User');
 
-const MATCH_STATUSES = ['Pendiente', 'En Vivo', 'Finalizado'];
+const MATCH_STATUSES = ['Por jugar', 'Jugando', 'Finalizado'];
 
 async function getPopup() {
   const popup = await Announcement.findOne({}).sort({ createdAt: -1 }).lean();
@@ -19,26 +19,16 @@ async function updatePopup({ titulo, mensaje, activo }) {
     throw new Error('El título y el mensaje del pop-up son obligatorios.');
   }
 
-  let popup = await Announcement.findOne({});
-
-  if (!popup) {
-    popup = await Announcement.create({
-      titulo: cleanTitle,
-      mensaje: cleanMessage,
-      activo: Boolean(activo)
-    });
-  } else {
-    popup.titulo = cleanTitle;
-    popup.mensaje = cleanMessage;
-    popup.activo = Boolean(activo);
-    await popup.save();
-  }
-
-  return popup.toObject();
+  return Announcement.create({
+    titulo: cleanTitle,
+    mensaje: cleanMessage,
+    activo: Boolean(activo)
+  });
 }
 
 async function listAdminTeams() {
-  return Team.find({}).sort({ puntos: -1, goles_favor: -1, nombre: 1 }).lean();
+  const teams = await Team.find({}).sort({ categoria: 1, nombre: 1 }).lean();
+  return teams.map((team) => ({ ...team, id: team._id.toString() }));
 }
 
 async function updateTeamStats({ teamId, puntos, golesFavor, golesContra }) {
@@ -69,8 +59,24 @@ async function listPlayers() {
     equipo_id: player.equipo_id ? player.equipo_id._id.toString() : null,
     nombre: player.nombre,
     posicion: player.posicion,
+    numero_camiseta: player.numero_camiseta || 0,
+    goles: player.goles || 0,
     equipo_nombre: player.equipo_id ? player.equipo_id.nombre : null
   }));
+}
+
+async function updatePlayerGoals(playerId, goals) {
+  const goalCount = Number(goals);
+  if (!playerId || !Number.isInteger(goalCount) || goalCount < 0) {
+    throw new Error('Los goles deben ser un número entero no negativo.');
+  }
+
+  const player = await Player.findById(playerId);
+  if (!player) throw new Error('No existe ese jugador.');
+
+  player.goles = goalCount;
+  await player.save();
+  return player.toObject();
 }
 
 async function listUsers() {
@@ -133,6 +139,7 @@ module.exports = {
   listAdminTeams,
   updateTeamStats,
   listPlayers,
+  updatePlayerGoals,
   listUsers,
   updateMatch,
   deleteMatch,

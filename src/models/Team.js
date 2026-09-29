@@ -12,6 +12,11 @@ const teamSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  escudoUrl: {
+    type: String,
+    default: '',
+    trim: true
+  },
   puntos: {
     type: Number,
     default: 0

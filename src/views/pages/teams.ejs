@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body class="sports-page teams-page">
+  <%- include('../partials/navbar', { user }) %>
+
+  <main class="container sports-main" id="main-content">
+    <header class="sports-heading">
+      <div>
+        <p class="eyebrow section-eyebrow">PLANTILLAS · TORNEO 2026</p>
+        <h1>Equipos y goleadores</h1>
+        <p>Consulta las plantillas inscritas y el ranking de anotadores.</p>
+      </div>
+      <form class="sports-filter" action="/equipos" method="get">
+        <label for="teams-category">Categoría</label>
+        <select id="teams-category" name="categoria" onchange="this.form.submit()">
+          <option value="">Todas</option>
+          <% categories.forEach((category) => { %>
+            <option value="<%= category %>" <%= selectedCategory === category ? 'selected' : '' %>><%= category %></option>
+          <% }) %>
+        </select>
+      </form>
+    </header>
+
+    <section class="sports-section" aria-labelledby="teams-title">
+      <div class="sports-section-heading">
+        <div>
+          <p class="eyebrow section-eyebrow">CLUBES PARTICIPANTES</p>
+          <h2 id="teams-title">Equipos</h2>
+        </div>
+        <span><%= teams.length %> equipo<%= teams.length === 1 ? '' : 's' %></span>
+      </div>
+      <% if (!teams.length) { %>
+        <p class="sports-empty-block">Aún no hay equipos registrados en esta categoría.</p>
+      <% } else { %>
+        <div class="teams-grid">
+          <% teams.forEach((team) => { %>
+            <article class="team-card">
+              <div class="team-card-top">
+                <% if (team.escudoUrl) { %>
+                  <img class="team-crest" src="<%= team.escudoUrl %>" alt="Escudo de <%= team.nombre %>" loading="lazy">
+                <% } else { %>
+                  <span class="team-crest team-crest--empty" aria-hidden="true"><%= team.nombre.slice(0, 1).toUpperCase() %></span>
+                <% } %>
+                <div>
+                  <p class="eyebrow"><%= team.categoria %></p>
+                  <h3><%= team.nombre %></h3>
+                  <p class="team-captain">Capitán: <%= team.capitanEmail || 'Por asignar' %></p>
+                </div>
+              </div>
+              <details class="team-roster">
+                <summary>Ver plantilla <span><%= team.jugadores.length %></span></summary>
+                <% if (team.jugadores.length) { %>
+                  <ul>
+                    <% team.jugadores.forEach((player) => { %>
+                      <li>
+                        <span class="roster-number"><%= player.numero_camiseta %></span>
+                        <span class="roster-name"><strong><%= player.nombre %></strong><small><%= player.posicion %></small></span>
+                        <span class="roster-goals"><%= player.goles %> gol<%= player.goles === 1 ? '' : 'es' %></span>
+                      </li>
+                    <% }) %>
+                  </ul>
+                <% } else { %>
+                  <p class="roster-empty">La plantilla aún no tiene jugadores.</p>
+                <% } %>
+              </details>
+            </article>
+          <% }) %>
+        </div>
+      <% } %>
+    </section>
+
+    <section class="sports-section scorers-section" aria-labelledby="scorers-title">
+      <div class="sports-section-heading">
+        <div>
+          <p class="eyebrow section-eyebrow">LÍDERES DEL TORNEO</p>
+          <h2 id="scorers-title">Goleadores</h2>
+        </div>
+        <span>Top 10</span>
+      </div>
+      <div class="sports-table-wrap">
+        <table class="sports-table scorers-table">
+          <thead><tr><th scope="col">#</th><th scope="col">Jugador</th><th scope="col">Equipo</th><th scope="col">Goles</th></tr></thead>
+          <tbody>
+            <% if (!topScorers.length) { %>
+              <tr><td colspan="4" class="sports-empty">Aún no hay goles individuales registrados.</td></tr>
+            <% } else { %>
+              <% topScorers.forEach((player, index) => { %>
+                <tr>
+                  <td class="standings-rank"><%= String(index + 1).padStart(2, '0') %></td>
+                  <th scope="row"><span class="scorer-number"><%= player.numero_camiseta %></span><%= player.nombre %><small><%= player.posicion %></small></th>
+                  <td><%= player.equipo %></td>
+                  <td class="standings-points"><%= player.goles %></td>
+                </tr>
+              <% }) %>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <%- include('../partials/accessibility-settings') %>
+</body>
+</html>
