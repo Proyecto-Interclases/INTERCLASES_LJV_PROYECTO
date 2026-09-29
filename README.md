@@ -6,10 +6,25 @@ Aplicacion web para gestionar y consultar las interclases de futbol del Colegio 
 
 ```bash
 npm install
+```
+
+Antes de iniciar, crea el archivo local `.env` a partir de la plantilla:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+En macOS o Linux, usa `cp .env.example .env`. Edita `.env` y configura `MONGO_URI` con la URI de MongoDB Atlas, además de cambiar `ADMIN_PASSWORD` y `SESSION_SECRET`. El archivo `.env` contiene secretos y no se sube a Git; `.env.example` sí se comparte.
+
+En Atlas, agrega la IP pública de cada computadora en **Network Access** y confirma que el usuario de base de datos tenga acceso al cluster.
+
+Luego inicia el servidor:
+
+```bash
 npm run dev
 ```
 
-Abrir `http://localhost:3000`.
+Abre `http://localhost:3000`.
 
 ## Rutas
 
