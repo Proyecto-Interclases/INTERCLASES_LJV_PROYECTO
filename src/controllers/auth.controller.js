@@ -14,6 +14,25 @@ function renderAuthPage(res, viewName, title, viewData = {}) {
   });
 }
 
+function setAuthenticatedUser(req, user) {
+  return new Promise((resolve, reject) => {
+    req.session.regenerate((error) => {
+      if (error) return reject(error);
+
+      req.session.user = {
+        id: user.id,
+        name: user.name,
+        nombre: user.name,
+        email: user.email,
+        role: user.role === 'admin' ? 'admin' : 'student',
+        teamName: user.teamName
+      };
+
+      return resolve();
+    });
+  });
+}
+
 async function register(req, res) {
   try {
     if (req.body.password !== req.body.confirmPassword) {
@@ -27,14 +46,7 @@ async function register(req, res) {
       role: 'student'
     });
 
-    req.session.user = {
-      id: user.id,
-      name: user.name,
-      nombre: user.name,
-      email: user.email,
-      role: user.role === 'admin' ? 'admin' : 'student',
-      teamName: user.teamName
-    };
+    await setAuthenticatedUser(req, user);
 
     return res.redirect(user.role === 'admin' ? '/admin' : '/');
   } catch (error) {
@@ -52,14 +64,7 @@ async function login(req, res) {
       password: req.body.password
     });
 
-    req.session.user = {
-      id: user.id,
-      name: user.name,
-      nombre: user.name,
-      email: user.email,
-      role: user.role === 'admin' ? 'admin' : 'student',
-      teamName: user.teamName
-    };
+    await setAuthenticatedUser(req, user);
 
     return res.redirect('/');
   } catch (error) {
@@ -70,9 +75,11 @@ async function login(req, res) {
   }
 }
 
-function logout(req, res) {
-  req.session.destroy(() => {
-    res.redirect('/login');
+function logout(req, res, next) {
+  req.session.destroy((error) => {
+    if (error) return next(error);
+    res.clearCookie('connect.sid');
+    return res.redirect('/login');
   });
 }
 

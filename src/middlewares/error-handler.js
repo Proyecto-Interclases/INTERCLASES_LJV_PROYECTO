@@ -1,14 +1,20 @@
-// Define el middleware global para procesar errores de Express.
 function errorHandler(error, req, res, next) {
-  // Muestra la pila completa del error para facilitar la depuracion.
-  console.error(error.stack || error);
+  if (res.headersSent) {
+    return next(error);
+  }
 
-  // Devuelve un mensaje util para detectar rapidamente la causa real.
-  res.status(500).json({
+  console.error(error.stack || error);
+  const status = Number(error.status || error.statusCode);
+  const responseStatus = status >= 400 && status < 600 ? status : 500;
+  const response = {
     error: 'Error interno del servidor',
-    details: error && error.message ? error.message : 'Sin detalle disponible'
-  });
+  };
+
+  if (process.env.NODE_ENV !== 'production' && error.message) {
+    response.details = error.message;
+  }
+
+  return res.status(responseStatus).json(response);
 }
 
-// Exporta el middleware para registrarlo al final de app.js.
 module.exports = errorHandler;

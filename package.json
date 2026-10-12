@@ -4,13 +4,12 @@
   "description": "Plataforma MVC para las Interclases de Futbol del Colegio Lucrecio Jaramillo Velez",
   "main": "server.js",
   "scripts": {
-    "devv": "node index.js",
+    "devv": "node server.js",
     "dev": "node --watch server.js",
     "start": "node server.js",
     "seed:admin": "node src/seeds/seedAdminMongo.js",
     "change-pass": "node src/scripts/changePassword.js",
     "list-users": "node src/scripts/listUsers.js",
-    "promote-admins": "node src/scripts/promoteAdmins.js",
     "test-send": "node src/scripts/testSend.js",
     "test": "node --test"
   },
@@ -18,9 +17,12 @@
   "author": "",
   "license": "ISC",
   "type": "commonjs",
+  "engines": {
+    "node": ">=20.8.0"
+  },
   "dependencies": {
-    "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.3",
+    "connect-mongo": "^6.0.0",
     "dotenv": "^17.4.2",
     "ejs": "^6.0.1",
     "express": "^5.2.1",

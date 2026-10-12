@@ -1,65 +1,124 @@
-# Interclases LJV
+# LJV Interclases
 
-Aplicacion web para gestionar y consultar las interclases de futbol del Colegio Lucrecio Jaramillo Velez, construida con Node.js, Express y el patron MVC.
+Sitio web oficial del torneo deportivo institucional de la Institución Educativa Lucrecio Jaramillo Vélez. Permite consultar la programación y los resultados, conocer los equipos participantes y administrar el contenido del torneo.
 
-## Ejecutar
+**Tecnologías:** Node.js, Express 5, EJS, MongoDB, Mongoose y Multer.
+
+## Características
+
+- Sitio público adaptable a móviles y escritorio.
+- Calendario de partidos y resultados.
+- Tabla de posiciones calculada automáticamente a partir de los partidos finalizados.
+- Listado de equipos, plantillas y goleadores.
+- Carrusel de fotografías administrable.
+- Panel de administración protegido por inicio de sesión y rol de administrador.
+- Recuperación de contraseña por correo (requiere configurar SMTP).
+- Sesiones almacenadas en MongoDB para mantenerlas entre reinicios y ejecuciones en varias instancias.
+
+## Requisitos previos
+
+- Node.js 20.8 o posterior y npm.
+- Una base de datos MongoDB Atlas con acceso de red habilitado para el servicio que ejecutará la aplicación.
+
+## Instalación y ejecución local
+
+1. Clona el repositorio y entra en la carpeta:
+
+   ```bash
+   git clone <URL_DEL_REPOSITORIO>
+   cd INTERCLASES_LJV_PROYECTO
+   ```
+
+2. Instala las dependencias:
+
+   ```bash
+   npm install
+   ```
+
+3. Crea `.env` a partir de la plantilla:
+
+   En PowerShell:
+
+   ```powershell
+   Copy-Item .env.example .env
+   ```
+
+   En macOS o Linux:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+4. Edita `.env` y reemplaza `MONGO_URI` por la URI de conexión de MongoDB Atlas. Genera un secreto de sesión criptográficamente aleatorio:
+
+   ```bash
+   node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
+   ```
+
+   Pega el resultado en `SESSION_SECRET`. Debe tener al menos 32 caracteres. No compartas ni publiques el archivo `.env`; Git lo ignora.
+
+5. Crea el primer administrador una sola vez. Proporciona `ADMIN_EMAIL`, `ADMIN_NAME` y `ADMIN_PASSWORD` como variables de entorno y ejecuta:
+
+   ```bash
+   npm run seed:admin
+   ```
+
+   Usa una contraseña única y segura. El servidor ya no crea ni vuelve a promover cuentas de administrador automáticamente al arrancar.
+
+6. Inicia la aplicación:
+
+   ```bash
+   npm run dev
+   ```
+
+   Para iniciarla sin el modo de desarrollo:
+
+   ```bash
+   npm start
+   ```
+
+   Abre `http://localhost:3000`. El puerto local predeterminado es `3000`; si se define `PORT`, la aplicación usa ese valor.
+
+## Variables de entorno
+
+La plantilla `.env.example` incluye sólo las variables base:
+
+| Variable | Uso |
+| --- | --- |
+| `PORT` | Puerto HTTP. Las plataformas suelen asignarlo automáticamente. |
+| `MONGO_URI` | URI privada de conexión a MongoDB Atlas. |
+| `SESSION_SECRET` | Secreto aleatorio de al menos 32 caracteres para firmar sesiones. |
+
+Para crear el administrador se usan `ADMIN_EMAIL`, `ADMIN_NAME` y `ADMIN_PASSWORD` al ejecutar `npm run seed:admin`; no son necesarias para cada arranque. Para habilitar la recuperación por correo, configura además `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USER`, `EMAIL_PASS` y `APP_URL`. En producción, define `NODE_ENV=production`.
+
+## Despliegue en Render o Railway
+
+1. Sube el repositorio a GitHub sin incluir `.env` ni credenciales.
+2. Crea un servicio web Node.js en Render o Railway y conecta el repositorio.
+3. Configura:
+   - **Build command:** `npm install`
+   - **Start command:** `npm start`
+   - **Node.js:** versión 20.8 o posterior
+4. En el panel de variables de entorno del servicio, define `MONGO_URI`, `SESSION_SECRET` y `NODE_ENV=production`. No es necesario fijar `PORT` si la plataforma lo proporciona.
+5. En MongoDB Atlas, permite las conexiones desde el servicio desplegado y verifica que la URI y el usuario de base de datos sean correctos.
+6. Crea el administrador una sola vez desde el entorno del servicio: define temporalmente `ADMIN_EMAIL`, `ADMIN_NAME` y `ADMIN_PASSWORD`, ejecuta `npm run seed:admin` (consola/shell del servicio o una ejecución puntual) y elimina `ADMIN_PASSWORD` del entorno cuando termine si ya no lo necesitas.
+7. Comprueba la URL pública, el inicio de sesión y las rutas del sitio. Si habilitas recuperación de contraseña, configura las variables SMTP y `APP_URL` con la URL HTTPS pública.
+
+La aplicación configura cookies seguras detrás del proxy HTTPS y guarda las sesiones en MongoDB. Las imágenes que se suben se escriben en `src/public/uploads/galeria`; los sistemas de archivos de muchos servicios en la nube son efímeros. Para conservarlas después de un redeploy, monta un volumen persistente en esa carpeta o integra un servicio de almacenamiento de objetos. Sin ello, las imágenes cargadas localmente pueden perderse al recrear la instancia.
+
+## Rutas útiles
+
+- `/` — página principal.
+- `/calendario` — calendario y resultados.
+- `/posiciones` — tabla de posiciones.
+- `/equipos` — equipos y goleadores.
+- `/admin` — panel de administración (requiere cuenta de administrador).
+- `/api/equipos` y `/api/partidos` — datos JSON públicos.
+
+## Pruebas
 
 ```bash
-npm install
+npm test
 ```
 
-Antes de iniciar, crea el archivo local `.env` a partir de la plantilla:
-
-```powershell
-Copy-Item .env.example .env
-```
-
-En macOS o Linux, usa `cp .env.example .env`. Edita `.env` y configura `MONGO_URI` con la URI de MongoDB Atlas, además de cambiar `ADMIN_PASSWORD` y `SESSION_SECRET`. El archivo `.env` contiene secretos y no se sube a Git; `.env.example` sí se comparte.
-
-### MongoDB Atlas y correo
-
-En `.env`, configura `MONGO_URI` con la URI de conexión de Atlas y las variables SMTP para recuperación de contraseñas. Usa tus credenciales locales; no pegues contraseñas reales en este README ni en `.env.example`:
-
-```dotenv
-MONGO_URI=mongodb+srv://<usuario>:<contraseña>@<cluster>.mongodb.net/interclases_db?retryWrites=true&w=majority&appName=<nombre-cluster>
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=465
-EMAIL_USER=<correo-de-notificaciones>
-EMAIL_PASS=<clave-de-aplicacion-de-google>
-```
-
-Reemplaza los valores entre `<...>` por los de tu proyecto. Mantén `.env` en tu equipo y verifica que permanezca excluido por `.gitignore`.
-
-En Atlas, agrega la IP pública de cada computadora en **Network Access** y confirma que el usuario de base de datos tenga acceso al cluster.
-
-Luego inicia el servidor:
-
-```bash
-npm run dev
-```
-
-Abre `http://localhost:3000`.
-
-## Rutas
-
-- `GET /`: pagina principal con resumen y proximos partidos.
-- `GET /api/equipos`: lista de equipos en formato JSON.
-- `GET /api/partidos`: lista de partidos con nombres de equipos.
-
-## Arquitectura
-
-```text
-server.js                  # Arranque del servidor
-src/
-  app.js                   # Configuracion de Express
-  config/                  # Variables de entorno y configuracion
-  controllers/             # Reciben peticiones y preparan respuestas
-  middlewares/             # Errores y futuras validaciones/autenticacion
-  models/                  # Acceso a datos; ahora en memoria
-  routes/                  # Rutas web y API
-  services/                # Reglas de negocio del torneo
-  views/                   # Plantillas EJS
-  public/                  # CSS, imagenes y JavaScript del navegador
-```
-
-Los modelos actuales usan datos en memoria para dejar la arquitectura lista. El siguiente paso natural es reemplazarlos por repositorios conectados a PostgreSQL, MySQL o MongoDB.
+Las pruebas de autenticación y gestión requieren una base MongoDB configurada mediante `.env`.

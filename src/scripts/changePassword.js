@@ -6,10 +6,14 @@ const mongoose = require('mongoose');
 const { connectDB } = require('../config/db');
 const User = require('../models/User');
 
-const ADMIN_EMAIL = 'anjelitoxk@gmail.com';
+const ADMIN_EMAIL = String(process.env.ADMIN_EMAIL || '').trim().toLowerCase();
 const NEW_PASSWORD = process.env.NEW_ADMIN_PASSWORD;
 
 async function changePassword() {
+  if (!ADMIN_EMAIL) {
+    throw new Error('Define ADMIN_EMAIL para identificar la cuenta administradora.');
+  }
+
   if (!NEW_PASSWORD || !/^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/.test(NEW_PASSWORD)) {
     throw new Error('Define NEW_ADMIN_PASSWORD con al menos 8 caracteres, una mayúscula, un número y un carácter especial.');
   }

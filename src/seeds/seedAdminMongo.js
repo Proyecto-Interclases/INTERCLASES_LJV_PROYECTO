@@ -9,9 +9,13 @@ async function seedAdminMongo() {
     throw new Error('MongoDB no está conectado. Ejecuta connectDB() antes del seed.');
   }
 
-  const email = (process.env.ADMIN_EMAIL || 'anjelitoxk@gmail.com').toLowerCase();
-  const name = process.env.ADMIN_NAME || 'Ángel Orlando Briceño Chacón';
-  const password = process.env.ADMIN_PASSWORD || 'Admin12345*';
+  const email = String(process.env.ADMIN_EMAIL || '').trim().toLowerCase();
+  const name = String(process.env.ADMIN_NAME || 'Administrador Interclases').trim();
+  const password = process.env.ADMIN_PASSWORD || '';
+
+  if (!email || !password || /^CAMBIA_/i.test(password)) {
+    throw new Error('Define ADMIN_EMAIL y una ADMIN_PASSWORD propia antes de crear o verificar el administrador.');
+  }
   const existingUser = await User.findOne({ email });
 
   if (existingUser) {
