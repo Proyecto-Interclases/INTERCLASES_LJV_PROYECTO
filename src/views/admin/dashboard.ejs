@@ -29,7 +29,11 @@
 
     <main class="dashboard-shell">
       <aside class="dashboard-sidebar">
-        <nav class="admin-section-nav" aria-label="Secciones de administración" role="tablist" aria-orientation="vertical">
+        <button class="admin-navigation-toggle" type="button" aria-expanded="false" aria-controls="admin-section-navigation" aria-label="Mostrar secciones de administración" hidden>
+          <span data-active-admin-section>Equipos y jugadores</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6"></path></svg>
+        </button>
+        <nav class="admin-section-nav" id="admin-section-navigation" aria-label="Secciones de administración" aria-hidden="false" role="tablist" aria-orientation="vertical">
           <button type="button" role="tab" id="admin-tab-teams" aria-controls="equipos" aria-selected="true" tabindex="0" data-admin-tab="teams">Equipos y jugadores</button>
           <button type="button" role="tab" id="admin-tab-matches" aria-controls="partidos" aria-selected="false" tabindex="-1" data-admin-tab="matches">Partidos y resultados</button>
           <button type="button" role="tab" id="admin-tab-standings" aria-controls="posiciones" aria-selected="false" tabindex="-1" data-admin-tab="standings">Tabla de posiciones</button>
@@ -418,6 +422,6 @@
       </section>
     </main>
     <%- include('../partials/accessibility-settings') %>
-    <script src="/js/admin-dashboard.js?v=admin-dashboard-20261012" defer></script>
+    <script src="/js/admin-dashboard.js?v=admin-mobile-20261013" defer></script>
   </body>
 </html>

@@ -117,10 +117,11 @@ body.dark-mode .teacher-access-footer a:hover, body.dark-mode .teacher-access-fo
 .nav-toggle[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
 .nav-toggle[aria-expanded="true"] span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
 .nav-menu { background: white; border-radius: 16px; box-shadow: 0 16px 30px rgba(20,33,29,.18); display: grid; gap: 18px; margin-top: 14px; max-height: 0; opacity: 0; overflow: hidden; padding: 0 18px; transform: translateY(-8px); transition: max-height .3s ease, opacity .25s ease, padding .3s ease, transform .3s ease; visibility: hidden; }
-.nav-menu.is-open { max-height: 520px; opacity: 1; padding: 18px; transform: translateY(0); visibility: visible; }
+.nav-menu.is-open { max-height: min(80vh, 680px); opacity: 1; overflow-y: auto; padding: 18px; transform: translateY(0); visibility: visible; }
 .nav-links { display: flex; flex-direction: column; gap: 4px; }
 .nav-links a { border-bottom: 2px solid transparent; border-radius: 8px; color: var(--ink); font-weight: 500; padding: 10px 8px; text-decoration: none; transition: all .2s ease; }
 .nav-links a:hover, .nav-links a:focus-visible { background: #eef5e8; border-bottom-color: #A5D6A7; color: var(--green); }
+.nav-links .admin-nav-link { color: #047857; font-weight: 700; }
 .header-actions { align-items: stretch; display: flex; flex-direction: column; gap: 8px; }
 .header-actions .btn { text-align: center; }
 .profile-menu { position: relative; }
@@ -2203,5 +2204,428 @@ body.dark-mode .admin-form-feedback.is-success { background: #052E16; border-col
 
   .calendar-empty p {
     font-size: .9rem;
+  }
+}
+
+.admin-navigation-toggle {
+  align-items: center;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  color: #0F172A;
+  cursor: pointer;
+  display: flex;
+  font: inherit;
+  font-weight: 700;
+  justify-content: space-between;
+  min-height: 48px;
+  padding: 10px 14px;
+  text-align: left;
+  width: 100%;
+}
+
+.admin-navigation-toggle[hidden] {
+  display: none !important;
+}
+
+.admin-navigation-toggle svg {
+  fill: none;
+  flex: 0 0 20px;
+  height: 20px;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+  transition: transform .18s ease;
+  width: 20px;
+}
+
+.admin-navigation-toggle[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+
+body.dark-mode .admin-navigation-toggle {
+  background: #0F172A;
+  border-color: #334155;
+  color: #F8FAFC;
+}
+
+.admin-roster-table-wrap,
+.sports-table-wrap {
+  -webkit-overflow-scrolling: touch;
+  box-shadow: inset 10px 0 8px -10px rgba(15, 23, 42, .32), inset -10px 0 8px -10px rgba(15, 23, 42, .32);
+  overscroll-behavior-x: contain;
+}
+
+@media (max-width: 767px) {
+  .dashboard-header {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .dashboard-header > div:first-child {
+    min-width: 0;
+  }
+
+  .dashboard-header h1 {
+    font-size: clamp(1.8rem, 8vw, 2.5rem);
+    line-height: 1;
+  }
+
+  .dashboard-profile-menu,
+  .dashboard-profile-menu .profile-trigger {
+    max-width: min(100%, 220px);
+  }
+
+  .dashboard-shell {
+    gap: 12px;
+    grid-template-columns: minmax(0, 1fr);
+    padding: 14px 12px 32px;
+    width: 100%;
+  }
+
+  .dashboard-sidebar {
+    padding: 8px;
+    position: static;
+    top: auto;
+  }
+
+  .admin-navigation-toggle:not([hidden]) {
+    display: flex;
+  }
+
+  .admin-section-nav {
+    align-items: stretch;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 0;
+    overflow: hidden;
+    padding: 0;
+    transition: max-height .2s ease, padding .2s ease;
+  }
+
+  .admin-section-nav[hidden] {
+    display: none !important;
+  }
+
+  .dashboard-sidebar.is-navigation-open .admin-section-nav {
+    max-height: 360px;
+    padding: 8px 0 0;
+  }
+
+  .admin-section-nav button {
+    flex: 0 0 auto;
+    justify-content: flex-start;
+    min-height: 48px;
+    padding: 10px 12px;
+    text-align: left;
+    white-space: normal;
+    width: 100%;
+  }
+
+  .dashboard-content,
+  .dashboard-content > *,
+  .dashboard-content > .panel-card,
+  .admin-kpis article {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .dashboard-content {
+    gap: 12px;
+  }
+
+  .admin-kpis {
+    gap: 8px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-kpis article {
+    min-height: 104px;
+    padding: 12px;
+  }
+
+  .admin-kpis span {
+    font-size: .68rem;
+    overflow-wrap: anywhere;
+  }
+
+  .admin-kpis strong {
+    font-size: 1.9rem;
+  }
+
+  .dashboard-content > .panel-card {
+    padding: 14px;
+  }
+
+  .admin-section-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+
+  .admin-section-toolbar > div,
+  .admin-section-toolbar > button,
+  .admin-section-toolbar .admin-table-tools {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .admin-section-toolbar > button {
+    min-height: 48px;
+  }
+
+  .admin-table-tools {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-table-tools input,
+  .admin-table-tools select,
+  .admin-player-search {
+    max-width: 100%;
+    min-height: 44px;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .admin-team-actions {
+    align-items: stretch;
+    gap: 8px;
+    margin: 12px 0 0;
+  }
+
+  .admin-team-actions > *,
+  .admin-team-actions form,
+  .admin-team-actions form button {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  .admin-change-captain,
+  .admin-add-player,
+  .admin-delete-team {
+    min-height: 44px;
+  }
+
+  .admin-roster-table-wrap,
+  .sports-table-wrap {
+    max-width: 100%;
+    overflow-x: auto;
+    width: 100%;
+  }
+
+  .match-admin-item .result-item {
+    align-items: stretch;
+    gap: 12px;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    width: 100%;
+  }
+
+  .match-admin-teams {
+    flex-wrap: wrap;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .score-form {
+    flex-wrap: wrap;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .score-form input {
+    flex: 1 1 64px;
+    min-height: 44px;
+    min-width: 0;
+  }
+
+  .score-form .btn {
+    flex: 1 1 100%;
+    min-height: 44px;
+  }
+
+  .admin-modal {
+    margin: auto;
+    max-height: calc(100dvh - 24px);
+    max-width: 620px;
+    overscroll-behavior: contain;
+    width: calc(100vw - 24px);
+  }
+
+  .admin-modal__surface {
+    max-height: calc(100dvh - 24px);
+    max-width: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 16px;
+    width: 100%;
+  }
+
+  .admin-modal__heading {
+    gap: 10px;
+  }
+
+  .admin-modal__heading > div {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .admin-modal__heading h2 {
+    font-size: 1.5rem;
+  }
+
+  .admin-modal__form,
+  .admin-modal__form > *,
+  .admin-modal__form label {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .admin-modal__form input,
+  .admin-modal__form select,
+  .admin-modal__form textarea {
+    min-height: 44px;
+    width: 100%;
+  }
+
+  .admin-modal__form input[type="file"] {
+    font-size: .78rem;
+    min-height: 52px;
+  }
+
+  .admin-modal__form .field-row {
+    gap: 12px;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .admin-dropzone {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    width: 100%;
+  }
+
+  .rich-toolbar {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .rich-toolbar button {
+    flex: 0 0 auto;
+    min-height: 40px;
+    min-width: 40px;
+  }
+
+  .announcement-editor-grid,
+  .announcement-live-preview {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .announcement-live-preview .welcome-card {
+    padding: 20px 16px;
+    width: 100%;
+  }
+
+  .admin-modal__actions {
+    align-items: stretch;
+    flex-direction: column-reverse;
+  }
+
+  .admin-modal__actions > * {
+    min-height: 46px;
+    width: 100%;
+  }
+
+  .icon-action {
+    height: 44px;
+    min-height: 44px;
+    width: 44px;
+  }
+
+  .admin-player-actions {
+    gap: 10px;
+  }
+
+  .admin-player-actions form {
+    display: inline-flex;
+  }
+
+  .gallery-admin-card__details {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .gallery-admin-card__details form,
+  .gallery-admin-card__details form button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 767px) {
+  .admin-roster-table {
+    min-width: 0;
+  }
+
+  .admin-roster-table thead {
+    display: none;
+  }
+
+  .admin-roster-table tbody {
+    display: grid;
+    gap: 8px;
+  }
+
+  .admin-roster-table tr {
+    background: rgba(15, 23, 42, .025);
+    border: 1px solid rgba(15, 23, 42, .07);
+    border-radius: 10px;
+    display: grid;
+    gap: 5px 12px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 10px;
+  }
+
+  .admin-roster-table td,
+  .admin-roster-table td:first-child {
+    border: 0;
+    display: flex;
+    gap: 6px;
+    min-width: 0;
+    padding: 5px 2px;
+  }
+
+  .admin-roster-table td::before {
+    color: #64748B;
+    content: attr(data-label);
+    flex: 0 0 auto;
+    font-size: .68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .admin-roster-table td:first-child,
+  .admin-roster-table td[data-label="Goles"],
+  .admin-roster-table td:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .admin-roster-table td:first-child {
+    align-items: center;
+  }
+
+  body.dark-mode .admin-roster-table tr {
+    background: #0F172A;
+    border-color: #334155;
+  }
+
+  body.dark-mode .admin-roster-table td::before {
+    color: #94A3B8;
   }
 }

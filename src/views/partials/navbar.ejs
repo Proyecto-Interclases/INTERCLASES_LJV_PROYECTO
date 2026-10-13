@@ -25,6 +25,9 @@
         <a href="/calendario">Calendario</a>
         <a href="/posiciones">Posiciones</a>
         <a href="/equipos">Equipos</a>
+        <% if (user && user.role === 'admin') { %>
+          <a class="admin-nav-link" href="/admin">Panel de Administración</a>
+        <% } %>
       </div>
 
       <div class="header-actions">
@@ -42,9 +45,6 @@
             <div class="profile-dropdown">
               <span class="profile-role"><%= user.role === 'admin' ? 'Administrador' : 'Estudiante' %></span>
               <a href="/">Ir al Inicio</a>
-              <% if (user.role === 'admin') { %>
-                <a href="/admin">Panel de Administrador</a>
-              <% } %>
               <a href="/logout">Cerrar sesión</a>
             </div>
           </details>

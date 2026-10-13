@@ -1,5 +1,6 @@
 (function initializeAdminDashboard() {
   const navigation = document.querySelector('.admin-section-nav');
+  const mobileNavigationToggle = document.querySelector('.admin-navigation-toggle');
 
   if (!navigation) return;
 
@@ -8,6 +9,35 @@
   const mobileNavigation = window.matchMedia('(max-width: 760px)');
 
   if (!tabs.length || !panels.length) return;
+
+  function setMobileNavigationExpanded(expanded) {
+    const isMobile = mobileNavigation.matches;
+    const isExpanded = isMobile && expanded;
+
+    if (mobileNavigationToggle) {
+      mobileNavigationToggle.hidden = !isMobile;
+      mobileNavigationToggle.setAttribute('aria-expanded', String(isExpanded));
+      mobileNavigationToggle.setAttribute(
+        'aria-label',
+        isExpanded ? 'Ocultar secciones de administración' : 'Mostrar secciones de administración'
+      );
+    }
+
+    navigation.hidden = isMobile && !isExpanded;
+    navigation.setAttribute('aria-hidden', String(isMobile && !isExpanded));
+    navigation.closest('.dashboard-sidebar')?.classList.toggle('is-navigation-open', isExpanded);
+
+    if (isMobile && !isExpanded && navigation.contains(document.activeElement)) {
+      mobileNavigationToggle?.focus();
+    }
+  }
+
+  setMobileNavigationExpanded(false);
+  mobileNavigationToggle?.addEventListener('click', () => {
+    const isExpanded = mobileNavigationToggle.getAttribute('aria-expanded') === 'true';
+    setMobileNavigationExpanded(!isExpanded);
+  });
+  mobileNavigation.addEventListener('change', () => setMobileNavigationExpanded(false));
 
   const validSections = new Set(tabs.map((tab) => tab.dataset.adminTab));
   let savedSection = null;
@@ -38,6 +68,10 @@
     panels.forEach((panel) => {
       panel.hidden = panel.dataset.adminPanel !== section;
     });
+
+    const activeSectionLabel = mobileNavigationToggle?.querySelector('[data-active-admin-section]');
+    if (activeSectionLabel) activeSectionLabel.textContent = activeTab.textContent.trim();
+    setMobileNavigationExpanded(focus);
 
     if (remember) {
       try {
