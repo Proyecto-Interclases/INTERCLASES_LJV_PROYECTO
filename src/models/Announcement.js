@@ -15,6 +15,19 @@ const announcementSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
+  imagenUrl: {
+    type: String,
+    default: '',
+    maxlength: 4300000
+  },
+  imagenes: {
+    type: [String],
+    default: [],
+    validate: {
+      validator: (images) => images.length <= 5 && images.every((image) => image.length <= 4300000),
+      message: 'El anuncio admite hasta cinco imágenes.'
+    }
+  },
   fecha: {
     type: Date,
     default: Date.now

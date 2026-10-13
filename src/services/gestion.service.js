@@ -2,8 +2,13 @@ const Team = require('../models/Team');
 const Player = require('../models/Player');
 const Match = require('../models/Match');
 const User = require('../models/User');
+const mongoose = require('mongoose');
 
 const MATCH_STATUSES = ['Por jugar', 'Jugando', 'Finalizado'];
+
+function exactCaseInsensitive(value) {
+  return new RegExp(`^${String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i');
+}
 
 async function createEquipo({ nombre, categoria, emailCapitan, escudoUrl }) {
   const trimmedNombre = String(nombre || '').trim();
@@ -27,22 +32,25 @@ async function createEquipo({ nombre, categoria, emailCapitan, escudoUrl }) {
     }
   }
 
-  const existing = await Team.findOne({ nombre: trimmedNombre });
+  const existing = await Team.findOne({ nombre: exactCaseInsensitive(trimmedNombre) });
 
   if (existing) {
-    return {
-      id: existing._id.toString(),
-      nombre: existing.nombre,
-      categoria: existing.categoria
-    };
+    const scope = existing.categoria === trimmedCategoria ? 'en esta categoría' : 'en el torneo';
+    throw new Error(`Ya existe un equipo con ese nombre ${scope}.`);
   }
 
-  const equipo = await Team.create({
-    nombre: trimmedNombre,
-    categoria: trimmedCategoria,
-    escudoUrl: String(escudoUrl || '').trim(),
-    capitanEmail: captainEmail || null
-  });
+  let equipo;
+  try {
+    equipo = await Team.create({
+      nombre: trimmedNombre,
+      categoria: trimmedCategoria,
+      escudoUrl: String(escudoUrl || '').trim(),
+      capitanEmail: captainEmail || null
+    });
+  } catch (error) {
+    if (error.code === 11000) throw new Error('Ya existe un equipo con ese nombre en el torneo.');
+    throw error;
+  }
 
   if (captain) {
     await User.updateOne({ _id: captain._id }, { $set: { teamName: trimmedNombre } });
@@ -62,7 +70,7 @@ async function addJugador({ equipoId, equipo_id, nombre, numero_camiseta, numero
   const shirtNumber = Number(numero_camiseta ?? numeroCamiseta ?? 0);
   const goalCount = Number(goles);
 
-  if (!teamId || !trimmedNombre) {
+  if (!mongoose.isValidObjectId(teamId) || !trimmedNombre) {
     throw new Error('Selecciona un equipo e ingresa el nombre del jugador.');
   }
   if (!Number.isInteger(shirtNumber) || shirtNumber < 0 || shirtNumber > 99 || !Number.isInteger(goalCount) || goalCount < 0) {
@@ -73,6 +81,9 @@ async function addJugador({ equipoId, equipo_id, nombre, numero_camiseta, numero
 
   if (!equipo) {
     throw new Error('No existe ese equipo.');
+  }
+  if (await Player.exists({ equipo_id: equipo._id, numero_camiseta: shirtNumber })) {
+    throw new Error('Ese número de camiseta ya está asignado en el equipo.');
   }
 
   const jugador = await Player.create({
@@ -94,8 +105,11 @@ async function addJugador({ equipoId, equipo_id, nombre, numero_camiseta, numero
 }
 
 async function createPartido({ equipoLocalId, equipoVisitanteId, fechaPartido, horaPartido, cancha, estado = 'Por jugar' }) {
-  if (!equipoLocalId || !equipoVisitanteId || equipoLocalId === equipoVisitanteId || !fechaPartido || !horaPartido || !cancha) {
-    throw new Error('Faltan datos para crear el partido.');
+  if (!mongoose.isValidObjectId(equipoLocalId) || !mongoose.isValidObjectId(equipoVisitanteId) || !fechaPartido || !horaPartido || !String(cancha || '').trim()) {
+    throw new Error('Completa los datos obligatorios y selecciona dos equipos válidos.');
+  }
+  if (String(equipoLocalId) === String(equipoVisitanteId)) {
+    throw new Error('El equipo local y el visitante deben ser diferentes.');
   }
   if (!MATCH_STATUSES.includes(estado)) {
     throw new Error('El estado del partido no es válido.');

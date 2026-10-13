@@ -5,13 +5,17 @@ const galleryImageSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
-    match: /^imagen-[a-f0-9-]+\.(jpg|jpeg|png|webp)$/i
+    match: /^(?:imagen-[a-f0-9-]+|galeria-\d{2})\.(jpg|jpeg|png|webp)$/i
   },
   title: {
     type: String,
     trim: true,
     maxlength: 140,
     default: ''
+  },
+  activo: {
+    type: Boolean,
+    default: true
   }
 }, {
   timestamps: {

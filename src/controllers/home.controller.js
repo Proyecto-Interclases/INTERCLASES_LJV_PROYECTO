@@ -13,6 +13,7 @@ async function showHome(req, res, next) {
       getPopup(),
       listGalleryImages()
     ]);
+    const activeGalleryImages = galleryImages.filter((image) => image.activo);
 
     // Renderiza index.ejs y le entrega los datos necesarios.
     res.render('index', {
@@ -20,7 +21,7 @@ async function showHome(req, res, next) {
       title: 'Interclases LJV',
       // Entrega la lista de partidos para mostrarla en la vista.
       matches,
-      galleryImages,
+      galleryImages: activeGalleryImages,
       popup,
       error: req.query.error || null,
       user: req.session && req.session.user ? req.session.user : null

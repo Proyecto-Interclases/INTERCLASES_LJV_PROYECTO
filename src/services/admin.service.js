@@ -6,25 +6,137 @@ const User = require('../models/User');
 const mongoose = require('mongoose');
 
 const MATCH_STATUSES = ['Por jugar', 'Jugando', 'Finalizado'];
+const ANNOUNCEMENT_TAGS = new Set(['p', 'div', 'br', 'strong', 'b', 'em', 'i', 'u', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'blockquote', 'a']);
+
+function exactCaseInsensitive(value) {
+  return new RegExp(`^${String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i');
+}
+
+function sanitizeAnnouncementHtml(input) {
+  const html = String(input || '').trim();
+  if (html.length > 5000) throw new Error('El mensaje no puede superar los 5000 caracteres.');
+
+  return html
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .replace(/<(script|style|svg|iframe|object|embed|form)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, '')
+    .replace(/<(script|style|svg|iframe|object|embed|form)\b[^>]*\/?>/gi, '')
+    .replace(/<([^>]+)>/g, (whole, rawTag) => {
+      const closing = /^\s*\//.test(rawTag);
+      const match = rawTag.match(/^\s*\/?\s*([a-z\d-]+)/i);
+      if (!match) return '';
+      const tag = match[1].toLowerCase();
+      if (!ANNOUNCEMENT_TAGS.has(tag)) return '';
+      if (closing) return tag === 'br' ? '' : `</${tag}>`;
+      if (tag === 'br') return '<br>';
+      if (tag !== 'a') return `<${tag}>`;
+      const hrefMatch = rawTag.match(/\bhref\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i);
+      const href = hrefMatch && (hrefMatch[1] || hrefMatch[2] || hrefMatch[3] || '').trim();
+      const safeHref = /^(?:https?:\/\/|mailto:|\/|#|\.\/|\.\.\/)/i.test(href || '');
+      if (!href || !safeHref || /[\u0000-\u001f]/.test(href)) return '<a>';
+      return `<a href="${href.replace(/&/g, '&amp;').replace(/"/g, '&quot;')}" rel="nofollow noopener noreferrer">`;
+    });
+}
 
 async function getPopup() {
   const popup = await Announcement.findOne({}).sort({ createdAt: -1 }).lean();
-  return popup || { titulo: '¡Bienvenidos!', mensaje: '', activo: 1 };
+  if (!popup) return { titulo: '¡Bienvenidos!', mensaje: '', activo: 1, imagenUrl: '' };
+  const imagenes = popup.imagenes?.length ? popup.imagenes : (popup.imagenUrl ? [popup.imagenUrl] : []);
+  return { ...popup, mensaje: sanitizeAnnouncementHtml(popup.mensaje), imagenes, imagenUrl: popup.imagenUrl || imagenes[0] || '' };
 }
 
-async function updatePopup({ titulo, mensaje, activo }) {
+async function updatePopup({ titulo, mensaje, activo, imagenUrl, imagenes }) {
   const cleanTitle = String(titulo || '').trim();
-  const cleanMessage = String(mensaje || '').trim();
+  const cleanMessage = sanitizeAnnouncementHtml(mensaje);
+  let cleanImageUrl = String(imagenUrl || '').trim();
+  let cleanImages = Array.isArray(imagenes) ? imagenes.map((image) => String(image || '').trim()).filter(Boolean) : [];
+  const isAllowedImageUrl = (url) => /^https:\/\/[^\s]+$/i.test(url)
+    || /^\/uploads\/anuncios\/anuncio-[a-f\d-]+\.(?:jpg|jpeg|png|webp)$/i.test(url)
+    || /^data:image\/(?:jpeg|png|webp);base64,[a-z\d+/]+=*$/i.test(url);
+  if (cleanImageUrl && !isAllowedImageUrl(cleanImageUrl)) {
+    throw new Error('La imagen del anuncio debe ser JPG, PNG o WebP o una URL HTTPS.');
+  }
+  if (cleanImages.length > 5 || cleanImages.some((image) => !isAllowedImageUrl(image))) {
+    throw new Error('El anuncio admite hasta cinco imágenes JPG, PNG o WebP.');
+  }
+  if (cleanImages.some((image) => image.length > 4300000)) throw new Error('Una imagen del anuncio supera el tamaño permitido.');
 
   if (!cleanTitle || !cleanMessage) {
     throw new Error('El título y el mensaje del pop-up son obligatorios.');
   }
+  if (cleanTitle.length > 140) throw new Error('El título no puede superar los 140 caracteres.');
+  if (!cleanImages.length && !cleanImageUrl) {
+    const previous = await Announcement.findOne({}).sort({ createdAt: -1 }).lean();
+    cleanImages = previous?.imagenes?.length
+      ? previous.imagenes
+      : (previous?.imagenUrl ? [previous.imagenUrl] : []);
+  }
+  if (!cleanImageUrl) cleanImageUrl = cleanImages[0] || '';
 
   return Announcement.create({
     titulo: cleanTitle,
     mensaje: cleanMessage,
-    activo: Boolean(activo)
+    activo: activo === true || activo === '1' || activo === 'on',
+    imagenUrl: cleanImageUrl,
+    imagenes: cleanImages
   });
+}
+
+async function updateTeam(teamId, { nombre, categoria, escudoUrl }) {
+  if (!mongoose.isValidObjectId(teamId)) throw new Error('El equipo seleccionado no es válido.');
+  const cleanName = String(nombre || '').trim();
+  const cleanCategory = String(categoria || '').trim();
+  const cleanShield = String(escudoUrl || '').trim();
+  if (!cleanName || cleanName.length > 80 || !cleanCategory || cleanCategory.length > 60) {
+    throw new Error('El nombre (máximo 80) y la categoría (máximo 60) son obligatorios.');
+  }
+  if (cleanShield && !/^https:\/\/[^\s]+$/i.test(cleanShield) && !/^data:image\/(?:jpeg|png|webp);base64,[a-z\d+/]+=*$/i.test(cleanShield)) {
+    throw new Error('El escudo debe ser una URL HTTPS o una imagen JPG, PNG o WebP válida.');
+  }
+
+  const team = await Team.findById(teamId);
+  if (!team) throw new Error('No existe ese equipo.');
+  const duplicate = await Team.findOne({ nombre: exactCaseInsensitive(cleanName), _id: { $ne: team._id } });
+  if (duplicate && duplicate.categoria === cleanCategory) throw new Error('Ya existe un equipo con ese nombre en esta categoría.');
+  if (duplicate) throw new Error('Ya existe un equipo con ese nombre.');
+
+  const oldName = team.nombre;
+  team.nombre = cleanName;
+  team.categoria = cleanCategory;
+  if (cleanShield) team.escudoUrl = cleanShield;
+  await team.save();
+
+  if (oldName !== cleanName) {
+    await Promise.all([
+      User.updateMany({ teamName: oldName }, { $set: { teamName: cleanName } }),
+      Match.updateMany({ $or: [{ equipoLocalId: team._id }, { equipo_a: oldName }] }, { $set: { equipo_a: cleanName } }),
+      Match.updateMany({ $or: [{ equipoVisitanteId: team._id }, { equipo_b: oldName }] }, { $set: { equipo_b: cleanName } })
+    ]);
+    const finishedMatches = await Match.find({
+      estado: 'Finalizado',
+      $or: [{ equipoLocalId: team._id }, { equipoVisitanteId: team._id }, { equipo_a: cleanName }, { equipo_b: cleanName }]
+    });
+    await Promise.all(finishedMatches.map((match) => {
+      match.resultado = `${match.equipo_a} ${match.goles_a} - ${match.goles_b} ${match.equipo_b}`;
+      return match.save();
+    }));
+  }
+  return team.toObject();
+}
+
+async function deleteTeam(teamId) {
+  if (!mongoose.isValidObjectId(teamId)) throw new Error('El equipo seleccionado no es válido.');
+  const team = await Team.findById(teamId);
+  if (!team) throw new Error('No existe ese equipo.');
+  const [players, matches] = await Promise.all([
+    Player.exists({ equipo_id: team._id }),
+    Match.exists({ $or: [{ equipoLocalId: team._id }, { equipoVisitanteId: team._id }, { equipo_a: team.nombre }, { equipo_b: team.nombre }] })
+  ]);
+  if (players || matches) throw new Error('No se puede eliminar: primero retira sus jugadores y elimina o reasigna sus partidos.');
+  await Promise.all([
+    User.updateMany({ teamName: team.nombre }, { $set: { teamName: null } }),
+    team.deleteOne()
+  ]);
+  return team;
 }
 
 async function listAdminTeams() {
@@ -150,6 +262,12 @@ async function updatePlayerData(playerId, { equipo_id, nombre, numero_camiseta, 
   ]);
 
   if (!player || !team) throw new Error('No se encontró el jugador o el equipo seleccionado.');
+  const duplicateNumber = await Player.exists({
+    equipo_id: team._id,
+    numero_camiseta: shirtNumber,
+    _id: { $ne: player._id }
+  });
+  if (duplicateNumber) throw new Error('Ese número de camiseta ya está asignado en el equipo.');
 
   player.equipo_id = team._id;
   player.nombre = cleanName;
@@ -168,8 +286,12 @@ async function listUsers() {
 }
 
 async function updateMatch({ matchId, equipoLocalId, equipoVisitanteId, fechaPartido, horaPartido, cancha, estado }) {
-  if (!equipoLocalId || !equipoVisitanteId || equipoLocalId === equipoVisitanteId || !fechaPartido || !horaPartido || !cancha) {
-    throw new Error('Completa todos los datos del partido y usa equipos diferentes.');
+  if (!mongoose.isValidObjectId(matchId) || !mongoose.isValidObjectId(equipoLocalId) || !mongoose.isValidObjectId(equipoVisitanteId)
+    || !fechaPartido || !horaPartido || !String(cancha || '').trim()) {
+    throw new Error('Completa los datos obligatorios y selecciona dos equipos válidos.');
+  }
+  if (String(equipoLocalId) === String(equipoVisitanteId)) {
+    throw new Error('El equipo local y el visitante deben ser diferentes.');
   }
 
   if (!MATCH_STATUSES.includes(estado)) {
@@ -216,8 +338,11 @@ async function deletePlayer(playerId) {
 
 module.exports = {
   MATCH_STATUSES,
+  sanitizeAnnouncementHtml,
   getPopup,
   updatePopup,
+  updateTeam,
+  deleteTeam,
   listAdminTeams,
   updateTeamCaptain,
   updateTeamStats,

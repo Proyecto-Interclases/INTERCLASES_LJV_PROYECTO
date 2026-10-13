@@ -1,17 +1,20 @@
 const express = require('express');
 const adminController = require('../controllers/admin.controller');
 const { esAdmin } = require('../middlewares/auth.middleware');
-const { uploadShield, uploadGalleryImage } = require('../middlewares/upload.middleware');
+const { uploadShield, uploadGalleryImage, uploadAnnouncementImage } = require('../middlewares/upload.middleware');
 
 const router = express.Router();
 
 router.use(esAdmin);
 router.get('/', adminController.dashboard);
 router.get('/dashboard', adminController.dashboard);
-router.post('/popup', adminController.guardarPopup);
+router.post('/popup', uploadAnnouncementImage, adminController.guardarPopup);
 router.post('/galeria', uploadGalleryImage, adminController.subirImagenGaleria);
 router.post('/galeria/:id/eliminar', adminController.eliminarImagenGaleria);
+router.post('/galeria/:id/estado', adminController.cambiarEstadoImagenGaleria);
 router.post('/equipos', uploadShield, adminController.guardarEquipo);
+router.post('/equipos/:id/editar', uploadShield, adminController.editarEquipo);
+router.post('/equipos/:id/eliminar', adminController.eliminarEquipo);
 router.post('/equipos/:id/estadisticas', adminController.guardarEstadisticasEquipo);
 router.post('/equipos/:id/capitan', adminController.actualizarCapitanEquipo);
 router.post('/jugadores', adminController.guardarJugador);

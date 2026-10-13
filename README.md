@@ -104,7 +104,7 @@ Para crear el administrador se usan `ADMIN_EMAIL`, `ADMIN_NAME` y `ADMIN_PASSWOR
 6. Crea el administrador una sola vez desde el entorno del servicio: define temporalmente `ADMIN_EMAIL`, `ADMIN_NAME` y `ADMIN_PASSWORD`, ejecuta `npm run seed:admin` (consola/shell del servicio o una ejecución puntual) y elimina `ADMIN_PASSWORD` del entorno cuando termine si ya no lo necesitas.
 7. Comprueba la URL pública, el inicio de sesión y las rutas del sitio. Si habilitas recuperación de contraseña, configura las variables SMTP y `APP_URL` con la URL HTTPS pública.
 
-La aplicación configura cookies seguras detrás del proxy HTTPS y guarda las sesiones en MongoDB. Las imágenes que se suben se escriben en `src/public/uploads/galeria`; los sistemas de archivos de muchos servicios en la nube son efímeros. Para conservarlas después de un redeploy, monta un volumen persistente en esa carpeta o integra un servicio de almacenamiento de objetos. Sin ello, las imágenes cargadas localmente pueden perderse al recrear la instancia.
+La aplicación configura cookies seguras detrás del proxy HTTPS y guarda las sesiones en MongoDB. Las imágenes que se suben se escriben en `src/public/uploads/galeria` y `src/public/uploads/anuncios`; los sistemas de archivos de muchos servicios en la nube son efímeros. Para conservarlas después de un redeploy, monta un volumen persistente en esas carpetas o integra un servicio de almacenamiento de objetos. Sin ello, las imágenes cargadas localmente pueden perderse al recrear la instancia.
 
 ## Rutas útiles
 

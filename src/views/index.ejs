@@ -164,7 +164,9 @@
         <button class="welcome-close" type="button" aria-label="Cerrar mensaje de bienvenida">&times;</button>
         <p class="eyebrow welcome-season">LJV / TEMPORADA 2026</p>
         <h2 id="welcome-title"><%= popup.titulo %></h2>
-        <p><%= popup.mensaje %></p>
+        <% const popupImages = popup.imagenes?.length ? popup.imagenes : (popup.imagenUrl ? [popup.imagenUrl] : []); %>
+        <% if (popupImages.length) { %><div class="welcome-images"><% popupImages.forEach((imageUrl, index) => { %><img class="welcome-image" src="<%= imageUrl %>" alt="Imagen <%= index + 1 %> del anuncio" loading="lazy"><% }) %></div><% } %>
+        <div class="welcome-message"><%- popup.mensaje %></div>
         <button class="btn btn-primary welcome-button" type="button">Continuar</button>
       </div>
     </div>
