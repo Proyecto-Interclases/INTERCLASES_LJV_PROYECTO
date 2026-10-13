@@ -990,6 +990,42 @@ body.dark-mode .scorers-number { color: #4ADE80; }
 body.dark-mode .sports-empty { color: #CBD5E1; }
 body.dark-mode .scorer-number,
 body.dark-mode .roster-number { background: #334155; color: #E2E8F0; }
+body.dark-mode.teams-page .team-card {
+  background: #1E293B;
+  border: 1px solid rgba(255, 255, 255, .08);
+  border-radius: 12px;
+  color: #F8FAFC;
+  transition: border-color .2s ease, transform .2s ease;
+}
+body.dark-mode.teams-page .team-card:hover {
+  border-color: rgba(52, 211, 153, .35);
+  transform: translateY(-2px);
+}
+body.dark-mode.teams-page .team-crest {
+  background: #0F172A;
+  border-color: rgba(255, 255, 255, .08);
+}
+body.dark-mode.teams-page .team-crest--empty {
+  background: #334155;
+  color: #34D399;
+}
+body.dark-mode.teams-page .team-captain,
+body.dark-mode.teams-page .team-roster summary span,
+body.dark-mode.teams-page .roster-name small,
+body.dark-mode.teams-page .roster-empty { color: #94A3B8; }
+body.dark-mode.teams-page .team-roster,
+body.dark-mode.teams-page .team-roster li { border-color: #334155; }
+body.dark-mode.teams-page .team-roster summary,
+body.dark-mode.teams-page .roster-goals { color: #34D399; }
+body.dark-mode.teams-page .roster-number {
+  background: #334155;
+  color: #E2E8F0;
+}
+body.dark-mode.teams-page .team-roster summary:focus-visible {
+  border-radius: 4px;
+  outline: 2px solid #34D399;
+  outline-offset: 4px;
+}
 @media (max-width: 760px) { .dashboard-shell { grid-template-columns: 1fr; } .field-row { grid-template-columns: 1fr; } .result-item { align-items: flex-start; flex-direction: column; } }
 @media (max-width: 650px) { .sports-main { padding-left: 14px; padding-right: 14px; padding-top: 28px; } .sports-heading { align-items: flex-start; flex-direction: column; } .sports-heading h1 { font-size: 2.8rem; } .sports-filter { align-items: flex-start; flex-direction: column; width: 100%; } .sports-filter select { width: 100%; } .admin-roster-player { align-items: flex-start; } .goal-update-form { margin-left: 40px; } }
 @media (max-width: 650px) { .institution-footer { padding: 40px 14px 28px; } .institution-card { padding: 24px; } .institution-heading { align-items: flex-start; flex-direction: column-reverse; gap: 18px; } .institution-crest { height: 84px; width: 84px; } .institution-details { grid-template-columns: 1fr; } .institution-location a, .social-links a { overflow-wrap: anywhere; } }
