@@ -66,7 +66,7 @@ async function login(req, res) {
 
     await setAuthenticatedUser(req, user);
 
-    return res.redirect('/');
+    return res.redirect(user.role === 'admin' ? '/admin' : '/');
   } catch (error) {
     return renderAuthPage(res, 'login', 'Iniciar sesión | Interclases LJV', {
       error: error.message,

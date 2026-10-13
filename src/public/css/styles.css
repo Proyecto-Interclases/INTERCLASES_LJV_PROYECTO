@@ -1026,6 +1026,7 @@ body.dark-mode.teams-page .team-roster summary:focus-visible {
   outline: 2px solid #34D399;
   outline-offset: 4px;
 }
+
 @media (max-width: 760px) { .dashboard-shell { grid-template-columns: 1fr; } .field-row { grid-template-columns: 1fr; } .result-item { align-items: flex-start; flex-direction: column; } }
 @media (max-width: 650px) { .sports-main { padding-left: 14px; padding-right: 14px; padding-top: 28px; } .sports-heading { align-items: flex-start; flex-direction: column; } .sports-heading h1 { font-size: 2.8rem; } .sports-filter { align-items: flex-start; flex-direction: column; width: 100%; } .sports-filter select { width: 100%; } .admin-roster-player { align-items: flex-start; } .goal-update-form { margin-left: 40px; } }
 @media (max-width: 650px) { .institution-footer { padding: 40px 14px 28px; } .institution-card { padding: 24px; } .institution-heading { align-items: flex-start; flex-direction: column-reverse; gap: 18px; } .institution-crest { height: 84px; width: 84px; } .institution-details { grid-template-columns: 1fr; } .institution-location a, .social-links a { overflow-wrap: anywhere; } }
@@ -2020,3 +2021,187 @@ body.dark-mode .announcement-live-preview .welcome-card h3 { color: #F8FAFC; }
 body.dark-mode .admin-form-feedback.is-error { background: #450A0A; border-color: #7F1D1D; color: #FECACA; }
 body.dark-mode .admin-form-feedback.is-success { background: #052E16; border-color: #166534; color: #BBF7D0; }
 @media (max-width: 760px) { .announcement-editor-grid { grid-template-columns: 1fr; } }
+
+@media (max-width: 767px) {
+  .site-header {
+    padding: 12px 16px;
+  }
+
+  .site-brand {
+    gap: 10px;
+    max-width: calc(100% - 54px);
+  }
+
+  .site-brand h1 {
+    font-size: clamp(1.25rem, 5vw, 1.55rem);
+    line-height: 1;
+  }
+
+  .site-brand p {
+    font-size: .68rem;
+  }
+
+  .site-logo {
+    flex: 0 0 52px;
+    width: 52px;
+  }
+
+  .nav-toggle {
+    height: 44px;
+    width: 44px;
+  }
+
+  .nav-menu.is-open {
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .nav-links a,
+  .profile-dropdown a {
+    min-height: 44px;
+    padding: 12px;
+  }
+
+  .container,
+  .sports-main,
+  .calendar-main {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .sports-main,
+  .calendar-main {
+    padding-top: 24px;
+  }
+
+  .sports-heading {
+    gap: 16px;
+    padding-bottom: 18px;
+  }
+
+  .sports-heading h1 {
+    font-size: clamp(2.15rem, 9vw, 2.8rem);
+    line-height: .98;
+  }
+
+  .sports-section {
+    padding-top: 24px;
+  }
+
+  .sports-section-heading h2 {
+    font-size: 1.8rem;
+  }
+
+  .teams-grid {
+    gap: 12px;
+    grid-template-columns: minmax(0, 1fr);
+    padding-top: 14px;
+  }
+
+  .team-card {
+    border-color: #E2E8F0;
+    border-radius: 14px;
+    padding: 16px;
+  }
+
+  .team-roster summary {
+    min-height: 44px;
+  }
+
+  .calendar-header {
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .calendar-header__stats {
+    align-self: flex-start;
+  }
+
+  .calendar-stat-pill {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    justify-content: center;
+    min-width: 150px;
+    padding: 12px 18px;
+    width: auto;
+  }
+
+  .calendar-stat-num,
+  .calendar-stat-label {
+    line-height: 1.1;
+  }
+
+  .calendar-title {
+    font-size: clamp(2rem, 9vw, 2.8rem);
+    line-height: 1;
+  }
+
+  .calendar-subtitle {
+    font-size: .95rem;
+  }
+
+  .calendar-tabs-wrapper {
+    margin-right: -16px;
+    margin-bottom: 24px;
+  }
+
+  .calendar-tabs {
+    gap: 8px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    padding: 0 16px 4px 0;
+    scroll-behavior: smooth;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .calendar-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .calendar-tab {
+    flex: 0 0 auto;
+    min-height: 48px;
+    padding: 10px 14px;
+    scroll-snap-align: start;
+  }
+
+  .calendar-panel__header {
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .calendar-panel__title {
+    font-size: 1.5rem;
+  }
+
+  .calendar-grid {
+    gap: 14px;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .calendar-card {
+    border-radius: 14px;
+    padding: 16px;
+  }
+
+  .calendar-empty {
+    border: 1px solid #E2E8F0;
+    border-radius: 14px;
+    min-height: 230px;
+    padding: 28px 20px;
+  }
+
+  .calendar-empty h3 {
+    font-size: 1.5rem;
+  }
+
+  .calendar-empty p {
+    font-size: .9rem;
+  }
+}
