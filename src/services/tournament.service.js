@@ -9,6 +9,12 @@ function normalizeMatchStatus(status = 'Por jugar') {
   return 'Por jugar';
 }
 
+function formatTeamGrades(grades) {
+  return [...new Set(grades.map((grade) => String(grade || '').trim()).filter(Boolean))]
+    .map((grade) => grade.replace(/(\d+)\.º\s*(\d+)/g, '$1-$2'))
+    .join(', ');
+}
+
 function buildStandings(teams, matches) {
   const rows = new Map();
   const idsByName = new Map();
@@ -19,6 +25,7 @@ function buildStandings(teams, matches) {
       id,
       name: team.nombre || team.name,
       category: team.categoria || team.category,
+      escudoUrl: team.escudoUrl || '',
       played: 0,
       won: 0,
       drawn: 0,
@@ -81,7 +88,8 @@ async function getTeams() {
   return teams.map((team) => ({
     id: team._id.toString(),
     name: team.nombre,
-    category: team.categoria
+    category: team.categoria,
+    escudoUrl: team.escudoUrl || ''
   }));
 }
 
@@ -173,18 +181,23 @@ async function getTeamsPageData(category) {
     Team.distinct('categoria')
   ]);
 
-  const teamsWithRoster = teams.map((team) => ({
-    ...team,
-    _id: team._id.toString(),
-    jugadores: players
-      .filter((player) => player.equipo_id && player.equipo_id._id.toString() === team._id.toString())
-      .map((player) => ({
+  const teamsWithRoster = teams.map((team) => {
+    const teamPlayers = players.filter((player) => (
+      player.equipo_id && player.equipo_id._id.toString() === team._id.toString()
+    ));
+    return {
+      ...team,
+      _id: team._id.toString(),
+      grado: formatTeamGrades(teamPlayers.map((player) => player.grado)),
+      jugadores: teamPlayers.map((player) => ({
         nombre: player.nombre,
+        grado: player.grado || '',
         posicion: player.posicion,
         numero_camiseta: player.numero_camiseta || 0,
         goles: player.goles || 0
       }))
-  }));
+    };
+  });
 
   return { teams: teamsWithRoster, categories: categories.sort(), selectedCategory: category || '' };
 }
@@ -195,6 +208,7 @@ async function getTopScorers(limit = 10, category) {
   const players = await Player.find(playerFilter).populate('equipo_id').sort({ goles: -1, nombre: 1 }).limit(limit).lean();
   return players.map((player) => ({
     nombre: player.nombre,
+    grado: player.grado || '',
     posicion: player.posicion,
     numero_camiseta: player.numero_camiseta || 0,
     goles: player.goles || 0,
@@ -203,4 +217,4 @@ async function getTopScorers(limit = 10, category) {
   }));
 }
 
-module.exports = { getTeams, getMatches, getCalendarMatches, getSummary, getStandings, getTeamsPageData, getTopScorers, buildStandings };
+module.exports = { getTeams, getMatches, getCalendarMatches, getSummary, getStandings, getTeamsPageData, getTopScorers, buildStandings, formatTeamGrades };

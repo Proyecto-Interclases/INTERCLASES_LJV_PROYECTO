@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 
+const TEAM_CATEGORIES = require('../constants/team-categories');
+
 const teamSchema = new mongoose.Schema({
   nombre: {
     type: String,
@@ -10,6 +12,7 @@ const teamSchema = new mongoose.Schema({
   categoria: {
     type: String,
     required: true,
+    enum: TEAM_CATEGORIES,
     trim: true
   },
   escudoUrl: {

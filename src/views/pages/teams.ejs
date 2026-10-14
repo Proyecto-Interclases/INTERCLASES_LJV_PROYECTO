@@ -38,13 +38,13 @@
             <article class="team-card">
               <div class="team-card-top">
                 <% if (team.escudoUrl) { %>
-                  <img class="team-crest" src="<%= team.escudoUrl %>" alt="Escudo de <%= team.nombre %>" loading="lazy">
+                  <img class="team-crest" src="<%= team.escudoUrl %>" alt="Bandera de <%= team.nombre %>" loading="lazy">
                 <% } else { %>
                   <span class="team-crest team-crest--empty" aria-hidden="true"><%= team.nombre.slice(0, 1).toUpperCase() %></span>
                 <% } %>
                 <div>
                   <p class="eyebrow"><%= team.categoria %></p>
-                  <h3><%= team.nombre %></h3>
+                  <h3><%= team.nombre %><% if (team.grado) { %> <span class="team-grade"><%= team.grado %></span><% } %></h3>
                   <p class="team-captain">Capitán: <%= team.capitanEmail || 'Por asignar' %></p>
                 </div>
               </div>
@@ -55,7 +55,7 @@
                     <% team.jugadores.forEach((player) => { %>
                       <li>
                         <span class="roster-number"><%= player.numero_camiseta %></span>
-                        <span class="roster-name"><strong><%= player.nombre %></strong><small><%= player.posicion %></small></span>
+                        <span class="roster-name"><strong><%= player.nombre %></strong><small><%= player.grado %></small><% if (player.posicion) { %><small><%= player.posicion %></small><% } %></span>
                         <span class="roster-goals"><%= player.goles %> gol<%= player.goles === 1 ? '' : 'es' %></span>
                       </li>
                     <% }) %>
@@ -88,7 +88,7 @@
               <% topScorers.forEach((player, index) => { %>
                 <tr>
                   <td class="standings-rank"><%= String(index + 1).padStart(2, '0') %></td>
-                  <th scope="row"><span class="scorer-number"><%= player.numero_camiseta %></span><%= player.nombre %><small><%= player.posicion %></small></th>
+                  <th scope="row"><span class="scorer-number"><%= player.numero_camiseta %></span><%= player.nombre %><small><%= player.grado %></small><% if (player.posicion) { %><small><%= player.posicion %></small><% } %></th>
                   <td><%= player.equipo %></td>
                   <td class="standings-points"><%= player.goles %></td>
                 </tr>
@@ -109,5 +109,6 @@
     <a href="/login">Acceso Docente</a>
   </footer>
   <%- include('../partials/accessibility-settings') %>
+  <script src="/js/navigation.js" defer></script>
 </body>
 </html>

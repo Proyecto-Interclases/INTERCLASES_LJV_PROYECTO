@@ -4,6 +4,7 @@ const Match = require('../models/Match');
 const Announcement = require('../models/Announcement');
 const User = require('../models/User');
 const mongoose = require('mongoose');
+const TEAM_CATEGORIES = require('../constants/team-categories');
 
 const MATCH_STATUSES = ['Por jugar', 'Jugando', 'Finalizado'];
 const ANNOUNCEMENT_TAGS = new Set(['p', 'div', 'br', 'strong', 'b', 'em', 'i', 'u', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'blockquote', 'a']);
@@ -89,8 +90,13 @@ async function updateTeam(teamId, { nombre, categoria, escudoUrl }) {
   if (!cleanName || cleanName.length > 80 || !cleanCategory || cleanCategory.length > 60) {
     throw new Error('El nombre (máximo 80) y la categoría (máximo 60) son obligatorios.');
   }
-  if (cleanShield && !/^https:\/\/[^\s]+$/i.test(cleanShield) && !/^data:image\/(?:jpeg|png|webp);base64,[a-z\d+/]+=*$/i.test(cleanShield)) {
-    throw new Error('El escudo debe ser una URL HTTPS o una imagen JPG, PNG o WebP válida.');
+  if (!TEAM_CATEGORIES.includes(cleanCategory)) {
+    throw new Error(`La categoría debe ser una de estas opciones: ${TEAM_CATEGORIES.join(', ')}.`);
+  }
+  if (cleanShield && !/^https:\/\/[^\s]+$/i.test(cleanShield)
+    && !/^\/images\/banderas\/[a-z-]+\.svg$/i.test(cleanShield)
+    && !/^data:image\/(?:jpeg|png|webp);base64,[a-z\d+/]+=*$/i.test(cleanShield)) {
+    throw new Error('El escudo debe ser una bandera local válida, una URL HTTPS o una imagen JPG, PNG o WebP válida.');
   }
 
   const team = await Team.findById(teamId);
@@ -218,6 +224,7 @@ async function listPlayers() {
     id: player._id.toString(),
     equipo_id: player.equipo_id ? player.equipo_id._id.toString() : null,
     nombre: player.nombre,
+    grado: player.grado || '',
     posicion: player.posicion,
     numero_camiseta: player.numero_camiseta || 0,
     goles: player.goles || 0,
@@ -239,16 +246,17 @@ async function updatePlayerGoals(playerId, goals) {
   return player.toObject();
 }
 
-async function updatePlayerData(playerId, { equipo_id, nombre, numero_camiseta, posicion, goles }) {
+async function updatePlayerData(playerId, { equipo_id, nombre, grado, numero_camiseta, posicion, goles }) {
   if (!mongoose.isValidObjectId(playerId) || !mongoose.isValidObjectId(equipo_id)) {
     throw new Error('Selecciona un equipo y un jugador válidos.');
   }
 
   const cleanName = String(nombre || '').trim();
+  const cleanGrade = String(grado || '').trim();
   const shirtNumber = Number(numero_camiseta);
   const goalCount = Number(goles);
 
-  if (!cleanName) throw new Error('El nombre del jugador es obligatorio.');
+  if (!cleanName || !cleanGrade) throw new Error('El nombre completo y el grado o sección del jugador son obligatorios.');
   if (!Number.isInteger(shirtNumber) || shirtNumber < 0 || shirtNumber > 99) {
     throw new Error('El número de camiseta debe ser un entero entre 0 y 99.');
   }
@@ -271,8 +279,9 @@ async function updatePlayerData(playerId, { equipo_id, nombre, numero_camiseta, 
 
   player.equipo_id = team._id;
   player.nombre = cleanName;
+  player.grado = cleanGrade;
   player.numero_camiseta = shirtNumber;
-  player.posicion = String(posicion || '').trim() || 'Sin definir';
+  player.posicion = String(posicion || '').trim();
   player.goles = goalCount;
   await player.save();
 

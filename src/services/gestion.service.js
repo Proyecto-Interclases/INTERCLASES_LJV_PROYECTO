@@ -3,6 +3,7 @@ const Player = require('../models/Player');
 const Match = require('../models/Match');
 const User = require('../models/User');
 const mongoose = require('mongoose');
+const TEAM_CATEGORIES = require('../constants/team-categories');
 
 const MATCH_STATUSES = ['Por jugar', 'Jugando', 'Finalizado'];
 
@@ -17,6 +18,9 @@ async function createEquipo({ nombre, categoria, emailCapitan, escudoUrl }) {
 
   if (!trimmedNombre || !trimmedCategoria) {
     throw new Error('El nombre y la categoría del equipo son obligatorios.');
+  }
+  if (!TEAM_CATEGORIES.includes(trimmedCategoria)) {
+    throw new Error(`La categoría debe ser una de estas opciones: ${TEAM_CATEGORIES.join(', ')}.`);
   }
 
   let captain = null;
@@ -63,15 +67,16 @@ async function createEquipo({ nombre, categoria, emailCapitan, escudoUrl }) {
   };
 }
 
-async function addJugador({ equipoId, equipo_id, nombre, numero_camiseta, numeroCamiseta, posicion, goles = 0 }) {
+async function addJugador({ equipoId, equipo_id, nombre, grado, numero_camiseta, numeroCamiseta, posicion, goles = 0 }) {
   const teamId = equipoId || equipo_id;
   const trimmedNombre = String(nombre || '').trim();
-  const trimmedPosicion = String(posicion || '').trim() || 'Sin definir';
+  const trimmedGrade = String(grado || '').trim();
+  const trimmedPosicion = String(posicion || '').trim();
   const shirtNumber = Number(numero_camiseta ?? numeroCamiseta ?? 0);
   const goalCount = Number(goles);
 
-  if (!mongoose.isValidObjectId(teamId) || !trimmedNombre) {
-    throw new Error('Selecciona un equipo e ingresa el nombre del jugador.');
+  if (!mongoose.isValidObjectId(teamId) || !trimmedNombre || !trimmedGrade) {
+    throw new Error('Selecciona un equipo e ingresa el nombre completo y el grado o sección del jugador.');
   }
   if (!Number.isInteger(shirtNumber) || shirtNumber < 0 || shirtNumber > 99 || !Number.isInteger(goalCount) || goalCount < 0) {
     throw new Error('El número de camiseta debe estar entre 0 y 99 y los goles deben ser un entero no negativo.');
@@ -89,6 +94,7 @@ async function addJugador({ equipoId, equipo_id, nombre, numero_camiseta, numero
   const jugador = await Player.create({
     equipo_id: equipo._id,
     nombre: trimmedNombre,
+    grado: trimmedGrade,
     posicion: trimmedPosicion,
     numero_camiseta: shirtNumber,
     goles: goalCount
@@ -98,6 +104,7 @@ async function addJugador({ equipoId, equipo_id, nombre, numero_camiseta, numero
     id: jugador._id.toString(),
     equipoId: jugador.equipo_id.toString(),
     nombre: jugador.nombre,
+    grado: jugador.grado,
     posicion: jugador.posicion,
     numero_camiseta: jugador.numero_camiseta,
     goles: jugador.goles

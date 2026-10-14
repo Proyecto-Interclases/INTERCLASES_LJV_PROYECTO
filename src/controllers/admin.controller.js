@@ -3,6 +3,7 @@ const { listAdminTeams, MATCH_STATUSES, getPopup, updatePopup, listPlayers, list
 const { listGalleryImages, saveGalleryImages, deleteGalleryImage, toggleGalleryImage } = require('../services/gallery.service');
 const { saveAnnouncementImages, removeAnnouncementImage } = require('../services/announcement-image.service');
 const tournamentService = require('../services/tournament.service');
+const TEAM_CATEGORIES = require('../constants/team-categories');
 
 async function dashboardData() {
   const [equipos, partidos, popup, jugadores, usuarios, posiciones, galleryImages] = await Promise.all([
@@ -21,7 +22,7 @@ async function dashboardData() {
     goles: jugadores.reduce((total, jugador) => total + Number(jugador.goles || 0), 0),
     anunciosActivos: popup.activo ? 1 : 0
   };
-  return { equipos, partidos, popup, jugadores, usuarios, posiciones, galleryImages, estadosPartido: MATCH_STATUSES, kpis };
+  return { equipos, partidos, popup, jugadores, usuarios, posiciones, galleryImages, estadosPartido: MATCH_STATUSES, categoriasEquipo: TEAM_CATEGORIES, kpis };
 }
 
 async function renderDashboard(req, res, { error = null, success = null } = {}) {
@@ -47,6 +48,7 @@ async function renderDashboard(req, res, { error = null, success = null } = {}) 
       galleryImages: [],
       kpis: { equipos: 0, partidosPendientes: 0, goles: 0, anunciosActivos: 0 },
       estadosPartido: MATCH_STATUSES,
+      categoriasEquipo: TEAM_CATEGORIES,
       error: loadError.message,
       success: null
     });

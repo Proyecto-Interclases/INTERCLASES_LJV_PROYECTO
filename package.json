@@ -8,6 +8,7 @@
     "dev": "node --watch server.js",
     "start": "node server.js",
     "seed:admin": "node src/seeds/seedAdminMongo.js",
+    "seed:mundialito": "node src/seeds/seedMundialito2026.js",
     "change-pass": "node src/scripts/changePassword.js",
     "list-users": "node src/scripts/listUsers.js",
     "test-send": "node src/scripts/testSend.js",

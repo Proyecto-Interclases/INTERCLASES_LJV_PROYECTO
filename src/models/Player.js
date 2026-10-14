@@ -11,6 +11,11 @@ const playerSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  grado: {
+    type: String,
+    required: true,
+    trim: true
+  },
   numero_camiseta: {
     type: Number,
     default: 0,
@@ -19,7 +24,7 @@ const playerSchema = new mongoose.Schema({
   },
   posicion: {
     type: String,
-    default: 'Sin definir',
+    default: '',
     trim: true
   },
   goles: {

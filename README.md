@@ -65,7 +65,15 @@ Sitio web oficial del torneo deportivo institucional de la Institución Educativ
 
    Usa una contraseña única y segura. El servidor ya no crea ni vuelve a promover cuentas de administrador automáticamente al arrancar.
 
-6. Inicia la aplicación:
+6. Para cargar los equipos oficiales de Mundialito 2026, primero verifica que `MONGO_URI` apunte a la base correcta y que exista una copia de seguridad. El seed borra todos los equipos, jugadores y partidos, y limpia las asignaciones `teamName` de las cuentas; conserva las cuentas y los demás datos. La carga sólo se ejecuta con la confirmación explícita:
+
+   ```bash
+   npm run seed:mundialito -- --confirm-reset
+   ```
+
+   No ejecutes este comando si necesitas conservar plantillas o historial de partidos.
+
+7. Inicia la aplicación:
 
    ```bash
    npm run dev

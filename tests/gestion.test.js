@@ -53,17 +53,19 @@ test('un estudiante registra equipo y jugadores y se guarda el resultado del par
     teamName: localName
   });
 
-  const equipoLocal = await createEquipo({ nombre: localName, categoria: 'Bachillerato', emailCapitan: email });
-  const equipoVisitante = await createEquipo({ nombre: awayName, categoria: 'Bachillerato' });
+  const equipoLocal = await createEquipo({ nombre: localName, categoria: 'Categoría A', emailCapitan: email });
+  const equipoVisitante = await createEquipo({ nombre: awayName, categoria: 'Categoría A' });
 
   const jugador = await addJugador({
     equipo_id: equipoLocal.id,
     nombre: 'Carlos Torres',
+    grado: '6.º 1',
     numero_camiseta: 9,
     posicion: 'Delantero'
   });
 
   assert.equal(jugador.nombre, 'Carlos Torres');
+  assert.equal(jugador.grado, '6.º 1');
   assert.equal(jugador.numero_camiseta, 9);
   assert.equal(jugador.goles, 0);
 

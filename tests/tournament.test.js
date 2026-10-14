@@ -1,12 +1,19 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
-const { buildStandings } = require('../src/services/tournament.service');
+const { buildStandings, formatTeamGrades } = require('../src/services/tournament.service');
+
+test('formatTeamGrades muestra grados de sección legibles junto al nombre del equipo', () => {
+  assert.equal(formatTeamGrades(['11.º 2', '11.º 2']), '11-2');
+  assert.equal(formatTeamGrades(['9.º 1, 10.º 1 y 11.º 1']), '9-1, 10-1 y 11-1');
+  assert.equal(formatTeamGrades(['Docentes']), 'Docentes');
+  assert.equal(formatTeamGrades([]), '');
+});
 
 test('buildStandings calcula puntos y estadísticas solo con partidos finalizados', () => {
   const teams = [
-    { id: 'team-a', nombre: 'Águilas', categoria: 'Bachillerato' },
-    { id: 'team-b', nombre: 'Leones', categoria: 'Bachillerato' }
+    { id: 'team-a', nombre: 'Águilas', categoria: 'Categoría A', escudoUrl: '/images/banderas/colombia.svg' },
+    { id: 'team-b', nombre: 'Leones', categoria: 'Categoría A' }
   ];
   const matches = [
     { equipoLocalId: 'team-a', equipoVisitanteId: 'team-b', goles_a: 2, goles_b: 1, estado: 'Finalizado' },
@@ -18,6 +25,7 @@ test('buildStandings calcula puntos y estadísticas solo con partidos finalizado
   const [leader, second] = buildStandings(teams, matches);
 
   assert.equal(leader.id, 'team-a');
+  assert.equal(leader.escudoUrl, '/images/banderas/colombia.svg');
   assert.deepEqual(
     [leader.played, leader.won, leader.drawn, leader.lost, leader.goalsFor, leader.goalsAgainst, leader.goalDifference, leader.points],
     [2, 1, 1, 0, 3, 2, 1, 4]

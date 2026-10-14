@@ -142,7 +142,7 @@
               <form class="dashboard-form admin-modal__form" action="/admin/equipos" method="post" enctype="multipart/form-data">
                 <div class="field-row">
                   <label>Nombre del equipo *<input type="text" name="nombre" required></label>
-                  <label>Curso o categoría *<input type="text" name="categoria" required></label>
+                  <label>Categoría *<select name="categoria" required><% categoriasEquipo.forEach((categoria) => { %><option value="<%= categoria %>"><%= categoria %></option><% }) %></select></label>
                 </div>
                 <div class="field-row">
                   <label>Subir escudo (JPG, PNG o WebP)<input type="file" name="escudo" accept="image/jpeg,image/png,image/webp"></label>
@@ -192,7 +192,7 @@
             <div class="admin-modal__surface">
               <div class="admin-modal__heading"><div><p class="eyebrow">TORNEO</p><h2 id="team-editor-title">Editar equipo</h2></div><button class="icon-action" type="button" data-modal-close aria-label="Cerrar formulario">&times;</button></div>
               <form class="dashboard-form admin-modal__form" id="team-editor-form" action="#" method="post" enctype="multipart/form-data">
-                <div class="field-row"><label>Nombre *<input type="text" name="nombre" id="team-editor-name" maxlength="80" required></label><label>Categoría *<input type="text" name="categoria" id="team-editor-category" maxlength="60" required></label></div>
+                <div class="field-row"><label>Nombre *<input type="text" name="nombre" id="team-editor-name" maxlength="80" required></label><label>Categoría *<select name="categoria" id="team-editor-category" required><% categoriasEquipo.forEach((categoria) => { %><option value="<%= categoria %>"><%= categoria %></option><% }) %></select></label></div>
                 <div class="field-row"><label>Subir escudo<input type="file" name="escudo" accept="image/jpeg,image/png,image/webp"></label><label>URL HTTPS del escudo<input type="url" name="escudoUrl" id="team-editor-shield" placeholder="https://..."></label></div>
                 <div class="admin-modal__actions"><button class="admin-quiet-button" type="button" data-modal-close>Cancelar</button><button class="btn btn-primary" type="submit">Guardar cambios</button></div>
               </form>
@@ -210,7 +210,7 @@
                 <article class="result-item admin-team-item" data-search="<%= `${equipo.nombre} ${equipo.categoria} ${equipo.capitanNombre || ''}`.toLowerCase() %>">
                   <div class="admin-team-heading">
                     <% if (equipo.escudoUrl) { %>
-                      <img class="admin-team-crest" src="<%= equipo.escudoUrl %>" alt="Escudo de <%= equipo.nombre %>" loading="lazy">
+                      <img class="admin-team-crest" src="<%= equipo.escudoUrl %>" alt="Bandera de <%= equipo.nombre %>" loading="lazy">
                     <% } else { %>
                       <span class="admin-team-crest admin-team-crest--empty" aria-hidden="true"><%= equipo.nombre.slice(0, 1).toUpperCase() %></span>
                     <% } %>
@@ -231,7 +231,7 @@
                     <% } else { %>
                       <div class="admin-roster-table-wrap">
                         <table class="admin-roster-table">
-                          <thead><tr><th>Jugador</th><th>Posición</th><th>Camiseta</th><th>Goles</th><th>Acciones</th></tr></thead>
+                          <thead><tr><th>Jugador</th><th>Grado / sección</th><th>Posición</th><th>Camiseta</th><th>Goles</th><th>Acciones</th></tr></thead>
                           <tbody>
                             <% teamPlayers.forEach((jugador) => { %>
                               <tr>
@@ -239,7 +239,8 @@
                                   <span class="admin-player-avatar" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="8" r="3.2"></circle><path d="M5.5 20c.8-3.2 3-5 6.5-5s5.7 1.8 6.5 5"></path></svg></span>
                                   <strong><%= jugador.nombre %></strong>
                                 </td>
-                                <td data-label="Posición"><%= jugador.posicion || 'Sin definir' %></td>
+                                <td data-label="Grado / sección"><%= jugador.grado %></td>
+                                <td data-label="Posición"><%= jugador.posicion || '—' %></td>
                                 <td data-label="Camiseta"><%= jugador.numero_camiseta %></td>
                                 <td data-label="Goles">
                                   <form class="goal-update-form" action="/admin/jugadores/<%= jugador.id %>/goles" method="post">
@@ -251,7 +252,7 @@
                                 </td>
                                 <td data-label="Acciones">
                                   <div class="admin-player-actions">
-                                    <button class="icon-action" type="button" data-modal-open="player-editor-modal" data-player-id="<%= jugador.id %>" data-team-id="<%= equipo.id %>" data-team-name="<%= equipo.nombre %>" data-player-name="<%= jugador.nombre %>" data-player-position="<%= jugador.posicion %>" data-player-number="<%= jugador.numero_camiseta %>" data-player-goals="<%= jugador.goles %>" aria-label="Editar a <%= jugador.nombre %>" title="Editar jugador">
+                                    <button class="icon-action" type="button" data-modal-open="player-editor-modal" data-player-id="<%= jugador.id %>" data-team-id="<%= equipo.id %>" data-team-name="<%= equipo.nombre %>" data-player-name="<%= jugador.nombre %>" data-player-grade="<%= jugador.grado %>" data-player-position="<%= jugador.posicion %>" data-player-number="<%= jugador.numero_camiseta %>" data-player-goals="<%= jugador.goles %>" aria-label="Editar a <%= jugador.nombre %>" title="Editar jugador">
                                       <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"></path></svg>
                                     </button>
                                     <form action="/admin/jugadores/<%= jugador.id %>/eliminar" method="post" onsubmit="return confirm('¿Eliminar a <%= jugador.nombre %> de la plantilla?')">
@@ -281,6 +282,7 @@
               <form class="dashboard-form admin-modal__form" id="player-editor-form" action="/admin/jugadores" method="post">
                 <input type="hidden" name="equipo_id" id="player-editor-team-id">
                 <label>Jugador *<input type="text" name="nombre" id="player-editor-name" required></label>
+                <label>Grado o sección *<input type="text" name="grado" id="player-editor-grade" required></label>
                 <div class="field-row">
                   <label>Número de camiseta *<input type="number" name="numero_camiseta" id="player-editor-number" min="0" max="99" value="0" required></label>
                   <label>Posición<input type="text" name="posicion" id="player-editor-position" placeholder="Defensa, delantero..."></label>

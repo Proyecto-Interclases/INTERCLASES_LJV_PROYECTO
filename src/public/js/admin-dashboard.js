@@ -128,6 +128,7 @@
         modal.querySelector('#player-editor-name').setAttribute('autocomplete', 'off');
         modal.querySelector('#player-editor-team-id').value = trigger.dataset.teamId || '';
         modal.querySelector('#player-editor-name').value = playerName;
+        modal.querySelector('#player-editor-grade').value = trigger.dataset.playerGrade || '';
         modal.querySelector('#player-editor-number').value = trigger.dataset.playerNumber || '0';
         modal.querySelector('#player-editor-position').value = trigger.dataset.playerPosition || '';
         modal.querySelector('#player-editor-goals').value = trigger.dataset.playerGoals || '0';
