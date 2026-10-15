@@ -2650,3 +2650,162 @@ body.dark-mode .admin-navigation-toggle {
     color: #94A3B8;
   }
 }
+
+/* Sport selector and enrollment flow */
+.sport-tabs {
+  display: flex;
+  gap: 8px;
+  margin: -10px 0 24px;
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  padding: 4px 2px 10px;
+  scrollbar-width: thin;
+}
+.sport-tab {
+  align-items: center;
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  border-radius: 999px;
+  color: #334155;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: .9rem;
+  font-weight: 700;
+  justify-content: center;
+  min-height: 46px;
+  min-width: 116px;
+  padding: 10px 18px;
+  text-decoration: none;
+}
+.sport-tab:hover, .sport-tab:focus-visible { border-color: #2E7D32; color: #166534; }
+.sport-tab.is-active { background: #166534; border-color: #166534; color: #FFFFFF; }
+body.dark-mode .sport-tab { background: #1E293B; border-color: #475569; color: #CBD5E1; }
+body.dark-mode .sport-tab:hover, body.dark-mode .sport-tab:focus-visible { border-color: #4ADE80; color: #4ADE80; }
+body.dark-mode .sport-tab.is-active { background: #166534; border-color: #166534; color: #FFFFFF; }
+
+.header-login-link {
+  align-items: center;
+  border: 1px solid rgba(255,255,255,.55);
+  border-radius: 999px;
+  color: #FFFFFF;
+  display: inline-flex;
+  font-size: .86rem;
+  font-weight: 700;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 16px;
+  text-decoration: none;
+}
+.header-login-link:hover, .header-login-link:focus-visible { background: rgba(255,255,255,.12); }
+
+.enrollment-main { max-width: 880px; }
+.enrollment-heading { margin-bottom: 28px; }
+.enrollment-heading h1 { font-size: clamp(2.5rem, 7vw, 4.8rem); }
+.enrollment-heading > p:last-child { color: #52616F; line-height: 1.6; margin-top: 14px; max-width: 650px; }
+.enrollment-form { display: grid; gap: 18px; }
+.enrollment-card, .enrollment-unavailable {
+  background: #FFFFFF;
+  border: 1px solid #D8E0E5;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, .05);
+  padding: clamp(18px, 4vw, 30px);
+}
+.enrollment-card-heading { align-items: flex-start; display: flex; gap: 14px; margin-bottom: 22px; }
+.enrollment-card-heading > span { align-items: center; background: #E8F3E8; border-radius: 50%; color: #166534; display: inline-flex; flex: 0 0 38px; font-weight: 800; height: 38px; justify-content: center; }
+.enrollment-card-heading h2, .enrollment-unavailable h2 { font-size: 1.65rem; }
+.enrollment-card-heading p { color: #64748B; font-size: .88rem; line-height: 1.45; margin: 5px 0 0; }
+.enrollment-fields { display: grid; gap: 16px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.enrollment-fields label, .enrollment-roster-row label { color: #334155; display: grid; font-size: .85rem; font-weight: 700; gap: 7px; min-width: 0; }
+.enrollment-fields input, .enrollment-fields select, .enrollment-roster-row input {
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  border-radius: 8px;
+  color: #17212B;
+  font: inherit;
+  min-height: 46px;
+  min-width: 0;
+  padding: 10px 12px;
+  width: 100%;
+}
+.enrollment-fields input:focus, .enrollment-fields select:focus, .enrollment-roster-row input:focus { border-color: #2E7D32; outline: 3px solid rgba(46,125,50,.15); }
+.enrollment-roster-heading { align-items: center; }
+.enrollment-roster-heading > div { flex: 1; }
+.enrollment-add-player, .enrollment-remove-player {
+  background: #FFFFFF;
+  border: 1px solid #166534;
+  border-radius: 8px;
+  color: #166534;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  min-height: 44px;
+  padding: 9px 14px;
+}
+.enrollment-add-player:disabled { cursor: not-allowed; opacity: .5; }
+.enrollment-roster-list { display: grid; gap: 10px; }
+.enrollment-roster-row { align-items: end; display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr) minmax(100px, 140px) 44px; }
+.enrollment-remove-player { border-color: #CBD5E1; color: #64748B; font-size: 1.35rem; line-height: 1; padding: 4px; }
+.enrollment-remove-player:disabled { cursor: not-allowed; opacity: .35; }
+.enrollment-privacy { color: #64748B; font-size: .8rem; line-height: 1.55; margin: 0; }
+.enrollment-submit { justify-self: start; min-height: 48px; padding: 12px 22px; }
+.enrollment-message { border-radius: 12px; line-height: 1.55; margin: 0 0 20px; padding: 16px 18px; }
+.enrollment-message--success { background: #ECFDF3; border: 1px solid #86EFAC; color: #166534; display: grid; gap: 4px; }
+.enrollment-message--error { background: #FEF2F2; border: 1px solid #FCA5A5; color: #991B1B; }
+.enrollment-unavailable { margin: 28px auto; max-width: 650px; padding: 38px 24px; text-align: center; }
+.enrollment-unavailable > span { display: block; font-size: 2.6rem; margin-bottom: 12px; }
+.enrollment-unavailable p { color: #64748B; line-height: 1.6; }
+.enrollment-admin-settings { display: grid; gap: 10px; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 18px 0 34px; }
+.enrollment-admin-setting { align-items: end; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; display: grid; gap: 10px; padding: 14px; }
+.enrollment-admin-setting strong { color: #17212B; }
+.enrollment-admin-setting label { color: #64748B; display: grid; font-size: .75rem; gap: 5px; }
+.enrollment-admin-setting select { background: white; border: 1px solid #CBD5E1; border-radius: 6px; font: inherit; min-height: 42px; padding: 8px; }
+.enrollment-requests-heading { margin-top: 28px; }
+.enrollment-request-list { display: grid; gap: 12px; }
+.enrollment-request-card { background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 18px; }
+.enrollment-request-title { align-items: flex-start; display: flex; gap: 14px; justify-content: space-between; }
+.enrollment-request-title .eyebrow { margin-bottom: 5px; }
+.enrollment-request-title h3 { font-size: 1.5rem; }
+.enrollment-request-card > p { color: #475569; font-size: .86rem; line-height: 1.6; }
+.enrollment-request-card details { color: #334155; font-size: .85rem; }
+.enrollment-request-card details summary { cursor: pointer; font-weight: 700; min-height: 44px; padding-top: 12px; }
+.enrollment-request-card details ul { display: grid; gap: 6px; grid-template-columns: repeat(2, minmax(0, 1fr)); list-style: none; margin: 0; padding: 0 0 10px; }
+.enrollment-status { background: #E2E8F0; border-radius: 999px; color: #334155; flex: 0 0 auto; font-size: .74rem; font-weight: 700; padding: 6px 10px; text-transform: capitalize; }
+.enrollment-status--pendiente { background: #FEF3C7; color: #92400E; }
+.enrollment-status--aprobada { background: #DCFCE7; color: #166534; }
+.enrollment-status--rechazada { background: #FEE2E2; color: #991B1B; }
+.enrollment-request-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.enrollment-request-card > form:last-child { margin-top: 8px; }
+body.dark-mode .enrollment-card, body.dark-mode .enrollment-unavailable { background: #1E293B; border-color: #334155; }
+body.dark-mode .enrollment-heading > p:last-child, body.dark-mode .enrollment-card-heading p, body.dark-mode .enrollment-privacy, body.dark-mode .enrollment-unavailable p { color: #94A3B8; }
+body.dark-mode .enrollment-fields label, body.dark-mode .enrollment-roster-row label { color: #CBD5E1; }
+body.dark-mode .enrollment-fields input, body.dark-mode .enrollment-fields select, body.dark-mode .enrollment-roster-row input { background: #0F172A; border-color: #475569; color: #F8FAFC; }
+body.dark-mode .enrollment-add-player, body.dark-mode .enrollment-remove-player { background: #1E293B; border-color: #4ADE80; color: #4ADE80; }
+body.dark-mode .enrollment-admin-setting, body.dark-mode .enrollment-request-card { background: #0F172A; border-color: #334155; }
+body.dark-mode .enrollment-admin-setting strong, body.dark-mode .enrollment-request-card details { color: #E2E8F0; }
+body.dark-mode .enrollment-admin-setting select { background: #1E293B; border-color: #475569; color: #F8FAFC; }
+body.dark-mode .enrollment-request-card > p { color: #CBD5E1; }
+body.dark-mode .player-item:hover,
+body.dark-mode .team-card:hover,
+body.dark-mode .team-roster li:hover,
+body.dark-mode .table-hover tbody tr:hover,
+body.dark-mode .sports-table tbody tr:hover,
+body.dark-mode .admin-roster-table tbody tr:hover {
+  background-color: rgba(30, 41, 59, .8) !important;
+  border-color: rgba(16, 185, 129, .4) !important;
+  color: #F8FAFC !important;
+}
+
+@media (max-width: 700px) {
+  .enrollment-admin-settings { grid-template-columns: 1fr; }
+  .enrollment-fields { grid-template-columns: 1fr; }
+  .enrollment-roster-heading { align-items: flex-start; flex-wrap: wrap; }
+  .enrollment-add-player { margin-left: 52px; }
+}
+@media (max-width: 480px) {
+  .enrollment-roster-row { grid-template-columns: minmax(0, 1fr) 82px 40px; gap: 8px; }
+  .enrollment-roster-row label { font-size: .76rem; }
+  .enrollment-request-title { flex-direction: column; }
+  .enrollment-request-card details ul { grid-template-columns: 1fr; }
+  .enrollment-submit { justify-self: stretch; }
+}

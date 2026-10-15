@@ -2,7 +2,21 @@
 const tournamentService = require('../services/tournament.service');
 const { getPopup } = require('../services/admin.service');
 const { listGalleryImages } = require('../services/gallery.service');
-const Team = require('../models/Team');
+const { SPORTS, SPORT_IDS } = require('../constants/sports');
+const TEAM_CATEGORIES = require('../constants/team-categories');
+const enrollmentService = require('../services/enrollment.service');
+
+function buildSportLinks(path, query = {}) {
+  const requested = String(query.deporte || '').trim().toLowerCase();
+  const selectedSport = SPORT_IDS.includes(requested) ? requested : 'futbol';
+  const sports = SPORTS.map((sport) => {
+    const params = new URLSearchParams({ deporte: sport.id });
+    if (query.categoria) params.set('categoria', String(query.categoria));
+    if (query.tab) params.set('tab', String(query.tab));
+    return { ...sport, href: `${path}?${params.toString()}` };
+  });
+  return { selectedSport, sports };
+}
 
 // Atiende la solicitud de la pagina principal.
 async function showHome(req, res, next) {
@@ -53,7 +67,8 @@ function showRegister(req, res) {
 // Atiende la solicitud del calendario de partidos.
 async function showCalendar(req, res, next) {
   try {
-    const { upcoming, finished, all } = await tournamentService.getCalendarMatches();
+    const { selectedSport, sports } = buildSportLinks(req.path, req.query);
+    const { upcoming, finished, all } = await tournamentService.getCalendarMatches(selectedSport);
     const activeTab = req.query.tab === 'jugados' || req.query.tab === 'resultados' ? 'jugados' : 'proximos';
 
     res.render('pages/calendar', {
@@ -62,6 +77,8 @@ async function showCalendar(req, res, next) {
       finished,
       all,
       activeTab,
+      selectedSport,
+      sports,
       currentPath: req.path,
       user: req.session && req.session.user ? req.session.user : null
     });
@@ -73,9 +90,10 @@ async function showCalendar(req, res, next) {
 async function showStandings(req, res, next) {
   try {
     const selectedCategory = String(req.query.categoria || '').trim();
+    const { selectedSport, sports } = buildSportLinks(req.path, req.query);
     const [standings, categories] = await Promise.all([
-      tournamentService.getStandings(selectedCategory),
-      Team.distinct('categoria')
+      tournamentService.getStandings(selectedCategory, selectedSport),
+      tournamentService.getTeamsPageData('', selectedSport).then((data) => data.categories)
     ]);
 
     res.render('pages/standings', {
@@ -83,6 +101,8 @@ async function showStandings(req, res, next) {
       standings,
       categories: categories.sort(),
       selectedCategory,
+      selectedSport,
+      sports,
       user: req.session?.user || null
     });
   } catch (error) {
@@ -93,9 +113,10 @@ async function showStandings(req, res, next) {
 async function showTeams(req, res, next) {
   try {
     const selectedCategory = String(req.query.categoria || '').trim();
+    const { selectedSport, sports } = buildSportLinks(req.path, req.query);
     const [{ teams, categories }, topScorers] = await Promise.all([
-      tournamentService.getTeamsPageData(selectedCategory),
-      tournamentService.getTopScorers(10, selectedCategory)
+      tournamentService.getTeamsPageData(selectedCategory, selectedSport),
+      tournamentService.getTopScorers(10, selectedCategory, selectedSport)
     ]);
 
     res.render('pages/teams', {
@@ -103,6 +124,8 @@ async function showTeams(req, res, next) {
       teams,
       categories,
       selectedCategory,
+      selectedSport,
+      sports,
       topScorers,
       user: req.session?.user || null
     });
@@ -111,5 +134,53 @@ async function showTeams(req, res, next) {
   }
 }
 
+async function showEnrollments(req, res, next) {
+  try {
+    const activeSports = await enrollmentService.getActiveSports();
+    res.render('pages/enrollment', {
+      title: 'Inscripciones | Interclases LJV',
+      activeSports,
+      categories: TEAM_CATEGORIES,
+      success: req.query.enviado === '1',
+      error: null,
+      formData: {},
+      user: req.session?.user || null
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function submitEnrollment(req, res, next) {
+  try {
+    await enrollmentService.submitEnrollment(req.body);
+    const activeSports = await enrollmentService.getActiveSports();
+    res.status(201).render('pages/enrollment', {
+      title: 'Inscripciones | Interclases LJV',
+      activeSports,
+      categories: TEAM_CATEGORIES,
+      success: true,
+      error: null,
+      formData: {},
+      user: req.session?.user || null
+    });
+  } catch (error) {
+    try {
+      const activeSports = await enrollmentService.getActiveSports();
+      res.status(422).render('pages/enrollment', {
+        title: 'Inscripciones | Interclases LJV',
+        activeSports,
+        categories: TEAM_CATEGORIES,
+        success: false,
+        error: error.message || 'No fue posible enviar la solicitud. Intenta de nuevo.',
+        formData: req.body,
+        user: req.session?.user || null
+      });
+    } catch (renderError) {
+      next(renderError);
+    }
+  }
+}
+
 // Exporta el controlador para conectarlo con las rutas web.
-module.exports = { showHome, showLogin, showRegister, showCalendar, showStandings, showTeams };
+module.exports = { showHome, showLogin, showRegister, showCalendar, showStandings, showTeams, showEnrollments, submitEnrollment, buildSportLinks };

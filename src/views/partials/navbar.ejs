@@ -8,7 +8,7 @@
       >
       <div>
         <p class="eyebrow banner-season">LJV / TEMPORADA 2026</p>
-        <h1>Interclases de futbol</h1>
+        <h1>LJV INTERCLASES DEPORTIVAS</h1>
         <p>Lucrecio Jaramillo Velez</p>
       </div>
     </a>
@@ -25,6 +25,7 @@
         <a href="/calendario">Calendario</a>
         <a href="/posiciones">Posiciones</a>
         <a href="/equipos">Equipos</a>
+        <a href="/inscripciones">Inscripciones</a>
         <% if (user && user.role === 'admin') { %>
           <a class="admin-nav-link" href="/admin">Panel de Administración</a>
         <% } %>
@@ -48,6 +49,8 @@
               <a href="/logout">Cerrar sesión</a>
             </div>
           </details>
+        <% } else { %>
+          <a class="header-login-link" href="/login">Acceso Docente</a>
         <% } %>
       </div>
     </div>

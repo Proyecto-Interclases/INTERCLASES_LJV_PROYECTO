@@ -1,8 +1,15 @@
 const mongoose = require('mongoose');
 
 const TEAM_CATEGORIES = require('../constants/team-categories');
+const { SPORT_IDS } = require('../constants/sports');
 
 const teamSchema = new mongoose.Schema({
+  deporte: {
+    type: String,
+    enum: SPORT_IDS,
+    default: 'futbol',
+    required: true
+  },
   nombre: {
     type: String,
     required: true,

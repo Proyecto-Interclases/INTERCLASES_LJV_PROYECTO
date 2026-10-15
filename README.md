@@ -14,6 +14,7 @@ Sitio web oficial del torneo deportivo institucional de la Institución Educativ
 - Panel de administración protegido por inicio de sesión y rol de administrador.
 - Recuperación de contraseña por correo (requiere configurar SMTP).
 - Sesiones almacenadas en MongoDB para mantenerlas entre reinicios y ejecuciones en varias instancias.
+- Calendario, posiciones y plantillas separados por fútbol, baloncesto y voleibol; solicitudes públicas de inscripción moderadas por administración.
 
 ## Requisitos previos
 
@@ -120,8 +121,21 @@ La aplicación configura cookies seguras detrás del proxy HTTPS y guarda las se
 - `/calendario` — calendario y resultados.
 - `/posiciones` — tabla de posiciones.
 - `/equipos` — equipos y goleadores.
+- `/inscripciones` — formulario público disponible cuando haya al menos un deporte abierto.
 - `/admin` — panel de administración (requiere cuenta de administrador).
 - `/api/equipos` y `/api/partidos` — datos JSON públicos.
+
+## Deportes e inscripción
+
+Las inscripciones comienzan cerradas para fútbol, baloncesto y voleibol. Un administrador puede abrir/cerrar cada deporte desde **Panel → Inscripciones**. Las solicitudes públicas no crean cuentas ni capitanes; al aprobar una solicitud se crea el equipo y su plantilla. Los equipos y partidos antiguos se consideran fútbol aunque todavía no tengan `deporte`.
+
+Después de respaldar la base correcta, revisa la cantidad de registros que el script migrará. El modo predeterminado no conecta con MongoDB. Sólo ejecuta la migración con las dos confirmaciones explícitas:
+
+```bash
+npm run migrate:sports -- --apply --confirm-safe-migration
+```
+
+El script asigna `deporte: "futbol"` únicamente a equipos/partidos sin deporte y crea disponibilidades cerradas sólo cuando aún no existen; conserva cualquier disponibilidad ya configurada y no elimina ni reemplaza documentos. También puedes aplicar manualmente esas operaciones `$set` / `$setOnInsert` después de una copia de seguridad. No ejecutes el seed de Mundialito como migración: ese seed reinicia datos del torneo.
 
 ## Pruebas
 

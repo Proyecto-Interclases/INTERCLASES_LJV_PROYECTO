@@ -5,6 +5,7 @@ const Announcement = require('../models/Announcement');
 const User = require('../models/User');
 const mongoose = require('mongoose');
 const TEAM_CATEGORIES = require('../constants/team-categories');
+const { SPORT_IDS, normalizeSport } = require('../constants/sports');
 
 const MATCH_STATUSES = ['Por jugar', 'Jugando', 'Finalizado'];
 const ANNOUNCEMENT_TAGS = new Set(['p', 'div', 'br', 'strong', 'b', 'em', 'i', 'u', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'blockquote', 'a']);
@@ -82,7 +83,7 @@ async function updatePopup({ titulo, mensaje, activo, imagenUrl, imagenes }) {
   });
 }
 
-async function updateTeam(teamId, { nombre, categoria, escudoUrl }) {
+async function updateTeam(teamId, { nombre, categoria, escudoUrl, deporte }) {
   if (!mongoose.isValidObjectId(teamId)) throw new Error('El equipo seleccionado no es válido.');
   const cleanName = String(nombre || '').trim();
   const cleanCategory = String(categoria || '').trim();
@@ -93,6 +94,8 @@ async function updateTeam(teamId, { nombre, categoria, escudoUrl }) {
   if (!TEAM_CATEGORIES.includes(cleanCategory)) {
     throw new Error(`La categoría debe ser una de estas opciones: ${TEAM_CATEGORIES.join(', ')}.`);
   }
+  const sport = String(deporte || '').trim().toLowerCase();
+  if (!SPORT_IDS.includes(sport)) throw new Error('Selecciona un deporte válido.');
   if (cleanShield && !/^https:\/\/[^\s]+$/i.test(cleanShield)
     && !/^\/images\/banderas\/[a-z-]+\.svg$/i.test(cleanShield)
     && !/^data:image\/(?:jpeg|png|webp);base64,[a-z\d+/]+=*$/i.test(cleanShield)) {
@@ -104,10 +107,22 @@ async function updateTeam(teamId, { nombre, categoria, escudoUrl }) {
   const duplicate = await Team.findOne({ nombre: exactCaseInsensitive(cleanName), _id: { $ne: team._id } });
   if (duplicate && duplicate.categoria === cleanCategory) throw new Error('Ya existe un equipo con ese nombre en esta categoría.');
   if (duplicate) throw new Error('Ya existe un equipo con ese nombre.');
+  if (normalizeSport(team.deporte) !== sport) {
+    const linkedMatch = await Match.exists({
+      $or: [
+        { equipoLocalId: team._id },
+        { equipoVisitanteId: team._id },
+        { equipo_a: team.nombre },
+        { equipo_b: team.nombre }
+      ]
+    });
+    if (linkedMatch) throw new Error('No se puede cambiar el deporte de un equipo con partidos asociados.');
+  }
 
   const oldName = team.nombre;
   team.nombre = cleanName;
   team.categoria = cleanCategory;
+  team.deporte = sport;
   if (cleanShield) team.escudoUrl = cleanShield;
   await team.save();
 
@@ -156,6 +171,7 @@ async function listAdminTeams() {
   return teams.map((team) => ({
     ...team,
     id: team._id.toString(),
+    deporte: normalizeSport(team.deporte),
     capitanNombre: captainsByEmail.get(team.capitanEmail)?.nombre || null
   }));
 }
@@ -319,9 +335,13 @@ async function updateMatch({ matchId, equipoLocalId, equipoVisitanteId, fechaPar
   if (!local || !visitante) {
     throw new Error('Los equipos del partido no existen.');
   }
+  if (normalizeSport(local.deporte) !== normalizeSport(visitante.deporte)) {
+    throw new Error('Un partido debe enfrentar equipos del mismo deporte.');
+  }
 
   match.equipoLocalId = local._id;
   match.equipoVisitanteId = visitante._id;
+  match.deporte = normalizeSport(local.deporte);
   match.equipo_a = local.nombre;
   match.equipo_b = visitante.nombre;
   match.fecha = fechaPartido;

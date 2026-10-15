@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="es">
+<%- include('../partials/head', { title }) %>
+<body class="sports-page enrollment-page">
+  <%- include('../partials/navbar', { user }) %>
+  <main class="container enrollment-main" id="main-content">
+    <header class="enrollment-heading">
+      <p class="eyebrow section-eyebrow">TORNEO INTERCLASES · LJV</p>
+      <h1>Inscripción de equipos</h1>
+      <p>Registra los datos del equipo y su plantilla. La solicitud será revisada por el equipo administrador.</p>
+    </header>
+
+    <% if (success) { %>
+      <div class="enrollment-message enrollment-message--success" role="status">
+        <strong>¡Solicitud recibida!</strong>
+        <span>Gracias por inscribir a tu equipo. La coordinación revisará la información y se pondrá en contacto con la persona responsable.</span>
+      </div>
+    <% } %>
+    <% if (error) { %>
+      <div class="enrollment-message enrollment-message--error" role="alert"><%= error %></div>
+    <% } %>
+
+    <% if (!activeSports.length) { %>
+      <section class="enrollment-unavailable" aria-live="polite">
+        <span aria-hidden="true">⚽</span>
+        <h2>Inscripciones temporalmente cerradas</h2>
+        <p>En este momento no hay deportes con inscripciones disponibles. Consulta nuevamente más adelante.</p>
+      </section>
+    <% } else { %>
+      <form class="enrollment-form" action="/inscripciones" method="post">
+        <section class="enrollment-card" aria-labelledby="enrollment-team-title">
+          <div class="enrollment-card-heading"><span>01</span><div><h2 id="enrollment-team-title">Datos del equipo</h2><p>Cuéntanos a qué deporte y categoría pertenece.</p></div></div>
+          <div class="enrollment-fields">
+            <label>Deporte *
+              <select name="deporte" required>
+                <option value="">Selecciona un deporte</option>
+                <% activeSports.forEach((sport) => { %><option value="<%= sport.id %>" <%= formData.deporte === sport.id ? 'selected' : '' %>><%= sport.name %></option><% }) %>
+              </select>
+            </label>
+            <label>Nombre del equipo *
+              <input type="text" name="nombreEquipo" maxlength="80" value="<%= formData.nombreEquipo || '' %>" autocomplete="organization" required>
+            </label>
+            <label>Categoría *
+              <select name="categoria" required>
+                <option value="">Selecciona una categoría</option>
+                <% categories.forEach((category) => { %><option value="<%= category %>" <%= formData.categoria === category ? 'selected' : '' %>><%= category %></option><% }) %>
+              </select>
+            </label>
+            <label>Grado o sección *
+              <input type="text" name="grado" maxlength="40" placeholder="Ej. 8.º 2" value="<%= formData.grado || '' %>" required>
+            </label>
+          </div>
+        </section>
+
+        <section class="enrollment-card" aria-labelledby="enrollment-contact-title">
+          <div class="enrollment-card-heading"><span>02</span><div><h2 id="enrollment-contact-title">Persona responsable</h2><p>Usaremos estos datos únicamente para comunicarnos sobre la solicitud.</p></div></div>
+          <div class="enrollment-fields">
+            <label>Nombre completo *
+              <input type="text" name="responsable" maxlength="100" value="<%= formData.responsable || '' %>" autocomplete="name" required>
+            </label>
+            <label>Correo electrónico o teléfono *
+              <input type="text" name="contacto" maxlength="120" placeholder="nombre@correo.com o 3001234567" value="<%= formData.contacto || '' %>" autocomplete="email" required>
+            </label>
+          </div>
+        </section>
+
+        <section class="enrollment-card" aria-labelledby="enrollment-roster-title">
+          <div class="enrollment-card-heading enrollment-roster-heading">
+            <span>03</span><div><h2 id="enrollment-roster-title">Plantilla de jugadores</h2><p>Incluye entre 1 y 30 integrantes. Los números no se pueden repetir.</p></div>
+            <button type="button" class="enrollment-add-player" data-add-player>+ Agregar jugador</button>
+          </div>
+          <div class="enrollment-roster-list" data-roster-list>
+            <% const submittedNames = Array.isArray(formData.jugadorNombre) ? formData.jugadorNombre : (formData.jugadorNombre ? [formData.jugadorNombre] : []); %>
+            <% const submittedNumbers = Array.isArray(formData.jugadorNumero) ? formData.jugadorNumero : (formData.jugadorNumero ? [formData.jugadorNumero] : []); %>
+            <% const rosterRowCount = Math.min(30, Math.max(1, submittedNames.length)); %>
+            <% for (let rowIndex = 0; rowIndex < rosterRowCount; rowIndex += 1) { %>
+            <div class="enrollment-roster-row">
+              <label>Nombre del jugador *<input type="text" name="jugadorNombre" maxlength="80" value="<%= submittedNames[rowIndex] || '' %>" required></label>
+              <label>Número *<input type="number" name="jugadorNumero" min="1" max="99" step="1" value="<%= submittedNumbers[rowIndex] || '' %>" required></label>
+              <button class="enrollment-remove-player" type="button" data-remove-player aria-label="Quitar jugador" disabled>&times;</button>
+            </div>
+            <% } %>
+          </div>
+        </section>
+        <p class="enrollment-privacy">Al enviar esta solicitud confirmas que la información es correcta. Enviar una solicitud no crea cuentas de usuario ni garantiza la aprobación del equipo.</p>
+        <button class="btn btn-primary enrollment-submit" type="submit">Enviar solicitud de inscripción</button>
+      </form>
+    <% } %>
+  </main>
+  <footer class="teacher-access-footer"><a href="/login">Acceso Docente</a></footer>
+  <%- include('../partials/accessibility-settings') %>
+  <script src="/js/enrollment-form.js" defer></script>
+</body>
+</html>

@@ -1,6 +1,13 @@
 const mongoose = require('mongoose');
+const { SPORT_IDS } = require('../constants/sports');
 
 const matchSchema = new mongoose.Schema({
+  deporte: {
+    type: String,
+    enum: SPORT_IDS,
+    default: 'futbol',
+    required: true
+  },
   equipoLocalId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Team',

@@ -4,16 +4,20 @@ const { listGalleryImages, saveGalleryImages, deleteGalleryImage, toggleGalleryI
 const { saveAnnouncementImages, removeAnnouncementImage } = require('../services/announcement-image.service');
 const tournamentService = require('../services/tournament.service');
 const TEAM_CATEGORIES = require('../constants/team-categories');
+const { SPORTS } = require('../constants/sports');
+const enrollmentService = require('../services/enrollment.service');
 
 async function dashboardData() {
-  const [equipos, partidos, popup, jugadores, usuarios, posiciones, galleryImages] = await Promise.all([
+  const [equipos, partidos, popup, jugadores, usuarios, posiciones, galleryImages, enrollmentRequests, enrollmentSettings] = await Promise.all([
     listAdminTeams(),
     listarPartidos(),
     getPopup(),
     listPlayers(),
     listUsers(),
     tournamentService.getStandings(),
-    listGalleryImages()
+    listGalleryImages(),
+    enrollmentService.listEnrollmentRequests(),
+    enrollmentService.getEnrollmentSettings()
   ]);
 
   const kpis = {
@@ -22,7 +26,7 @@ async function dashboardData() {
     goles: jugadores.reduce((total, jugador) => total + Number(jugador.goles || 0), 0),
     anunciosActivos: popup.activo ? 1 : 0
   };
-  return { equipos, partidos, popup, jugadores, usuarios, posiciones, galleryImages, estadosPartido: MATCH_STATUSES, categoriasEquipo: TEAM_CATEGORIES, kpis };
+  return { equipos, partidos, popup, jugadores, usuarios, posiciones, galleryImages, enrollmentRequests, enrollmentSettings, sports: SPORTS, estadosPartido: MATCH_STATUSES, categoriasEquipo: TEAM_CATEGORIES, kpis };
 }
 
 async function renderDashboard(req, res, { error = null, success = null } = {}) {
@@ -46,6 +50,9 @@ async function renderDashboard(req, res, { error = null, success = null } = {}) 
       usuarios: [],
       posiciones: [],
       galleryImages: [],
+      enrollmentRequests: [],
+      enrollmentSettings: SPORTS.map((sport) => ({ ...sport, abierto: false })),
+      sports: SPORTS,
       kpis: { equipos: 0, partidosPendientes: 0, goles: 0, anunciosActivos: 0 },
       estadosPartido: MATCH_STATUSES,
       categoriasEquipo: TEAM_CATEGORIES,
@@ -220,6 +227,34 @@ const guardarGolesJugador = (req, res) => runDashboardAction(
   'Goles del jugador actualizados.'
 );
 
+const actualizarDisponibilidadInscripcion = (req, res) => runDashboardAction(
+  req,
+  res,
+  () => enrollmentService.setEnrollmentAvailability(req.body.deporte, req.body.abierto === 'true'),
+  'Disponibilidad de inscripción actualizada.'
+);
+
+const aprobarInscripcion = (req, res) => runDashboardAction(
+  req,
+  res,
+  () => enrollmentService.approveEnrollment(req.params.id),
+  (team) => `Solicitud aprobada. Se creó el equipo ${team.nombre} y su plantilla.`
+);
+
+const rechazarInscripcion = (req, res) => runDashboardAction(
+  req,
+  res,
+  () => enrollmentService.rejectEnrollment(req.params.id),
+  'Solicitud rechazada.'
+);
+
+const eliminarSolicitudInscripcion = (req, res) => runDashboardAction(
+  req,
+  res,
+  () => enrollmentService.deleteEnrollmentRequest(req.params.id),
+  'Solicitud eliminada.'
+);
+
 module.exports = {
   dashboard,
   guardarPopup,
@@ -238,5 +273,9 @@ module.exports = {
   eliminarJugador,
   subirImagenGaleria,
   eliminarImagenGaleria,
-  cambiarEstadoImagenGaleria
+  cambiarEstadoImagenGaleria,
+  actualizarDisponibilidadInscripcion,
+  aprobarInscripcion,
+  rechazarInscripcion,
+  eliminarSolicitudInscripcion
 };

@@ -4,6 +4,7 @@ const Match = require('../models/Match');
 const User = require('../models/User');
 const mongoose = require('mongoose');
 const TEAM_CATEGORIES = require('../constants/team-categories');
+const { normalizeSport, SPORT_IDS } = require('../constants/sports');
 
 const MATCH_STATUSES = ['Por jugar', 'Jugando', 'Finalizado'];
 
@@ -11,10 +12,11 @@ function exactCaseInsensitive(value) {
   return new RegExp(`^${String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i');
 }
 
-async function createEquipo({ nombre, categoria, emailCapitan, escudoUrl }) {
+async function createEquipo({ nombre, categoria, emailCapitan, escudoUrl, deporte = 'futbol' }) {
   const trimmedNombre = String(nombre || '').trim();
   const trimmedCategoria = String(categoria || '').trim();
   const captainEmail = String(emailCapitan || '').trim().toLowerCase();
+  const sport = String(deporte || 'futbol').trim().toLowerCase();
 
   if (!trimmedNombre || !trimmedCategoria) {
     throw new Error('El nombre y la categoría del equipo son obligatorios.');
@@ -22,6 +24,7 @@ async function createEquipo({ nombre, categoria, emailCapitan, escudoUrl }) {
   if (!TEAM_CATEGORIES.includes(trimmedCategoria)) {
     throw new Error(`La categoría debe ser una de estas opciones: ${TEAM_CATEGORIES.join(', ')}.`);
   }
+  if (!SPORT_IDS.includes(sport)) throw new Error('Selecciona un deporte válido.');
 
   let captain = null;
   if (captainEmail) {
@@ -48,6 +51,7 @@ async function createEquipo({ nombre, categoria, emailCapitan, escudoUrl }) {
     equipo = await Team.create({
       nombre: trimmedNombre,
       categoria: trimmedCategoria,
+      deporte: sport,
       escudoUrl: String(escudoUrl || '').trim(),
       capitanEmail: captainEmail || null
     });
@@ -128,10 +132,14 @@ async function createPartido({ equipoLocalId, equipoVisitanteId, fechaPartido, h
   if (!local || !visitante) {
     throw new Error('Los equipos del partido no existen.');
   }
+  if (normalizeSport(local.deporte) !== normalizeSport(visitante.deporte)) {
+    throw new Error('Un partido debe enfrentar equipos del mismo deporte.');
+  }
 
   const partido = await Match.create({
     equipoLocalId: local._id,
     equipoVisitanteId: visitante._id,
+    deporte: normalizeSport(local.deporte),
     equipo_a: local.nombre,
     equipo_b: visitante.nombre,
     fecha: fechaPartido,
@@ -184,6 +192,7 @@ async function listarPartidos() {
     id: partido._id.toString(),
     equipo_local_id: partido.equipoLocalId ? partido.equipoLocalId.toString() : null,
     equipo_visitante_id: partido.equipoVisitanteId ? partido.equipoVisitanteId.toString() : null,
+    deporte: normalizeSport(partido.deporte),
     equipo_local: partido.equipo_a,
     equipo_visitante: partido.equipo_b,
     fecha_partido: partido.fecha,

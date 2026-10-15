@@ -1,7 +1,7 @@
 {
   "name": "interclases-ljv",
   "version": "1.0.0",
-  "description": "Plataforma MVC para las Interclases de Futbol del Colegio Lucrecio Jaramillo Velez",
+  "description": "Plataforma MVC para las Interclases Deportivas del Colegio Lucrecio Jaramillo Vélez",
   "main": "server.js",
   "scripts": {
     "devv": "node server.js",
@@ -9,6 +9,7 @@
     "start": "node server.js",
     "seed:admin": "node src/seeds/seedAdminMongo.js",
     "seed:mundialito": "node src/seeds/seedMundialito2026.js",
+    "migrate:sports": "node src/scripts/migrateSportsEnrollment.js",
     "change-pass": "node src/scripts/changePassword.js",
     "list-users": "node src/scripts/listUsers.js",
     "test-send": "node src/scripts/testSend.js",

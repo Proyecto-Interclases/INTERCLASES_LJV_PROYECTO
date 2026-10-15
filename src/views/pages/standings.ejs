@@ -12,6 +12,7 @@
         <p>La clasificación se calcula automáticamente con los partidos finalizados.</p>
       </div>
       <form class="sports-filter" action="/posiciones" method="get">
+        <input type="hidden" name="deporte" value="<%= selectedSport %>">
         <label for="standings-category">Categoría</label>
         <select id="standings-category" name="categoria" onchange="this.form.submit()">
           <option value="">Todas</option>
@@ -21,6 +22,7 @@
         </select>
       </form>
     </header>
+    <%- include('../partials/sport-tabs', { sports, selectedSport }) %>
 
     <section class="sports-table-wrap" aria-label="Clasificación de equipos">
       <table class="sports-table standings-table">
@@ -45,7 +47,7 @@
             <% standings.forEach((team, index) => { %>
               <tr>
                 <td class="standings-rank"><%= String(index + 1).padStart(2, '0') %></td>
-                <th scope="row"><a href="/equipos?categoria=<%= encodeURIComponent(team.category || '') %>"><% if (team.escudoUrl) { %><img class="standings-flag" src="<%= team.escudoUrl %>" alt="" loading="lazy"><% } %><%= team.name %></a><small><%= team.category %></small></th>
+                <th scope="row"><a href="/equipos?deporte=<%= encodeURIComponent(selectedSport) %>&amp;categoria=<%= encodeURIComponent(team.category || '') %>"><% if (team.escudoUrl) { %><img class="standings-flag" src="<%= team.escudoUrl %>" alt="" loading="lazy"><% } %><%= team.name %></a><small><%= team.category %></small></th>
                 <td><%= team.played %></td>
                 <td><%= team.won %></td>
                 <td><%= team.drawn %></td>
@@ -72,6 +74,5 @@
     <a href="/login">Acceso Docente</a>
   </footer>
   <%- include('../partials/accessibility-settings') %>
-  <script src="/js/navigation.js" defer></script>
 </body>
 </html>

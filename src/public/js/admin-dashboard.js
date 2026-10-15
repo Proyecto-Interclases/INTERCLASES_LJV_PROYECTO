@@ -139,6 +139,7 @@
         teamForm.action = `/admin/equipos/${encodeURIComponent(trigger.dataset.teamId || '')}/editar`;
         modal.querySelector('#team-editor-name').value = trigger.dataset.teamName || '';
         modal.querySelector('#team-editor-category').value = trigger.dataset.teamCategory || '';
+        modal.querySelector('#team-editor-sport').value = trigger.dataset.teamSport || 'futbol';
         modal.querySelector('#team-editor-shield').value = '';
       }
 

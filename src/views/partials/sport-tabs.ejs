@@ -1,0 +1,7 @@
+<nav class="sport-tabs" aria-label="Seleccionar deporte">
+  <% sports.forEach((sport) => { %>
+    <a class="sport-tab <%= selectedSport === sport.id ? 'is-active' : '' %>"
+       href="<%= sport.href %>"
+       <%= selectedSport === sport.id ? 'aria-current="page"' : '' %>><%= sport.name %></a>
+  <% }) %>
+</nav>
