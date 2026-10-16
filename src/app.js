@@ -56,9 +56,9 @@ app.use(session({
 }));
 
 // Permite recibir solicitudes con cuerpos JSON.
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 // Permite recibir datos enviados desde formularios HTML.
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Publica archivos estaticos como CSS, imagenes y JavaScript del navegador.
 app.use(express.static(path.join(__dirname, 'public')));
 

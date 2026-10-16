@@ -67,7 +67,7 @@ function dashboard(req, res) {
 }
 
 async function runDashboardAction(req, res, action, success, { requireBody = true } = {}) {
-  if (requireBody && (!req.body || typeof req.body !== 'object' || Array.isArray(req.body))) {
+  if (requireBody && (!req.body || typeof req.body !== 'object' || Array.isArray(req.body) || Object.keys(req.body).length === 0)) {
     return res.status(400).json({ success: false, message: 'Cuerpo de la petición vacío.' });
   }
 
@@ -236,7 +236,7 @@ const guardarGolesJugador = (req, res) => runDashboardAction(
 );
 
 async function actualizarDisponibilidadInscripcion(req, res) {
-  if (!req.body || typeof req.body !== 'object' || Array.isArray(req.body)) {
+  if (!req.body || typeof req.body !== 'object' || Array.isArray(req.body) || Object.keys(req.body).length === 0) {
     return res.status(400).json({ success: false, message: 'Cuerpo de la petición vacío.' });
   }
 

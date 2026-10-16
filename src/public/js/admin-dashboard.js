@@ -406,11 +406,28 @@
       feedback.textContent = 'Guardando…';
 
       try {
-        const response = await fetch(form.action, {
-          method: 'POST',
-          body: new FormData(form),
-          headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
-        });
+        const formData = new FormData(form);
+        const includesFiles = Array.from(form.querySelectorAll('input[type="file"]'))
+          .some((input) => input.files && input.files.length > 0);
+        const headers = { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' };
+        let body;
+
+        if (includesFiles) {
+          body = formData;
+        } else {
+          const data = {};
+          formData.forEach((value, key) => {
+            if (Object.hasOwn(data, key)) {
+              data[key] = Array.isArray(data[key]) ? [...data[key], value] : [data[key], value];
+            } else {
+              data[key] = value;
+            }
+          });
+          headers['Content-Type'] = 'application/json';
+          body = JSON.stringify(data);
+        }
+
+        const response = await fetch(form.action, { method: 'POST', body, headers });
         const result = await response.json();
         if (!response.ok || !result.ok) {
           feedback.classList.add('is-error');
