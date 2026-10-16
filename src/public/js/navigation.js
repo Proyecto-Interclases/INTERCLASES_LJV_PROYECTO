@@ -41,6 +41,6 @@
   });
 
   window.addEventListener('resize', () => {
-    if (window.innerWidth >= 768) closeMenu();
+    if (window.innerWidth >= 1240) closeMenu();
   });
 })();

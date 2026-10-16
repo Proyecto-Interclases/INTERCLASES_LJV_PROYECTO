@@ -5,9 +5,9 @@
   <%- include('../partials/navbar', { user }) %>
   <main class="container enrollment-main" id="main-content">
     <header class="enrollment-heading">
-      <p class="eyebrow section-eyebrow">TORNEO INTERCLASES · LJV</p>
+      <p class="eyebrow section-eyebrow">INTERCLASES LUCRECIO JARAMILLO</p>
       <h1>Inscripción de equipos</h1>
-      <p>Registra los datos del equipo y su plantilla. La solicitud será revisada por el equipo administrador.</p>
+      <p>Fútbol, baloncesto y voleibol forman parte de las Interclases. Registra tu equipo en uno de los deportes con inscripciones abiertas; la solicitud será revisada por el equipo administrador.</p>
     </header>
 
     <% if (success) { %>
@@ -22,7 +22,7 @@
 
     <% if (!activeSports.length) { %>
       <section class="enrollment-unavailable" aria-live="polite">
-        <span aria-hidden="true">⚽</span>
+        <span aria-hidden="true">🏆</span>
         <h2>Inscripciones temporalmente cerradas</h2>
         <p>En este momento no hay deportes con inscripciones disponibles. Consulta nuevamente más adelante.</p>
       </section>
@@ -37,6 +37,17 @@
                 <% activeSports.forEach((sport) => { %><option value="<%= sport.id %>" <%= formData.deporte === sport.id ? 'selected' : '' %>><%= sport.name %></option><% }) %>
               </select>
             </label>
+            <div class="enrollment-sports" aria-label="Deportes con inscripciones abiertas">
+              <span class="enrollment-sports__label">Deportes disponibles</span>
+              <div class="enrollment-sports__list">
+                <% activeSports.forEach((sport) => { %>
+                  <span class="enrollment-sport">
+                    <span aria-hidden="true"><%= sport.id === 'futbol' ? '⚽' : sport.id === 'baloncesto' ? '🏀' : '🏐' %></span>
+                    <%= sport.name %>
+                  </span>
+                <% }) %>
+              </div>
+            </div>
             <label>Nombre del equipo *
               <input type="text" name="nombreEquipo" maxlength="80" value="<%= formData.nombreEquipo || '' %>" autocomplete="organization" required>
             </label>

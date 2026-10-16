@@ -50,7 +50,7 @@ async function register(req, res) {
 
     return res.redirect(user.role === 'admin' ? '/admin' : '/');
   } catch (error) {
-    return renderAuthPage(res, 'register', 'Registro | Interclases LJV', {
+    return renderAuthPage(res, 'register', 'Registro | Interclases Lucrecio Jaramillo', {
       error: error.message,
       formData: req.body
     });
@@ -68,7 +68,7 @@ async function login(req, res) {
 
     return res.redirect(user.role === 'admin' ? '/admin' : '/');
   } catch (error) {
-    return renderAuthPage(res, 'login', 'Iniciar sesión | Interclases LJV', {
+    return renderAuthPage(res, 'login', 'Iniciar sesión | Interclases Lucrecio Jaramillo', {
       error: error.message,
       formData: req.body
     });
@@ -85,7 +85,7 @@ function logout(req, res, next) {
 
 function showForgotPassword(req, res) {
   return res.render('forgot-password', {
-    title: 'Recuperar contraseña | Interclases LJV',
+    title: 'Recuperar contraseña | Interclases Lucrecio Jaramillo',
     error: null,
     success: null,
     formData: {}
@@ -116,21 +116,21 @@ async function forgotPassword(req, res) {
       await mailer.sendMail({
         from: process.env.EMAIL_USER,
         to: user.email,
-        subject: 'Restablece tu contraseña | Interclases LJV',
+        subject: 'Restablece tu contraseña | Interclases Lucrecio Jaramillo',
         text: `Restablece tu contraseña usando este enlace: ${resetUrl}. El enlace vence en una hora.`,
         html: `<p>Solicitaste restablecer tu contraseña.</p><p><a href="${resetUrl}">Restablecer contraseña</a></p><p>Este enlace vence en una hora.</p>`
       });
     }
 
     return res.render('forgot-password', {
-      title: 'Recuperar contraseña | Interclases LJV',
+      title: 'Recuperar contraseña | Interclases Lucrecio Jaramillo',
       error: null,
       success: genericMessage,
       formData: { email }
     });
   } catch (error) {
     return res.status(400).render('forgot-password', {
-      title: 'Recuperar contraseña | Interclases LJV',
+      title: 'Recuperar contraseña | Interclases Lucrecio Jaramillo',
       error: error.message,
       success: null,
       formData: { email }
@@ -146,7 +146,7 @@ async function showResetPassword(req, res) {
 
   if (!user) {
     return res.status(400).render('reset-password', {
-      title: 'Restablecer contraseña | Interclases LJV',
+      title: 'Restablecer contraseña | Interclases Lucrecio Jaramillo',
       error: 'El enlace no es válido o ya venció.',
       success: null,
       token: null
@@ -154,7 +154,7 @@ async function showResetPassword(req, res) {
   }
 
   return res.render('reset-password', {
-    title: 'Restablecer contraseña | Interclases LJV',
+    title: 'Restablecer contraseña | Interclases Lucrecio Jaramillo',
     error: null,
     success: null,
     token: req.params.token
@@ -191,7 +191,7 @@ async function resetPassword(req, res) {
     return res.redirect('/login?success=Contraseña+actualizada+correctamente');
   } catch (error) {
     return res.status(400).render('reset-password', {
-      title: 'Restablecer contraseña | Interclases LJV',
+      title: 'Restablecer contraseña | Interclases Lucrecio Jaramillo',
       error: error.message,
       success: null,
       token: req.params.token

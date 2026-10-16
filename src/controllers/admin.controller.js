@@ -33,7 +33,7 @@ async function renderDashboard(req, res, { error = null, success = null } = {}) 
   try {
     const data = await dashboardData();
     return res.render('admin/dashboard', {
-      title: 'Panel administrador | Interclases LJV',
+      title: 'Panel administrador | Interclases Lucrecio Jaramillo',
       user: req.session.user,
       error,
       success,
@@ -41,7 +41,7 @@ async function renderDashboard(req, res, { error = null, success = null } = {}) 
     });
   } catch (loadError) {
     return res.status(500).render('admin/dashboard', {
-      title: 'Panel administrador | Interclases LJV',
+      title: 'Panel administrador | Interclases Lucrecio Jaramillo',
       user: req.session.user,
       equipos: [],
       partidos: [],

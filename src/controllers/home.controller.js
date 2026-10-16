@@ -22,6 +22,7 @@ function buildSportLinks(path, query = {}) {
 async function showHome(req, res, next) {
   // Intenta preparar y renderizar la vista.
   try {
+    const { sports } = buildSportLinks('/calendario');
     const [matches, popup, galleryImages] = await Promise.all([
       tournamentService.getMatches(),
       getPopup(),
@@ -32,9 +33,10 @@ async function showHome(req, res, next) {
     // Renderiza index.ejs y le entrega los datos necesarios.
     res.render('index', {
       // Define el titulo que aparece en el navegador.
-      title: 'Interclases LJV',
+      title: 'Interclases Lucrecio Jaramillo',
       // Entrega la lista de partidos para mostrarla en la vista.
       matches,
+      sports,
       galleryImages: activeGalleryImages,
       popup,
       error: req.query.error || null,
@@ -49,7 +51,7 @@ async function showHome(req, res, next) {
 
 function showLogin(req, res) {
   res.render('login', {
-    title: 'Iniciar sesión | Interclases LJV',
+    title: 'Iniciar sesión | Interclases Lucrecio Jaramillo',
     error: req.query.error || null,
     success: req.query.success || null,
     formData: {}
@@ -58,7 +60,7 @@ function showLogin(req, res) {
 
 function showRegister(req, res) {
   res.render('register', {
-    title: 'Registro | Interclases LJV',
+    title: 'Registro | Interclases Lucrecio Jaramillo',
     error: null,
     formData: {}
   });
@@ -72,7 +74,7 @@ async function showCalendar(req, res, next) {
     const activeTab = req.query.tab === 'jugados' || req.query.tab === 'resultados' ? 'jugados' : 'proximos';
 
     res.render('pages/calendar', {
-      title: 'Calendario de Partidos | Interclases LJV',
+      title: 'Calendario de Partidos | Interclases Lucrecio Jaramillo',
       upcoming,
       finished,
       all,
@@ -97,7 +99,7 @@ async function showStandings(req, res, next) {
     ]);
 
     res.render('pages/standings', {
-      title: 'Posiciones | Interclases LJV',
+      title: 'Posiciones | Interclases Lucrecio Jaramillo',
       standings,
       categories: categories.sort(),
       selectedCategory,
@@ -120,7 +122,7 @@ async function showTeams(req, res, next) {
     ]);
 
     res.render('pages/teams', {
-      title: 'Equipos y goleadores | Interclases LJV',
+      title: 'Equipos y goleadores | Interclases Lucrecio Jaramillo',
       teams,
       categories,
       selectedCategory,
@@ -138,7 +140,7 @@ async function showEnrollments(req, res, next) {
   try {
     const activeSports = await enrollmentService.getActiveSports();
     res.render('pages/enrollment', {
-      title: 'Inscripciones | Interclases LJV',
+      title: 'Inscripciones | Interclases Lucrecio Jaramillo',
       activeSports,
       categories: TEAM_CATEGORIES,
       success: req.query.enviado === '1',
@@ -156,7 +158,7 @@ async function submitEnrollment(req, res, next) {
     await enrollmentService.submitEnrollment(req.body);
     const activeSports = await enrollmentService.getActiveSports();
     res.status(201).render('pages/enrollment', {
-      title: 'Inscripciones | Interclases LJV',
+      title: 'Inscripciones | Interclases Lucrecio Jaramillo',
       activeSports,
       categories: TEAM_CATEGORIES,
       success: true,
@@ -168,7 +170,7 @@ async function submitEnrollment(req, res, next) {
     try {
       const activeSports = await enrollmentService.getActiveSports();
       res.status(422).render('pages/enrollment', {
-        title: 'Inscripciones | Interclases LJV',
+        title: 'Inscripciones | Interclases Lucrecio Jaramillo',
         activeSports,
         categories: TEAM_CATEGORIES,
         success: false,

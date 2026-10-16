@@ -5,6 +5,23 @@
   <%- include('partials/navbar', { user }) %>
 
   <main class="container">
+    <section class="home-sports" aria-labelledby="home-sports-title">
+      <div class="home-sports__heading">
+        <p class="eyebrow section-eyebrow">Interclases Lucrecio Jaramillo</p>
+        <h2 id="home-sports-title">Tres deportes, una comunidad</h2>
+        <p>Consulta la actividad y acompaña a los equipos de fútbol, baloncesto y voleibol.</p>
+      </div>
+      <div class="home-sports__grid">
+        <% sports.forEach((sport) => { %>
+          <a class="home-sport-card" href="<%= sport.href %>">
+            <span class="home-sport-card__icon" aria-hidden="true"><%= sport.id === 'futbol' ? '⚽' : sport.id === 'baloncesto' ? '🏀' : '🏐' %></span>
+            <span><%= sport.name %></span>
+            <span class="home-sport-card__action">Ver calendario <span aria-hidden="true">→</span></span>
+          </a>
+        <% }) %>
+      </div>
+    </section>
+
     <section class="match-carousel" id="match-carousel" aria-labelledby="match-carousel-title">
       <% if (error) { %>
         <div class="auth-alert error"><%= error %></div>
@@ -54,7 +71,7 @@
       <div class="match-carousel__dots" data-carousel-dots aria-label="Seleccionar partido"></div>
     </section>
 
-    <section class="gallery-hero" aria-label="Galería de las Interclases LJV">
+    <section class="gallery-hero" aria-label="Galería de Interclases Lucrecio Jaramillo">
       <% if (galleryImages.length) { %>
         <div class="gallery-carousel" data-gallery-carousel aria-roledescription="carrusel">
           <div class="gallery-carousel__viewport" data-gallery-viewport>
@@ -62,7 +79,7 @@
               <figure class="gallery-slide <%= index === 0 ? 'is-active' : '' %>" data-gallery-slide aria-hidden="<%= index === 0 ? 'false' : 'true' %>" role="group" aria-roledescription="diapositiva" aria-label="Imagen <%= index + 1 %> de <%= galleryImages.length %>">
                 <img src="<%= image.url %>" alt="<%= image.alt %>" <%= index === 0 ? 'fetchpriority=high' : 'loading=lazy' %>>
                 <figcaption class="gallery-slide__overlay">
-                  <span class="gallery-slide__eyebrow">Interclases LJV · Temporada 2026</span>
+                  <span class="gallery-slide__eyebrow">Interclases Lucrecio Jaramillo · Temporada 2026</span>
                   <% if (image.title) { %><h2><%= image.title %></h2><% } %>
                 </figcaption>
               </figure>
@@ -80,7 +97,7 @@
         </div>
       <% } else { %>
         <div class="gallery-empty">
-          <p class="eyebrow section-eyebrow">Interclases LJV · Temporada 2026</p>
+          <p class="eyebrow section-eyebrow">Interclases Lucrecio Jaramillo · Temporada 2026</p>
           <h2>La galería se está preparando</h2>
         </div>
       <% } %>
@@ -93,12 +110,12 @@
       <div class="institution-heading">
         <div>
           <p class="institution-kicker">Información institucional</p>
-          <h2>Institución Educativa Lucrecio Jaramillo Vélez</h2>
+          <h2>Interclases Lucrecio Jaramillo</h2>
         </div>
         <img
           class="institution-crest institutional-shield"
           src="/images/logo-ljv.png"
-          alt="Escudo de la Institución Educativa Lucrecio Jaramillo Vélez"
+          alt="Identidad de Interclases Lucrecio Jaramillo"
         >
       </div>
 
