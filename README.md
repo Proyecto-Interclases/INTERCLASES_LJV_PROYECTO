@@ -96,9 +96,10 @@ La plantilla `.env.example` incluye sólo las variables base:
 | --- | --- |
 | `PORT` | Puerto HTTP. Las plataformas suelen asignarlo automáticamente. |
 | `MONGO_URI` | URI privada de conexión a MongoDB Atlas. |
+| `MONGO_URI_DIRECT` | URI opcional `mongodb://` con los nodos de Atlas; se intenta sólo si la URI `mongodb+srv://` falla por DNS o conexión rechazada. |
 | `SESSION_SECRET` | Secreto aleatorio de al menos 32 caracteres para firmar sesiones. |
 
-Para crear el administrador se usan `ADMIN_EMAIL`, `ADMIN_NAME` y `ADMIN_PASSWORD` al ejecutar `npm run seed:admin`; no son necesarias para cada arranque. Para habilitar la recuperación por correo, configura además `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USER`, `EMAIL_PASS` y `APP_URL`. En producción, define `NODE_ENV=production`.
+Configura `MONGO_URI_DIRECT` sólo con la URI estándar nodo a nodo que proporciona Atlas, y mantenla privada igual que `MONGO_URI`. Si ambas conexiones fallan por DNS, prueba servidores DNS de Google (8.8.8.8) o una red no restringida; verifica también la lista de acceso de IP de Atlas. Para crear el administrador se usan `ADMIN_EMAIL`, `ADMIN_NAME` y `ADMIN_PASSWORD` al ejecutar `npm run seed:admin`; no son necesarias para cada arranque. Para habilitar la recuperación por correo, configura además `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USER`, `EMAIL_PASS` y `APP_URL`. En producción, define `NODE_ENV=production`.
 
 ## Despliegue en Render o Railway
 
@@ -121,13 +122,13 @@ La aplicación configura cookies seguras detrás del proxy HTTPS y guarda las se
 - `/calendario` — calendario y resultados.
 - `/posiciones` — tabla de posiciones.
 - `/equipos` — equipos y goleadores.
-- `/inscripciones` — formulario público disponible cuando haya al menos un deporte abierto.
+- `/inscripciones` — formulario público disponible cuando las inscripciones globales están abiertas.
 - `/admin` — panel de administración (requiere cuenta de administrador).
 - `/api/equipos` y `/api/partidos` — datos JSON públicos.
 
 ## Deportes e inscripción
 
-Las inscripciones comienzan cerradas para fútbol, baloncesto y voleibol. Un administrador puede abrir/cerrar cada deporte desde **Panel → Inscripciones**. Las solicitudes públicas no crean cuentas ni capitanes; al aprobar una solicitud se crea el equipo y su plantilla. Los equipos y partidos antiguos se consideran fútbol aunque todavía no tengan `deporte`.
+Las inscripciones comienzan cerradas. Un administrador puede abrirlas o cerrarlas desde el interruptor global de **Panel → Inscripciones**; cuando están abiertas, los estudiantes pueden elegir fútbol, baloncesto o voleibol. El estado se guarda en `TournamentConfig` y los tres deportes están habilitados por defecto. Si aún no existe esa configuración global, el sistema conserva la disponibilidad anterior considerando abiertas las inscripciones si había algún deporte abierto. Las solicitudes públicas no crean cuentas ni capitanes; al aprobar una solicitud se crea el equipo y su plantilla. Los equipos y partidos antiguos se consideran fútbol aunque todavía no tengan `deporte`.
 
 Después de respaldar la base correcta, revisa la cantidad de registros que el script migrará. El modo predeterminado no conecta con MongoDB. Sólo ejecuta la migración con las dos confirmaciones explícitas:
 

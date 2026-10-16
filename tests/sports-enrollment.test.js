@@ -4,7 +4,11 @@ const assert = require('node:assert/strict');
 const Team = require('../src/models/Team');
 const Match = require('../src/models/Match');
 const EnrollmentSetting = require('../src/models/EnrollmentSetting');
+const TournamentConfig = require('../src/models/TournamentConfig');
 const { buildStandings } = require('../src/services/tournament.service');
+const { createEquipo, addJugador, createPartido, actualizarResultadoPartido } = require('../src/services/gestion.service');
+const { updatePopup, updateTeam, updateTeamStats, updatePlayerData, updateMatch } = require('../src/services/admin.service');
+const { setEnrollmentAvailability } = require('../src/services/enrollment.service');
 const {
   validateEnrollmentPayload,
   assertEnrollmentOpen,
@@ -40,6 +44,27 @@ test('team and match models default to football', () => {
   assert.equal(team.deporte, 'futbol');
   assert.equal(match.deporte, 'futbol');
   assert.equal(new EnrollmentSetting({ deporte: 'futbol' }).abierto, false);
+});
+
+test('global tournament config starts closed and enables all three sports', () => {
+  const config = new TournamentConfig();
+  assert.equal(config.inscripcionesAbiertas, false);
+  assert.equal(config.get('deportesHabilitados.futbol'), true);
+  assert.equal(config.get('deportesHabilitados.baloncesto'), true);
+  assert.equal(config.get('deportesHabilitados.voleibol'), true);
+});
+
+test('management services reject absent payloads without destructuring errors', async () => {
+  await assert.rejects(createEquipo(undefined), /datos del equipo/i);
+  await assert.rejects(addJugador(undefined), /datos del jugador/i);
+  await assert.rejects(createPartido(undefined), /datos del partido/i);
+  await assert.rejects(actualizarResultadoPartido(undefined), /datos del resultado/i);
+  await assert.rejects(updatePopup(undefined), /datos del aviso/i);
+  await assert.rejects(updateTeam('id', undefined), /datos del equipo/i);
+  await assert.rejects(updateTeamStats(undefined), /estadísticas del equipo/i);
+  await assert.rejects(updatePlayerData('id', undefined), /datos del jugador/i);
+  await assert.rejects(updateMatch(undefined), /datos del partido/i);
+  await assert.rejects(setEnrollmentAvailability('true'), /estado de las inscripciones/i);
 });
 
 test('standings count only same-sport matches and teams', () => {

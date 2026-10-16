@@ -8,11 +8,19 @@ const { normalizeSport, SPORT_IDS } = require('../constants/sports');
 
 const MATCH_STATUSES = ['Por jugar', 'Jugando', 'Finalizado'];
 
+function requirePayload(payload, label) {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+    throw new Error(`${label} no se recibieron correctamente.`);
+  }
+  return payload;
+}
+
 function exactCaseInsensitive(value) {
   return new RegExp(`^${String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i');
 }
 
-async function createEquipo({ nombre, categoria, emailCapitan, escudoUrl, deporte = 'futbol' }) {
+async function createEquipo(payload) {
+  const { nombre, categoria, emailCapitan, escudoUrl, deporte = 'futbol' } = requirePayload(payload, 'Los datos del equipo');
   const trimmedNombre = String(nombre || '').trim();
   const trimmedCategoria = String(categoria || '').trim();
   const captainEmail = String(emailCapitan || '').trim().toLowerCase();
@@ -71,7 +79,8 @@ async function createEquipo({ nombre, categoria, emailCapitan, escudoUrl, deport
   };
 }
 
-async function addJugador({ equipoId, equipo_id, nombre, grado, numero_camiseta, numeroCamiseta, posicion, goles = 0 }) {
+async function addJugador(payload) {
+  const { equipoId, equipo_id, nombre, grado, numero_camiseta, numeroCamiseta, posicion, goles = 0 } = requirePayload(payload, 'Los datos del jugador');
   const teamId = equipoId || equipo_id;
   const trimmedNombre = String(nombre || '').trim();
   const trimmedGrade = String(grado || '').trim();
@@ -115,7 +124,8 @@ async function addJugador({ equipoId, equipo_id, nombre, grado, numero_camiseta,
   };
 }
 
-async function createPartido({ equipoLocalId, equipoVisitanteId, fechaPartido, horaPartido, cancha, estado = 'Por jugar' }) {
+async function createPartido(payload) {
+  const { equipoLocalId, equipoVisitanteId, fechaPartido, horaPartido, cancha, estado = 'Por jugar' } = requirePayload(payload, 'Los datos del partido');
   if (!mongoose.isValidObjectId(equipoLocalId) || !mongoose.isValidObjectId(equipoVisitanteId) || !fechaPartido || !horaPartido || !String(cancha || '').trim()) {
     throw new Error('Completa los datos obligatorios y selecciona dos equipos válidos.');
   }
@@ -161,7 +171,8 @@ async function createPartido({ equipoLocalId, equipoVisitanteId, fechaPartido, h
   };
 }
 
-async function actualizarResultadoPartido({ partidoId, golesLocal, golesVisitante }) {
+async function actualizarResultadoPartido(payload) {
+  const { partidoId, golesLocal, golesVisitante } = requirePayload(payload, 'Los datos del resultado');
   const homeScore = Number(golesLocal);
   const awayScore = Number(golesVisitante);
   if (!Number.isInteger(homeScore) || homeScore < 0 || !Number.isInteger(awayScore) || awayScore < 0) {

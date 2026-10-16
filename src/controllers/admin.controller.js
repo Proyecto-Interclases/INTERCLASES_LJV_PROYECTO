@@ -8,7 +8,7 @@ const { SPORTS } = require('../constants/sports');
 const enrollmentService = require('../services/enrollment.service');
 
 async function dashboardData() {
-  const [equipos, partidos, popup, jugadores, usuarios, posiciones, galleryImages, enrollmentRequests, enrollmentSettings] = await Promise.all([
+  const [equipos, partidos, popup, jugadores, usuarios, posiciones, galleryImages, enrollmentRequests, enrollmentConfig] = await Promise.all([
     listAdminTeams(),
     listarPartidos(),
     getPopup(),
@@ -17,7 +17,7 @@ async function dashboardData() {
     tournamentService.getStandings(),
     listGalleryImages(),
     enrollmentService.listEnrollmentRequests(),
-    enrollmentService.getEnrollmentSettings()
+    enrollmentService.getEnrollmentConfig()
   ]);
 
   const kpis = {
@@ -26,7 +26,7 @@ async function dashboardData() {
     goles: jugadores.reduce((total, jugador) => total + Number(jugador.goles || 0), 0),
     anunciosActivos: popup.activo ? 1 : 0
   };
-  return { equipos, partidos, popup, jugadores, usuarios, posiciones, galleryImages, enrollmentRequests, enrollmentSettings, sports: SPORTS, estadosPartido: MATCH_STATUSES, categoriasEquipo: TEAM_CATEGORIES, kpis };
+  return { equipos, partidos, popup, jugadores, usuarios, posiciones, galleryImages, enrollmentRequests, enrollmentConfig, sports: SPORTS, estadosPartido: MATCH_STATUSES, categoriasEquipo: TEAM_CATEGORIES, kpis };
 }
 
 async function renderDashboard(req, res, { error = null, success = null } = {}) {
@@ -51,7 +51,7 @@ async function renderDashboard(req, res, { error = null, success = null } = {}) 
       posiciones: [],
       galleryImages: [],
       enrollmentRequests: [],
-      enrollmentSettings: SPORTS.map((sport) => ({ ...sport, abierto: false })),
+      enrollmentConfig: { inscripcionesAbiertas: false },
       sports: SPORTS,
       kpis: { equipos: 0, partidosPendientes: 0, goles: 0, anunciosActivos: 0 },
       estadosPartido: MATCH_STATUSES,
@@ -66,7 +66,11 @@ function dashboard(req, res) {
   return renderDashboard(req, res, { error: req.query.error || null });
 }
 
-async function runDashboardAction(req, res, action, success) {
+async function runDashboardAction(req, res, action, success, { requireBody = true } = {}) {
+  if (requireBody && (!req.body || typeof req.body !== 'object' || Array.isArray(req.body))) {
+    return res.status(400).json({ success: false, message: 'Cuerpo de la petición vacío.' });
+  }
+
   try {
     const result = await action();
     const message = typeof success === 'function' ? success(result) : success;
@@ -119,7 +123,8 @@ const eliminarPartido = (req, res) => runDashboardAction(
   req,
   res,
   () => deleteMatch(req.params.id),
-  'Partido eliminado correctamente.'
+  'Partido eliminado correctamente.',
+  { requireBody: false }
 );
 
 const guardarResultado = (req, res) => runDashboardAction(
@@ -161,7 +166,8 @@ const eliminarEquipo = (req, res) => runDashboardAction(
   req,
   res,
   () => deleteTeam(req.params.id),
-  'Equipo eliminado correctamente.'
+  'Equipo eliminado correctamente.',
+  { requireBody: false }
 );
 
 const guardarEstadisticasEquipo = (req, res) => runDashboardAction(
@@ -196,7 +202,8 @@ const eliminarJugador = (req, res) => runDashboardAction(
   req,
   res,
   () => deletePlayer(req.params.id),
-  'Jugador eliminado de la plantilla.'
+  'Jugador eliminado de la plantilla.',
+  { requireBody: false }
 );
 
 const subirImagenGaleria = (req, res) => runDashboardAction(
@@ -210,7 +217,8 @@ const eliminarImagenGaleria = (req, res) => runDashboardAction(
   req,
   res,
   () => deleteGalleryImage(req.params.id),
-  'Imagen eliminada de la galería.'
+  'Imagen eliminada de la galería.',
+  { requireBody: false }
 );
 
 const cambiarEstadoImagenGaleria = (req, res) => runDashboardAction(
@@ -227,32 +235,57 @@ const guardarGolesJugador = (req, res) => runDashboardAction(
   'Goles del jugador actualizados.'
 );
 
-const actualizarDisponibilidadInscripcion = (req, res) => runDashboardAction(
-  req,
-  res,
-  () => enrollmentService.setEnrollmentAvailability(req.body.deporte, req.body.abierto === 'true'),
-  'Disponibilidad de inscripción actualizada.'
-);
+async function actualizarDisponibilidadInscripcion(req, res) {
+  if (!req.body || typeof req.body !== 'object' || Array.isArray(req.body)) {
+    return res.status(400).json({ success: false, message: 'Cuerpo de la petición vacío.' });
+  }
+
+  const requestedState = req.body.inscripcionesAbiertas;
+  const opened = requestedState === true || requestedState === 'true';
+  if (requestedState === undefined && req.is('application/json')) {
+    return res.status(400).json({ success: false, message: 'Indica si las inscripciones deben abrirse o cerrarse.' });
+  }
+  if (requestedState !== undefined && requestedState !== false && requestedState !== 'false'
+    && requestedState !== true && requestedState !== 'true') {
+    return res.status(400).json({ success: false, message: 'El estado de las inscripciones no es válido.' });
+  }
+
+  try {
+    const result = await enrollmentService.setEnrollmentAvailability(opened);
+    if (req.accepts('json') && !req.accepts('html')) {
+      return res.json({ success: true, inscripcionesAbiertas: result.inscripcionesAbiertas });
+    }
+    return renderDashboard(req, res, { success: 'Estado de inscripciones actualizado.' });
+  } catch (error) {
+    if (req.accepts('json') && !req.accepts('html')) {
+      return res.status(422).json({ success: false, message: error.message });
+    }
+    return renderDashboard(req, res, { error: error.message });
+  }
+}
 
 const aprobarInscripcion = (req, res) => runDashboardAction(
   req,
   res,
   () => enrollmentService.approveEnrollment(req.params.id),
-  (team) => `Solicitud aprobada. Se creó el equipo ${team.nombre} y su plantilla.`
+  (team) => `Solicitud aprobada. Se creó el equipo ${team.nombre} y su plantilla.`,
+  { requireBody: false }
 );
 
 const rechazarInscripcion = (req, res) => runDashboardAction(
   req,
   res,
   () => enrollmentService.rejectEnrollment(req.params.id),
-  'Solicitud rechazada.'
+  'Solicitud rechazada.',
+  { requireBody: false }
 );
 
 const eliminarSolicitudInscripcion = (req, res) => runDashboardAction(
   req,
   res,
   () => enrollmentService.deleteEnrollmentRequest(req.params.id),
-  'Solicitud eliminada.'
+  'Solicitud eliminada.',
+  { requireBody: false }
 );
 
 module.exports = {

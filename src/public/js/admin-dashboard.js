@@ -385,7 +385,7 @@
 })();
 
 (function initializeAdminAjaxForms() {
-  document.querySelectorAll('.dashboard-content form[method="post"]').forEach((form) => {
+  document.querySelectorAll('.dashboard-content form[method="post"]:not([data-enrollment-toggle])').forEach((form) => {
     form.addEventListener('submit', async (event) => {
       if (event.defaultPrevented) return;
       event.preventDefault();
@@ -427,5 +427,62 @@
         feedback.textContent = 'No se pudo completar la solicitud. Verifica tu conexión e inténtalo de nuevo.';
       }
     });
+  });
+})();
+
+(function initializeEnrollmentToggle() {
+  const form = document.querySelector('[data-enrollment-toggle]');
+  if (!form) return;
+
+  const toggle = form.querySelector('input[name="inscripcionesAbiertas"]');
+  const feedback = form.querySelector('.enrollment-toggle__feedback');
+  const status = form.querySelector('.enrollment-toggle__copy strong');
+  const submitButton = form.querySelector('button[type="submit"]');
+  if (!toggle || !feedback || !status || !submitButton) return;
+  let savedState = toggle.checked;
+
+  form.addEventListener('change', (event) => {
+    if (event.target === toggle) form.requestSubmit();
+  });
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const requestedState = toggle.checked;
+    toggle.disabled = true;
+    submitButton.disabled = true;
+    feedback.className = 'enrollment-toggle__feedback';
+    feedback.setAttribute('role', 'status');
+    feedback.textContent = 'Guardando…';
+
+    try {
+      const response = await fetch(form.action, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ inscripcionesAbiertas: requestedState })
+      });
+      const result = await response.json();
+      if (!response.ok || result.success !== true || typeof result.inscripcionesAbiertas !== 'boolean') {
+        throw new Error(result.message || 'No se pudo actualizar el estado de las inscripciones.');
+      }
+
+      toggle.checked = result.inscripcionesAbiertas;
+      savedState = result.inscripcionesAbiertas;
+      status.textContent = `Inscripciones ${result.inscripcionesAbiertas ? 'abiertas' : 'cerradas'}`;
+      feedback.classList.add('is-success');
+      feedback.textContent = 'Estado actualizado correctamente.';
+    } catch (error) {
+      toggle.checked = savedState;
+      status.textContent = `Inscripciones ${toggle.checked ? 'abiertas' : 'cerradas'}`;
+      feedback.classList.add('is-error');
+      feedback.setAttribute('role', 'alert');
+      feedback.textContent = error.message || 'No se pudo completar la solicitud. Verifica tu conexión e inténtalo de nuevo.';
+    } finally {
+      toggle.disabled = false;
+      submitButton.disabled = false;
+    }
   });
 })();

@@ -10,6 +10,13 @@ const { SPORT_IDS, normalizeSport } = require('../constants/sports');
 const MATCH_STATUSES = ['Por jugar', 'Jugando', 'Finalizado'];
 const ANNOUNCEMENT_TAGS = new Set(['p', 'div', 'br', 'strong', 'b', 'em', 'i', 'u', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'blockquote', 'a']);
 
+function requirePayload(payload, label) {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+    throw new Error(`${label} no se recibieron correctamente.`);
+  }
+  return payload;
+}
+
 function exactCaseInsensitive(value) {
   return new RegExp(`^${String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i');
 }
@@ -46,7 +53,8 @@ async function getPopup() {
   return { ...popup, mensaje: sanitizeAnnouncementHtml(popup.mensaje), imagenes, imagenUrl: popup.imagenUrl || imagenes[0] || '' };
 }
 
-async function updatePopup({ titulo, mensaje, activo, imagenUrl, imagenes }) {
+async function updatePopup(payload) {
+  const { titulo, mensaje, activo, imagenUrl, imagenes } = requirePayload(payload, 'Los datos del aviso');
   const cleanTitle = String(titulo || '').trim();
   const cleanMessage = sanitizeAnnouncementHtml(mensaje);
   let cleanImageUrl = String(imagenUrl || '').trim();
@@ -83,7 +91,8 @@ async function updatePopup({ titulo, mensaje, activo, imagenUrl, imagenes }) {
   });
 }
 
-async function updateTeam(teamId, { nombre, categoria, escudoUrl, deporte }) {
+async function updateTeam(teamId, payload) {
+  const { nombre, categoria, escudoUrl, deporte } = requirePayload(payload, 'Los datos del equipo');
   if (!mongoose.isValidObjectId(teamId)) throw new Error('El equipo seleccionado no es válido.');
   const cleanName = String(nombre || '').trim();
   const cleanCategory = String(categoria || '').trim();
@@ -213,7 +222,8 @@ async function updateTeamCaptain(teamId, requestedEmail) {
   return team.toObject();
 }
 
-async function updateTeamStats({ teamId, puntos, golesFavor, golesContra }) {
+async function updateTeamStats(payload) {
+  const { teamId, puntos, golesFavor, golesContra } = requirePayload(payload, 'Las estadísticas del equipo');
   const values = [Number(puntos), Number(golesFavor), Number(golesContra)];
   if (!teamId || values.some((value) => !Number.isInteger(value) || value < 0)) {
     throw new Error('Las estadísticas del equipo deben ser números enteros positivos.');
@@ -262,7 +272,8 @@ async function updatePlayerGoals(playerId, goals) {
   return player.toObject();
 }
 
-async function updatePlayerData(playerId, { equipo_id, nombre, grado, numero_camiseta, posicion, goles }) {
+async function updatePlayerData(playerId, payload) {
+  const { equipo_id, nombre, grado, numero_camiseta, posicion, goles } = requirePayload(payload, 'Los datos del jugador');
   if (!mongoose.isValidObjectId(playerId) || !mongoose.isValidObjectId(equipo_id)) {
     throw new Error('Selecciona un equipo y un jugador válidos.');
   }
@@ -310,7 +321,8 @@ async function listUsers() {
     .lean();
 }
 
-async function updateMatch({ matchId, equipoLocalId, equipoVisitanteId, fechaPartido, horaPartido, cancha, estado }) {
+async function updateMatch(payload) {
+  const { matchId, equipoLocalId, equipoVisitanteId, fechaPartido, horaPartido, cancha, estado } = requirePayload(payload, 'Los datos del partido');
   if (!mongoose.isValidObjectId(matchId) || !mongoose.isValidObjectId(equipoLocalId) || !mongoose.isValidObjectId(equipoVisitanteId)
     || !fechaPartido || !horaPartido || !String(cancha || '').trim()) {
     throw new Error('Completa los datos obligatorios y selecciona dos equipos válidos.');

@@ -4,8 +4,8 @@
   <body class="dashboard-page">
     <header class="dashboard-header">
       <div>
-        <p class="eyebrow">GESTIÓN DOCENTE</p>
-        <h1>Panel del profesor</h1>
+        <p class="eyebrow">PANEL DEL PROFESOR</p>
+        <h1>Interclases Lucrecio Jaramillo</h1>
       </div>
       <div class="header-actions">
         <% const displayName = user.nombre || user.name || ''; %>
@@ -58,18 +58,17 @@
         </section>
 
         <section class="panel-card admin-tab-panel" id="inscripciones" data-admin-panel="enrollments" role="tabpanel" aria-labelledby="admin-tab-enrollments" hidden>
-          <div class="admin-section-toolbar"><div><p class="eyebrow">CONVOCATORIA</p><h2>Inscripciones por deporte</h2></div></div>
-          <p class="form-hint">Las inscripciones comienzan cerradas. Activa cada deporte cuando quieras recibir solicitudes.</p>
-          <div class="enrollment-admin-settings">
-            <% enrollmentSettings.forEach((setting) => { %>
-              <form class="enrollment-admin-setting" action="/admin/inscripciones/disponibilidad" method="post">
-                <input type="hidden" name="deporte" value="<%= setting.id %>">
-                <strong><%= setting.name %></strong>
-                <label>Estado<select name="abierto" aria-label="Disponibilidad de <%= setting.name %>"><option value="false" <%= setting.abierto ? '' : 'selected' %>>Cerradas</option><option value="true" <%= setting.abierto ? 'selected' : '' %>>Abiertas</option></select></label>
-                <button class="admin-quiet-button" type="submit">Guardar</button>
-              </form>
-            <% }) %>
-          </div>
+          <div class="admin-section-toolbar"><div><p class="eyebrow">CONVOCATORIA</p><h2>Inscripciones</h2></div></div>
+          <p class="form-hint">Al abrirlas, los estudiantes podrán inscribir equipos en fútbol, baloncesto o voleibol.</p>
+          <form class="enrollment-admin-setting" action="/admin/inscripciones/disponibilidad" method="post" data-enrollment-toggle>
+            <label class="enrollment-toggle">
+              <input type="checkbox" name="inscripcionesAbiertas" value="true" <%= enrollmentConfig.inscripcionesAbiertas ? 'checked' : '' %>>
+              <span class="enrollment-toggle__track" aria-hidden="true"></span>
+              <span class="enrollment-toggle__copy"><strong>Inscripciones <%= enrollmentConfig.inscripcionesAbiertas ? 'abiertas' : 'cerradas' %></strong><small>Controla la recepción de solicitudes para los tres deportes.</small></span>
+            </label>
+            <button class="admin-quiet-button" type="submit">Guardar estado</button>
+            <p class="enrollment-toggle__feedback" role="status" aria-live="polite"></p>
+          </form>
           <div class="admin-section-toolbar enrollment-requests-heading"><div><p class="eyebrow">SOLICITUDES</p><h2>Solicitudes recibidas</h2></div><span><%= enrollmentRequests.filter((item) => item.estado === 'pendiente').length %> pendientes</span></div>
           <% if (!enrollmentRequests.length) { %>
             <p class="sports-empty-block">Todavía no hay solicitudes de inscripción.</p>

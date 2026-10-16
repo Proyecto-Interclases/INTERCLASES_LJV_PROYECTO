@@ -138,10 +138,14 @@ async function showTeams(req, res, next) {
 
 async function showEnrollments(req, res, next) {
   try {
-    const activeSports = await enrollmentService.getActiveSports();
+    const [activeSports, enrollmentConfig] = await Promise.all([
+      enrollmentService.getActiveSports(),
+      enrollmentService.getEnrollmentConfig()
+    ]);
     res.render('pages/enrollment', {
       title: 'Inscripciones | Interclases Lucrecio Jaramillo',
       activeSports,
+      inscripcionesAbiertas: enrollmentConfig.inscripcionesAbiertas,
       categories: TEAM_CATEGORIES,
       success: req.query.enviado === '1',
       error: null,
@@ -154,12 +158,17 @@ async function showEnrollments(req, res, next) {
 }
 
 async function submitEnrollment(req, res, next) {
+  const formData = req.body || {};
   try {
-    await enrollmentService.submitEnrollment(req.body);
-    const activeSports = await enrollmentService.getActiveSports();
+    await enrollmentService.submitEnrollment(formData);
+    const [activeSports, enrollmentConfig] = await Promise.all([
+      enrollmentService.getActiveSports(),
+      enrollmentService.getEnrollmentConfig()
+    ]);
     res.status(201).render('pages/enrollment', {
       title: 'Inscripciones | Interclases Lucrecio Jaramillo',
       activeSports,
+      inscripcionesAbiertas: enrollmentConfig.inscripcionesAbiertas,
       categories: TEAM_CATEGORIES,
       success: true,
       error: null,
@@ -168,14 +177,18 @@ async function submitEnrollment(req, res, next) {
     });
   } catch (error) {
     try {
-      const activeSports = await enrollmentService.getActiveSports();
+      const [activeSports, enrollmentConfig] = await Promise.all([
+        enrollmentService.getActiveSports(),
+        enrollmentService.getEnrollmentConfig()
+      ]);
       res.status(422).render('pages/enrollment', {
         title: 'Inscripciones | Interclases Lucrecio Jaramillo',
         activeSports,
+        inscripcionesAbiertas: enrollmentConfig.inscripcionesAbiertas,
         categories: TEAM_CATEGORIES,
         success: false,
         error: error.message || 'No fue posible enviar la solicitud. Intenta de nuevo.',
-        formData: req.body,
+        formData,
         user: req.session?.user || null
       });
     } catch (renderError) {

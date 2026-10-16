@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const EnrollmentRequest = require('../models/EnrollmentRequest');
 const EnrollmentSetting = require('../models/EnrollmentSetting');
+const TournamentConfig = require('../models/TournamentConfig');
 const Team = require('../models/Team');
 const Player = require('../models/Player');
 const TEAM_CATEGORIES = require('../constants/team-categories');
@@ -8,6 +9,11 @@ const { SPORTS, SPORT_IDS } = require('../constants/sports');
 
 const MAX_ROSTER_SIZE = 30;
 const NAME_PATTERN = /^[\p{L}\p{M}\p{N} .,'’&()-]+$/u;
+const DEFAULT_ENABLED_SPORTS = Object.freeze({
+  futbol: true,
+  baloncesto: true,
+  voleibol: true
+});
 
 function cleanText(value, maxLength, label) {
   const clean = String(value || '').replace(/[\u0000-\u001f\u007f]/g, '').trim();
@@ -25,6 +31,9 @@ function normalizeRoster(payload) {
 }
 
 function validateEnrollmentPayload(payload = {}) {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+    throw new Error('Los datos de la inscripción no se recibieron correctamente.');
+  }
   const deporte = String(payload.deporte || '').trim().toLowerCase();
   if (!SPORT_IDS.includes(deporte)) throw new Error('Selecciona un deporte disponible.');
   const nombreEquipo = cleanText(payload.nombreEquipo, 80, 'El nombre del equipo');
@@ -82,19 +91,35 @@ function assertEnrollmentOpen(sport, setting) {
   if (setting.deporte !== sport) throw new Error('La disponibilidad seleccionada no corresponde al deporte.');
 }
 
-async function getEnrollmentSettings() {
-  const saved = await EnrollmentSetting.find({}).lean();
-  const bySport = new Map(saved.map((item) => [item.deporte, item.abierto === true]));
-  return SPORTS.map((sport) => ({ ...sport, abierto: bySport.get(sport.id) || false }));
+async function getEnrollmentConfig() {
+  const config = await TournamentConfig.findById('global').lean();
+  if (config) {
+    return {
+      inscripcionesAbiertas: config.inscripcionesAbiertas === true,
+      deportesHabilitados: { ...DEFAULT_ENABLED_SPORTS, ...config.deportesHabilitados }
+    };
+  }
+
+  const legacySettings = await EnrollmentSetting.find({}).lean();
+  return {
+    inscripcionesAbiertas: legacySettings.some((setting) => setting.abierto === true),
+    deportesHabilitados: { ...DEFAULT_ENABLED_SPORTS }
+  };
 }
 
 async function getActiveSports() {
-  return (await getEnrollmentSettings()).filter((sport) => sport.abierto);
+  const config = await getEnrollmentConfig();
+  if (!config.inscripcionesAbiertas) return [];
+  return SPORTS.filter((sport) => config.deportesHabilitados[sport.id]);
 }
 
 async function submitEnrollment(payload) {
   const request = validateEnrollmentPayload(payload);
-  const setting = await EnrollmentSetting.findOne({ deporte: request.deporte }).lean();
+  const config = await getEnrollmentConfig();
+  const setting = {
+    deporte: request.deporte,
+    abierto: config.inscripcionesAbiertas && config.deportesHabilitados[request.deporte]
+  };
   assertEnrollmentOpen(request.deporte, setting);
   const existingTeam = await Team.findOne({
     nombre: new RegExp(`^${request.nombreEquipo.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i')
@@ -113,14 +138,17 @@ async function listEnrollmentRequests() {
   return EnrollmentRequest.find({}).sort({ creado_en: -1 }).lean();
 }
 
-async function setEnrollmentAvailability(sport, opened) {
-  if (!SPORT_IDS.includes(sport)) throw new Error('El deporte seleccionado no es válido.');
-  const updated = await EnrollmentSetting.findOneAndUpdate(
-    { deporte: sport },
-    { $set: { abierto: opened === true || opened === 'true' || opened === 'on' }, $setOnInsert: { deporte: sport } },
+async function setEnrollmentAvailability(opened) {
+  if (typeof opened !== 'boolean') throw new Error('El estado de las inscripciones no es válido.');
+  const updated = await TournamentConfig.findOneAndUpdate(
+    { _id: 'global' },
+    {
+      $set: { inscripcionesAbiertas: opened },
+      $setOnInsert: { deportesHabilitados: DEFAULT_ENABLED_SPORTS }
+    },
     { upsert: true, new: true, runValidators: true }
   ).lean();
-  return updated;
+  return { inscripcionesAbiertas: updated.inscripcionesAbiertas };
 }
 
 async function approveEnrollment(requestId) {
@@ -185,7 +213,7 @@ module.exports = {
   validateEnrollmentPayload,
   mapEnrollmentToTeamAndPlayers,
   assertEnrollmentOpen,
-  getEnrollmentSettings,
+  getEnrollmentConfig,
   getActiveSports,
   submitEnrollment,
   listEnrollmentRequests,
