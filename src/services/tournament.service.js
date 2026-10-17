@@ -1,6 +1,7 @@
 const Match = require('../models/Match');
 const Team = require('../models/Team');
 const Player = require('../models/Player');
+const TEAM_CATEGORIES = require('../constants/team-categories');
 const { normalizeSport, sportQuery } = require('../constants/sports');
 const { isManagedPlayerPhotoUrl } = require('./player-photo.service');
 const { groupPlayersByPosition, buildFootballLineup } = require('./player-lineup.service');
@@ -16,6 +17,19 @@ function formatTeamGrades(grades) {
   return [...new Set(grades.map((grade) => String(grade || '').trim()).filter(Boolean))]
     .map((grade) => grade.replace(/(\d+)\.º\s*(\d+)/g, '$1-$2'))
     .join(', ');
+}
+
+async function filterLegacyTeamMatches(matches) {
+  const legacyTeams = await Team.find({ categoria: { $nin: TEAM_CATEGORIES } }, '_id nombre').lean();
+  if (!legacyTeams.length) return matches;
+  const legacyIds = new Set(legacyTeams.map((team) => team._id.toString()));
+  const legacyNames = new Set(legacyTeams.map((team) => team.nombre));
+  return matches.filter((match) => (
+    !legacyIds.has(match.equipoLocalId?.toString())
+    && !legacyIds.has(match.equipoVisitanteId?.toString())
+    && !legacyNames.has(match.equipo_a)
+    && !legacyNames.has(match.equipo_b)
+  ));
 }
 
 function buildStandings(teams, matches, selectedSport = 'futbol') {
@@ -94,7 +108,8 @@ function buildStandings(teams, matches, selectedSport = 'futbol') {
 }
 
 async function getTeams(selectedSport = 'futbol') {
-  const teams = await Team.find(sportQuery(selectedSport)).sort({ nombre: 1 }).lean();
+  const teams = await Team.find({ ...sportQuery(selectedSport), categoria: { $in: TEAM_CATEGORIES } })
+    .sort({ nombre: 1 }).lean();
 
   return teams.map((team) => ({
     id: team._id.toString(),
@@ -106,7 +121,8 @@ async function getTeams(selectedSport = 'futbol') {
 }
 
 async function getMatches(selectedSport = 'futbol') {
-  const matches = await Match.find(sportQuery(selectedSport)).sort({ fecha: 1, hora: 1 }).lean();
+  const rawMatches = await Match.find(sportQuery(selectedSport)).sort({ fecha: 1, hora: 1 }).lean();
+  const matches = await filterLegacyTeamMatches(rawMatches);
 
   return matches.map((match) => ({
     id: match._id.toString(),
@@ -126,7 +142,8 @@ async function getMatches(selectedSport = 'futbol') {
 }
 
 async function getCalendarMatches(selectedSport = 'futbol') {
-  const rawMatches = await Match.find(sportQuery(selectedSport)).sort({ fecha: 1, hora: 1 }).lean();
+  const allMatches = await Match.find(sportQuery(selectedSport)).sort({ fecha: 1, hora: 1 }).lean();
+  const rawMatches = await filterLegacyTeamMatches(allMatches);
 
   const formattedMatches = rawMatches.map((match) => {
     const homeTeam = match.equipo_a || 'Equipo local';
@@ -182,8 +199,8 @@ async function getSummary(selectedSport = 'futbol') {
 
 async function getStandings(category, selectedSport = 'futbol') {
   const sport = normalizeSport(selectedSport);
-  const baseFilter = sportQuery(sport);
-  const filter = category ? { ...baseFilter, categoria: category } : baseFilter;
+  const baseFilter = { ...sportQuery(sport), categoria: { $in: TEAM_CATEGORIES } };
+  const filter = TEAM_CATEGORIES.includes(category) ? { ...baseFilter, categoria: category } : baseFilter;
   const teams = await Team.find(filter).sort({ nombre: 1 }).lean();
   const matches = await Match.find(sportQuery(sport)).lean();
   return buildStandings(teams, matches, sport);
@@ -191,13 +208,12 @@ async function getStandings(category, selectedSport = 'futbol') {
 
 async function getTeamsPageData(category, selectedSport = 'futbol') {
   const sport = normalizeSport(selectedSport);
-  const baseFilter = sportQuery(sport);
-  const filter = category ? { ...baseFilter, categoria: category } : baseFilter;
+  const baseFilter = { ...sportQuery(sport), categoria: { $in: TEAM_CATEGORIES } };
+  const filter = TEAM_CATEGORIES.includes(category) ? { ...baseFilter, categoria: category } : baseFilter;
   const teamIds = await Team.find(filter).distinct('_id');
-  const [teams, players, categories] = await Promise.all([
+  const [teams, players] = await Promise.all([
     Team.find(filter).sort({ categoria: 1, nombre: 1 }).lean(),
-    Player.find({ equipo_id: { $in: teamIds } }).populate('equipo_id').sort({ numero_camiseta: 1, nombre: 1 }).lean(),
-    Team.find(baseFilter).distinct('categoria')
+    Player.find({ equipo_id: { $in: teamIds } }).populate('equipo_id').sort({ numero_camiseta: 1, nombre: 1 }).lean()
   ]);
 
   const teamsWithRoster = teams.map((team) => {
@@ -225,11 +241,19 @@ async function getTeamsPageData(category, selectedSport = 'futbol') {
     };
   });
 
-  return { teams: teamsWithRoster, categories: categories.sort(), selectedCategory: category || '' };
+  return {
+    teams: teamsWithRoster,
+    categories: TEAM_CATEGORIES,
+    selectedCategory: TEAM_CATEGORIES.includes(category) ? category : ''
+  };
 }
 
 async function getTopScorers(limit = 10, category, selectedSport = 'futbol') {
-  const teamQuery = { ...sportQuery(selectedSport), ...(category ? { categoria: category } : {}) };
+  const teamQuery = {
+    ...sportQuery(selectedSport),
+    categoria: { $in: TEAM_CATEGORIES },
+    ...(TEAM_CATEGORIES.includes(category) ? { categoria: category } : {})
+  };
   const teamFilter = await Team.find(teamQuery).distinct('_id');
   const playerFilter = { goles: { $gt: 0 }, equipo_id: { $in: teamFilter } };
   const players = await Player.find(playerFilter).populate('equipo_id').sort({ goles: -1, nombre: 1 }).limit(limit).lean();

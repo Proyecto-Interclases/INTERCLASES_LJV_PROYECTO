@@ -9,9 +9,12 @@ const enrollmentService = require('../services/enrollment.service');
 function buildSportLinks(path, query = {}) {
   const requested = String(query.deporte || '').trim().toLowerCase();
   const selectedSport = SPORT_IDS.includes(requested) ? requested : 'futbol';
+  const selectedCategory = TEAM_CATEGORIES.includes(String(query.categoria || '').trim())
+    ? String(query.categoria).trim()
+    : '';
   const sports = SPORTS.map((sport) => {
     const params = new URLSearchParams({ deporte: sport.id });
-    if (query.categoria) params.set('categoria', String(query.categoria));
+    if (selectedCategory) params.set('categoria', selectedCategory);
     if (query.tab) params.set('tab', String(query.tab));
     return { ...sport, href: `${path}?${params.toString()}` };
   });
@@ -91,7 +94,8 @@ async function showCalendar(req, res, next) {
 
 async function showStandings(req, res, next) {
   try {
-    const selectedCategory = String(req.query.categoria || '').trim();
+    const requestedCategory = String(req.query.categoria || '').trim();
+    const selectedCategory = TEAM_CATEGORIES.includes(requestedCategory) ? requestedCategory : '';
     const { selectedSport, sports } = buildSportLinks(req.path, req.query);
     const [standings, categories] = await Promise.all([
       tournamentService.getStandings(selectedCategory, selectedSport),
@@ -114,7 +118,8 @@ async function showStandings(req, res, next) {
 
 async function showTeams(req, res, next) {
   try {
-    const selectedCategory = String(req.query.categoria || '').trim();
+    const requestedCategory = String(req.query.categoria || '').trim();
+    const selectedCategory = TEAM_CATEGORIES.includes(requestedCategory) ? requestedCategory : '';
     const { selectedSport, sports } = buildSportLinks(req.path, req.query);
     const [{ teams, categories }, topScorers] = await Promise.all([
       tournamentService.getTeamsPageData(selectedCategory, selectedSport),

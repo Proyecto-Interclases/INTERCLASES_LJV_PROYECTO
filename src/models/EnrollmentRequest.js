@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const { SPORT_IDS } = require('../constants/sports');
 const TEAM_CATEGORIES = require('../constants/team-categories');
+const LEGACY_TEAM_CATEGORIES = require('../constants/legacy-team-categories');
 
 const rosterPlayerSchema = new mongoose.Schema({
   nombre: { type: String, required: true, trim: true, maxlength: 80 },
@@ -10,7 +11,7 @@ const rosterPlayerSchema = new mongoose.Schema({
 const enrollmentRequestSchema = new mongoose.Schema({
   deporte: { type: String, enum: SPORT_IDS, required: true },
   nombreEquipo: { type: String, required: true, trim: true, maxlength: 80 },
-  categoria: { type: String, enum: TEAM_CATEGORIES, required: true },
+  categoria: { type: String, enum: [...TEAM_CATEGORIES, ...LEGACY_TEAM_CATEGORIES], required: true },
   grado: { type: String, required: true, trim: true, maxlength: 40 },
   responsable: { type: String, required: true, trim: true, maxlength: 100 },
   contacto: { type: String, required: true, trim: true, maxlength: 120 },

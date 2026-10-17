@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const TEAM_CATEGORIES = require('../constants/team-categories');
+const LEGACY_TEAM_CATEGORIES = require('../constants/legacy-team-categories');
 const { SPORT_IDS } = require('../constants/sports');
 
 const teamSchema = new mongoose.Schema({
@@ -19,7 +20,7 @@ const teamSchema = new mongoose.Schema({
   categoria: {
     type: String,
     required: true,
-    enum: TEAM_CATEGORIES,
+    enum: [...TEAM_CATEGORIES, ...LEGACY_TEAM_CATEGORIES],
     trim: true
   },
   escudoUrl: {

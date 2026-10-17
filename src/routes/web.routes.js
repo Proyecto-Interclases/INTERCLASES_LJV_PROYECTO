@@ -9,6 +9,7 @@ const authController = require('../controllers/auth.controller');
 const router = express.Router();
 
 const loginRoutes = ['/login'];
+const registerRoutes = ['/registro', '/register'];
 const calendarRoutes = ['/calendario', '/calendar'];
 
 // Asocia la URL raiz con el controlador del home.
@@ -20,6 +21,8 @@ router.get('/inscripciones', homeController.showEnrollments);
 router.post('/inscripciones', homeController.submitEnrollment);
 loginRoutes.forEach((route) => router.get(route, homeController.showLogin));
 loginRoutes.forEach((route) => router.post(route, authController.login));
+registerRoutes.forEach((route) => router.get(route, homeController.showRegister));
+registerRoutes.forEach((route) => router.post(route, authController.register));
 router.get('/logout', authController.logout);
 router.get('/forgot-password', authController.showForgotPassword);
 router.post('/forgot-password', authController.forgotPassword);

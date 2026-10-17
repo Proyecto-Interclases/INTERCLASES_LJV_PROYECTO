@@ -8,6 +8,7 @@ const router = express.Router();
 router.use(esAdmin);
 router.get('/', adminController.dashboard);
 router.get('/dashboard', adminController.dashboard);
+router.post('/usuarios/:id/restablecer-password', adminController.restablecerContrasenaUsuario);
 router.get('/api/torneo', adminController.adminOverview);
 router.post('/inscripciones/disponibilidad', adminController.actualizarDisponibilidadInscripcion);
 router.post('/inscripciones/:id/aprobar', adminController.aprobarInscripcion);

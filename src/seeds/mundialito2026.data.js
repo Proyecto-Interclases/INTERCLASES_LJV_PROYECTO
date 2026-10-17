@@ -105,13 +105,6 @@ const mundialito2026Teams = [
     grado: '11.º 2',
     escudoUrl: '/images/banderas/portugal.svg',
     jugadores: ['Juan Manuel Alvarez', 'Jacobo Quintero', 'Emmanuel Soto', 'Santiago Roman', 'Geronimo Aguirre', 'Ana Alzate', 'Santiago Campos', 'Jeronimo Gomez']
-  },
-  {
-    nombre: 'Costa de Marfil',
-    categoria: TEAM_CATEGORIES[1],
-    grado: 'Docentes',
-    escudoUrl: '/images/banderas/costa-de-marfil.svg',
-    jugadores: ['Daniel Alzate', 'Samuel Roldan', 'Camilo', 'John Elias', 'Juan K. Rodriguez', 'Juan Jose Ardila', 'Romulo Arango', 'Carlos "Chiqui"', 'Heider Linares', 'Wilson Gomez']
   }
 ];
 

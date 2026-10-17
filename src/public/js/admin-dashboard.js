@@ -204,6 +204,18 @@
         captainSelect.value = currentCaptain;
       }
 
+      if (modal.id === 'user-password-modal') {
+        const form = modal.querySelector('#user-password-form');
+        form.reset();
+        form.action = `/admin/usuarios/${encodeURIComponent(trigger.dataset.userId || '')}/restablecer-password`;
+        modal.querySelector('#user-password-confirm').setCustomValidity('');
+        modal.querySelector('[data-user-password-target]').textContent =
+          `Cuenta: ${trigger.dataset.userName || ''} · ${trigger.dataset.userEmail || ''}`;
+        const feedback = modal.querySelector('[data-user-password-feedback]');
+        feedback.textContent = '';
+        feedback.className = 'admin-form-feedback';
+      }
+
       if (typeof modal.showModal === 'function') modal.showModal();
       else modal.setAttribute('open', '');
       modal.querySelector('input:not([type="hidden"])')?.focus();
@@ -232,6 +244,61 @@
   document.querySelector('#player-editor-modal')?.addEventListener('close', () => {
     if (playerPhotoObjectUrl) URL.revokeObjectURL(playerPhotoObjectUrl);
     playerPhotoObjectUrl = '';
+  });
+})();
+
+(function initializeUserPasswordReset() {
+  const form = document.querySelector('[data-user-password-form]');
+  if (!form) return;
+
+  const password = form.querySelector('#user-password-input');
+  const confirmation = form.querySelector('#user-password-confirm');
+  const feedback = form.querySelector('[data-user-password-feedback]');
+  const submitButton = form.querySelector('button[type="submit"]');
+
+  confirmation.addEventListener('input', () => {
+    confirmation.setCustomValidity(
+      confirmation.value && confirmation.value !== password.value
+        ? 'Las contraseñas no coinciden.'
+        : ''
+    );
+  });
+  password.addEventListener('input', () => confirmation.dispatchEvent(new Event('input')));
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!form.reportValidity()) return;
+
+    submitButton.disabled = true;
+    feedback.className = 'admin-form-feedback';
+    feedback.setAttribute('role', 'status');
+    feedback.textContent = 'Guardando…';
+
+    try {
+      const response = await fetch(form.action, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ password: password.value })
+      });
+      const result = await response.json();
+      if (!response.ok || result.ok !== true) {
+        throw new Error(result.message || 'No se pudo restablecer la contraseña.');
+      }
+      feedback.classList.add('is-success');
+      feedback.textContent = result.message;
+      password.value = '';
+      confirmation.value = '';
+    } catch (error) {
+      feedback.classList.add('is-error');
+      feedback.setAttribute('role', 'alert');
+      feedback.textContent = error.message || 'No se pudo completar la solicitud.';
+    } finally {
+      submitButton.disabled = false;
+    }
   });
 })();
 

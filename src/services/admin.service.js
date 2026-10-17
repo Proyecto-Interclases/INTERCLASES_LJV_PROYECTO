@@ -3,6 +3,7 @@ const Player = require('../models/Player');
 const Match = require('../models/Match');
 const Announcement = require('../models/Announcement');
 const User = require('../models/User');
+const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
 const TEAM_CATEGORIES = require('../constants/team-categories');
 const { SPORT_IDS, normalizeSport } = require('../constants/sports');
@@ -171,7 +172,7 @@ async function deleteTeam(teamId) {
 }
 
 async function listAdminTeams() {
-  const teams = await Team.find({}).sort({ categoria: 1, nombre: 1 }).lean();
+  const teams = await Team.find({ categoria: { $in: TEAM_CATEGORIES } }).sort({ categoria: 1, nombre: 1 }).lean();
   const captainEmails = teams.map((team) => team.capitanEmail).filter(Boolean);
   const captains = captainEmails.length
     ? await User.find({ email: { $in: captainEmails } }, 'nombre email').lean()
@@ -415,9 +416,34 @@ async function updatePlayerData(playerId, payload) {
 }
 
 async function listUsers() {
-  return User.find({}, 'nombre email role creado_en teamName')
+  const users = await User.find({}, 'nombre email role creado_en activo teamName')
     .sort({ creado_en: 1 })
     .lean();
+  return users.map((user) => ({
+    id: user._id.toString(),
+    nombre: user.nombre,
+    email: user.email,
+    role: user.role,
+    creado_en: user.creado_en,
+    activo: user.activo !== false,
+    teamName: user.teamName || null
+  }));
+}
+
+async function resetUserPassword(userId, password) {
+  if (!mongoose.isValidObjectId(userId)) throw new Error('El usuario seleccionado no es válido.');
+
+  const cleanPassword = String(password || '');
+  if (!/^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/.test(cleanPassword)) {
+    throw new Error('La contraseña debe tener mínimo 8 caracteres, una mayúscula, un número y un carácter especial.');
+  }
+
+  const passwordHash = await bcrypt.hash(cleanPassword, 10);
+  const result = await User.updateOne(
+    { _id: userId },
+    { $set: { password: passwordHash } }
+  );
+  if (result.matchedCount === 0) throw new Error('No existe ese usuario.');
 }
 
 async function updateMatch(payload) {
@@ -497,6 +523,7 @@ module.exports = {
   updatePlayerGoals,
   updatePlayerData,
   listUsers,
+  resetUserPassword,
   updateMatch,
   deleteMatch,
   deletePlayer

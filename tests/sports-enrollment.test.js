@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 
 const Team = require('../src/models/Team');
 const Match = require('../src/models/Match');
+const EnrollmentRequest = require('../src/models/EnrollmentRequest');
 const EnrollmentSetting = require('../src/models/EnrollmentSetting');
 const TournamentConfig = require('../src/models/TournamentConfig');
 const { buildStandings } = require('../src/services/tournament.service');
@@ -28,6 +29,12 @@ test('sport tabs keep category and calendar tab query parameters', () => {
   ]);
 });
 
+test('sport links discard unsupported legacy categories from public filters', () => {
+  const links = buildSportLinks('/equipos', { deporte: 'voleibol', categoria: 'Docentes' });
+  assert.equal(links.selectedSport, 'voleibol');
+  assert.ok(links.sports.every(({ href }) => !href.includes('categoria=')));
+});
+
 test('sport query keeps records without a sport in the legacy football view', () => {
   const query = sportQuery('futbol');
   assert.ok(query.$or.some((condition) => condition.deporte?.$exists === false));
@@ -47,12 +54,22 @@ test('team and match models default to football', () => {
   assert.equal(new EnrollmentSetting({ deporte: 'futbol' }).abierto, false);
 });
 
-test('Docentes is a supported team and enrollment category alongside existing categories', () => {
-  assert.deepEqual(TEAM_CATEGORIES, ['Categoría A', 'Categoría B', 'Docentes']);
+test('only student categories are available for teams and enrollment, with legacy team categories retained for existing records', () => {
+  assert.deepEqual(TEAM_CATEGORIES, ['Categoría A', 'Categoría B']);
   const team = new Team({ nombre: 'Docentes', categoria: 'Docentes', deporte: 'voleibol' });
   assert.equal(team.validateSync(), undefined);
+  const legacyRequest = new EnrollmentRequest({
+    deporte: 'baloncesto',
+    nombreEquipo: 'Equipo histórico',
+    categoria: 'Docentes',
+    grado: 'Docentes',
+    responsable: 'Persona Responsable',
+    contacto: 'responsable@example.edu',
+    jugadores: [{ nombre: 'Ana Pérez', numero_camiseta: 8 }]
+  });
+  assert.equal(legacyRequest.validateSync(), undefined);
 
-  const request = validateEnrollmentPayload({
+  assert.throws(() => validateEnrollmentPayload({
     deporte: 'baloncesto',
     nombreEquipo: 'Profesores',
     categoria: 'Docentes',
@@ -61,8 +78,7 @@ test('Docentes is a supported team and enrollment category alongside existing ca
     contacto: 'responsable@example.edu',
     jugadorNombre: ['Ana Pérez'],
     jugadorNumero: ['8']
-  });
-  assert.equal(request.categoria, 'Docentes');
+  }), /categoría válida/i);
 });
 
 test('global tournament config starts closed and enables all three sports', () => {

@@ -135,7 +135,7 @@ async function submitEnrollment(payload) {
 }
 
 async function listEnrollmentRequests() {
-  return EnrollmentRequest.find({}).sort({ creado_en: -1 }).lean();
+  return EnrollmentRequest.find({ categoria: { $in: TEAM_CATEGORIES } }).sort({ creado_en: -1 }).lean();
 }
 
 async function setEnrollmentAvailability(opened) {

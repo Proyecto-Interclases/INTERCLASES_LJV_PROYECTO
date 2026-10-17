@@ -4,7 +4,7 @@
   <body class="dashboard-page">
     <header class="dashboard-header">
       <div>
-        <p class="eyebrow">PANEL DEL PROFESOR</p>
+        <p class="eyebrow">PANEL DE ADMINISTRACIÓN</p>
         <h1>Interclases Lucrecio Jaramillo</h1>
       </div>
       <div class="header-actions">
@@ -40,6 +40,7 @@
           <button type="button" role="tab" id="admin-tab-standings" aria-controls="posiciones" aria-selected="false" tabindex="-1" data-admin-tab="standings">Tabla de posiciones</button>
           <button type="button" role="tab" id="admin-tab-announcements" aria-controls="anuncios" aria-selected="false" tabindex="-1" data-admin-tab="announcements">Anuncios y noticias</button>
           <button type="button" role="tab" id="admin-tab-gallery" aria-controls="galeria" aria-selected="false" tabindex="-1" data-admin-tab="gallery">Galería / Carrusel</button>
+          <button type="button" role="tab" id="admin-tab-users" aria-controls="usuarios" aria-selected="false" tabindex="-1" data-admin-tab="users">Usuarios</button>
         </nav>
       </aside>
 
@@ -482,26 +483,58 @@
             </div>
           <% } %>
         </section>
-        <details class="panel-card admin-users admin-tab-panel" id="usuarios" data-admin-panel="teams" role="tabpanel" aria-labelledby="admin-tab-teams">
-          <summary>Usuarios registrados</summary>
-          <div class="result-list dashboard-list">
-            <% if (!usuarios.length) { %>
-              <p>No hay usuarios registrados.</p>
-            <% } else { %>
-              <% usuarios.forEach((usuario) => { %>
-                <div class="result-item">
-                  <div>
-                    <strong><%= usuario.nombre %></strong>
-                    <small><%= usuario.email %> · <%= usuario.role %><%= usuario.teamName ? ` · ${usuario.teamName}` : '' %></small>
-                  </div>
-                </div>
-              <% }) %>
-            <% } %>
+        <section class="panel-card admin-tab-panel" id="usuarios" data-admin-panel="users" role="tabpanel" aria-labelledby="admin-tab-users" hidden>
+          <div class="admin-section-toolbar">
+            <div><p class="eyebrow">CUENTAS</p><h2>Gestión de usuarios</h2></div>
           </div>
-        </details>
+          <% if (!usuarios.length) { %>
+            <p class="sports-empty-block">No hay usuarios registrados.</p>
+          <% } else { %>
+            <div class="admin-users-table-wrap">
+              <table class="admin-users-table">
+                <thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Estado</th><th>Fecha de creación</th><th>Acciones</th></tr></thead>
+                <tbody>
+                  <% usuarios.forEach((usuario) => { %>
+                    <tr>
+                      <td data-label="Nombre"><strong><%= usuario.nombre %></strong></td>
+                      <td data-label="Correo"><%= usuario.email %></td>
+                      <td data-label="Rol"><%= usuario.role === 'admin' ? 'Administrador' : 'Estudiante' %></td>
+                      <td data-label="Estado"><span class="admin-user-status <%= usuario.activo ? 'is-active' : 'is-inactive' %>"><%= usuario.activo ? 'Activa' : 'Inactiva' %></span></td>
+                      <td data-label="Fecha de creación"><%= usuario.creado_en ? new Date(usuario.creado_en).toLocaleDateString('es-CO') : '—' %></td>
+                      <td data-label="Acciones"><button class="admin-quiet-button" type="button" data-modal-open="user-password-modal" data-user-id="<%= usuario.id %>" data-user-name="<%= usuario.nombre %>" data-user-email="<%= usuario.email %>">Restablecer contraseña</button></td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          <% } %>
+          <dialog class="admin-modal" id="user-password-modal" aria-labelledby="user-password-title">
+            <div class="admin-modal__surface">
+              <div class="admin-modal__heading">
+                <div><p class="eyebrow">GESTIÓN DE CUENTAS</p><h2 id="user-password-title">Restablecer contraseña</h2></div>
+                <button class="icon-action" type="button" data-modal-close aria-label="Cerrar formulario">&times;</button>
+              </div>
+              <p class="form-hint" data-user-password-target></p>
+              <form class="dashboard-form admin-modal__form" id="user-password-form" action="#" method="post" data-user-password-form>
+                <label>Nueva contraseña
+                  <input type="password" name="password" id="user-password-input" minlength="8" pattern="(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}" autocomplete="new-password" required>
+                </label>
+                <small class="form-hint">Mínimo 8 caracteres, una mayúscula, un número y un carácter especial.</small>
+                <label>Confirmar nueva contraseña
+                  <input type="password" name="confirmPassword" id="user-password-confirm" minlength="8" autocomplete="new-password" required>
+                </label>
+                <p class="admin-form-feedback" data-user-password-feedback role="status" aria-live="polite"></p>
+                <div class="admin-modal__actions">
+                  <button class="admin-quiet-button" type="button" data-modal-close>Cancelar</button>
+                  <button type="submit" class="btn btn-primary">Guardar contraseña</button>
+                </div>
+              </form>
+            </div>
+          </dialog>
+        </section>
       </section>
     </main>
     <%- include('../partials/accessibility-settings') %>
-    <script src="/js/admin-dashboard.js?v=admin-mobile-20261013" defer></script>
+    <script src="/js/admin-dashboard.js?v=admin-users-20261017" defer></script>
   </body>
 </html>

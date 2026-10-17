@@ -10,15 +10,15 @@ const Player = require('../src/models/Player');
 const { createEquipo } = require('../src/services/gestion.service');
 
 test('el seed Mundialito 2026 contiene equipos, categorías, grados y banderas oficiales', () => {
-  assert.equal(teams.length, 16);
+  assert.equal(teams.length, 15);
   assert.deepEqual(
     teams.reduce((counts, team) => {
       counts[team.categoria] = (counts[team.categoria] || 0) + 1;
       return counts;
     }, {}),
-    { 'Categoría A': 9, 'Categoría B': 7 }
+    { 'Categoría A': 9, 'Categoría B': 6 }
   );
-  assert.deepEqual(TEAM_CATEGORIES, ['Categoría A', 'Categoría B', 'Docentes']);
+  assert.deepEqual(TEAM_CATEGORIES, ['Categoría A', 'Categoría B']);
 
   for (const team of teams) {
     assert.ok(team.grado);
@@ -32,11 +32,9 @@ test('el seed Mundialito 2026 contiene equipos, categorías, grados y banderas o
     assert.equal(Object.hasOwn(team, 'posicion'), false);
   }
 
-  assert.equal(teams.reduce((count, team) => count + team.jugadores.length, 0), 118);
+  assert.equal(teams.reduce((count, team) => count + team.jugadores.length, 0), 108);
   assert.equal(teams.find((team) => team.nombre === 'Alemania').grado, '9.º 1, 10.º 1 y 11.º 1');
-  const teacherTeam = teams.find((team) => team.nombre === 'Costa de Marfil');
-  assert.equal(teacherTeam.categoria, 'Categoría B');
-  assert.equal(teacherTeam.grado, 'Docentes');
+  assert.equal(teams.some((team) => team.grado === 'Docentes'), false);
 });
 
 test('el modelo y los servicios restringen categorías y guardan grado sin posición forzada', async () => {

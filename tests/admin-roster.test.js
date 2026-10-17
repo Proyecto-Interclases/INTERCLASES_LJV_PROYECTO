@@ -89,7 +89,7 @@ test('primary team grade uses the most common roster grade and formats it next t
     { grado: '7.º 2' },
     { grado: '8.º 1' }
   ]), '7°2');
-  assert.equal(getPrimaryTeamGrade([{ grado: 'Docentes' }]), 'Docentes');
+  assert.equal(getPrimaryTeamGrade([{ grado: '11.º 1' }]), '11°1');
   assert.equal(getPrimaryTeamGrade([]), '');
 });
 

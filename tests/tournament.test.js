@@ -6,7 +6,7 @@ const { buildStandings, formatTeamGrades } = require('../src/services/tournament
 test('formatTeamGrades muestra grados de sección legibles junto al nombre del equipo', () => {
   assert.equal(formatTeamGrades(['11.º 2', '11.º 2']), '11-2');
   assert.equal(formatTeamGrades(['9.º 1, 10.º 1 y 11.º 1']), '9-1, 10-1 y 11-1');
-  assert.equal(formatTeamGrades(['Docentes']), 'Docentes');
+  assert.equal(formatTeamGrades(['11.º 1']), '11-1');
   assert.equal(formatTeamGrades([]), '');
 });
 

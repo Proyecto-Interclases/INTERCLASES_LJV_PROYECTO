@@ -22,6 +22,10 @@ const userSchema = new mongoose.Schema({
     enum: ['student', 'admin'],
     default: 'student'
   },
+  activo: {
+    type: Boolean,
+    default: true
+  },
   teamName: {
     type: String,
     default: null
