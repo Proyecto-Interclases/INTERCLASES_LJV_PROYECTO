@@ -349,36 +349,59 @@
               <% }) %>
             <% } %>
           </div>
-          <dialog class="admin-modal" id="player-editor-modal" aria-labelledby="player-editor-title">
+          <dialog class="admin-modal admin-modal--player" id="player-editor-modal" aria-labelledby="player-editor-title">
             <div class="admin-modal__surface">
               <div class="admin-modal__heading">
                 <div><p class="eyebrow" id="player-editor-team">PLANTILLA</p><h2 id="player-editor-title">Agregar jugador</h2></div>
                 <button class="icon-action" type="button" data-modal-close aria-label="Cerrar formulario">&times;</button>
               </div>
-              <form class="dashboard-form admin-modal__form" id="player-editor-form" action="/admin/jugadores" method="post" enctype="multipart/form-data">
-                <input type="hidden" name="equipo_id" id="player-editor-team-id">
-                <label>Jugador *<input type="text" name="nombre" id="player-editor-name" required></label>
-                <label>Grado o sección *<input type="text" name="grado" id="player-editor-grade" required></label>
-                <div class="field-row">
-                  <label>Número de camiseta *<input type="number" name="numero_camiseta" id="player-editor-number" min="0" max="99" value="0" required></label>
-                  <label>Posición<input type="text" name="posicion" id="player-editor-position" placeholder="Defensa, delantero..."></label>
-                </div>
-                <label>Goles<input type="number" name="goles" id="player-editor-goals" min="0" value="0"></label>
-                <div class="player-photo-editor">
-                  <label>Foto del jugador (JPG, PNG o WebP; máximo 3 MB)
-                    <input type="file" name="foto" id="player-editor-photo" accept="image/jpeg,image/png,image/webp" data-player-photo-input>
-                  </label>
-                  <div class="player-photo-preview" data-player-photo-preview role="img" aria-label="Vista previa de la foto del jugador">
-                    <img src="" alt="" hidden>
-                    <span>Vista previa</span>
+              <div class="player-editor-layout">
+                <form class="dashboard-form admin-modal__form" id="player-editor-form" action="/admin/jugadores" method="post" enctype="multipart/form-data">
+                  <input type="hidden" name="equipo_id" id="player-editor-team-id">
+                  <label>Jugador *<input type="text" name="nombre" id="player-editor-name" required></label>
+                  <label>Grado o sección *<input type="text" name="grado" id="player-editor-grade" required></label>
+                  <div class="field-row">
+                    <label>Número de camiseta *<input type="number" name="numero_camiseta" id="player-editor-number" min="0" max="99" value="0" required></label>
+                    <label>Posición<input type="text" name="posicion" id="player-editor-position" placeholder="Defensa, delantero..."></label>
                   </div>
-                  <p class="form-hint">Si no seleccionas otra foto, se conservará la actual.</p>
-                </div>
-                <div class="admin-modal__actions">
-                  <button class="admin-quiet-button" type="button" data-modal-close>Cancelar</button>
-                  <button class="btn btn-primary" type="submit" id="player-editor-submit">Agregar jugador</button>
-                </div>
-              </form>
+                  <label>Goles<input type="number" name="goles" id="player-editor-goals" min="0" value="0"></label>
+                  <div class="player-photo-editor">
+                    <label class="admin-dropzone player-photo-dropzone" data-player-dropzone>
+                      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 16V4m0 0L7 9m5-5 5 5M5 14v5h14v-5"></path></svg>
+                      <strong>Arrastra una foto o selecciónala</strong>
+                      <span data-player-file-name>JPG, PNG o WebP · Máximo 3 MB</span>
+                      <input type="file" name="foto" id="player-editor-photo" accept="image/jpeg,image/png,image/webp" data-player-photo-input>
+                    </label>
+                    <div class="player-photo-preview" data-player-photo-preview role="img" aria-label="Vista previa de la foto del jugador">
+                      <img src="" alt="" hidden>
+                      <span>Sin foto</span>
+                    </div>
+                    <p class="form-hint">Si no seleccionas otra foto, se conservará la actual.</p>
+                  </div>
+                  <div class="admin-modal__actions player-editor-actions">
+                    <button class="admin-quiet-button player-preview-toggle" type="button" data-player-preview-toggle aria-expanded="false" aria-controls="player-live-preview">Vista previa</button>
+                    <button class="admin-quiet-button" type="button" data-modal-close>Cancelar</button>
+                    <button class="btn btn-primary" type="submit" id="player-editor-submit">Agregar jugador</button>
+                  </div>
+                </form>
+                <aside class="player-live-preview" id="player-live-preview" data-player-preview-panel aria-label="Vista previa de la tarjeta del jugador" hidden>
+                  <p class="eyebrow">VISTA PREVIA</p>
+                  <article class="fifa-card player-preview-card">
+                    <div class="fifa-card__top"><span data-preview-position>JUG</span><span class="fifa-card__number" data-preview-number>#0</span></div>
+                    <div class="fifa-card__portrait">
+                      <img data-preview-photo alt="" hidden>
+                      <span class="fifa-card__portrait-placeholder" data-preview-placeholder aria-hidden="true"></span>
+                    </div>
+                    <strong class="fifa-card__name" data-preview-name>Nombre del jugador</strong>
+                    <small class="player-preview-grade" data-preview-grade>Grado o sección</small>
+                    <div class="fifa-card__stats">
+                      <span><b data-preview-goals>0</b><span>Goles</span></span>
+                      <span><b data-preview-assists>0</b><span>Asist.</span></span>
+                      <span><b data-preview-saves>0</b><span>Ataj.</span></span>
+                    </div>
+                  </article>
+                </aside>
+              </div>
             </div>
           </dialog>
         </section>
@@ -559,6 +582,6 @@
       </section>
     </main>
     <%- include('../partials/accessibility-settings') %>
-    <script src="/js/admin-dashboard.js?v=admin-category-normalization-20261017" defer></script>
+    <script src="/js/admin-dashboard.js?v=player-preview-fifa-animation-20261017" defer></script>
   </body>
 </html>

@@ -115,15 +115,88 @@
 
 (function initializeAdminModals() {
   let playerPhotoObjectUrl = '';
+  let activePlayerPhoto = '';
+  const playerModal = document.querySelector('#player-editor-modal');
+  const playerForm = playerModal?.querySelector('#player-editor-form');
+  const photoInput = playerModal?.querySelector('[data-player-photo-input]');
+  const dropzone = playerModal?.querySelector('[data-player-dropzone]');
+  const fileName = playerModal?.querySelector('[data-player-file-name]');
+  const previewPanel = playerModal?.querySelector('[data-player-preview-panel]');
+  const previewToggle = playerModal?.querySelector('[data-player-preview-toggle]');
+
+  function abbreviatePlayerPosition(value) {
+    const position = String(value || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
+    if (/port|arqu|goalkeeper|\bgk\b|\bpor\b/.test(position)) return 'POR';
+    if (/defen|lateral|central|zagu|back|\bdf\b|\bld\b|\bli\b/.test(position)) return 'DEF';
+    if (/medio|volante|midfield|\bmc\b|\bmd\b|\bmi\b/.test(position)) return 'MED';
+    if (/delan|atac|extremo|forward|striker|punta|\bdc\b|\bst\b|\bed\b|\bei\b/.test(position)) return 'DEL';
+    return position ? position.slice(0, 3).toUpperCase() : 'JUG';
+  }
 
   function showPlayerPhotoPreview(source) {
-    const preview = document.querySelector('[data-player-photo-preview]');
+    const preview = playerModal?.querySelector('[data-player-photo-preview]');
     const image = preview?.querySelector('img');
     const placeholder = preview?.querySelector('span');
-    if (!preview || !image || !placeholder) return;
-    image.src = source || '';
-    image.hidden = !source;
-    placeholder.hidden = Boolean(source);
+    const cardImage = previewPanel?.querySelector('[data-preview-photo]');
+    const cardPlaceholder = previewPanel?.querySelector('[data-preview-placeholder]');
+    if (image && placeholder) {
+      image.src = source || '';
+      image.hidden = !source;
+      placeholder.hidden = Boolean(source);
+    }
+    if (cardImage && cardPlaceholder) {
+      cardImage.src = source || '';
+      cardImage.hidden = !source;
+      cardPlaceholder.hidden = Boolean(source);
+    }
+  }
+
+  function updatePlayerCardPreview() {
+    if (!playerForm) return;
+    const name = playerForm.querySelector('#player-editor-name').value.trim();
+    const grade = playerForm.querySelector('#player-editor-grade').value.trim();
+    const number = playerForm.querySelector('#player-editor-number').value || '0';
+    const position = playerForm.querySelector('#player-editor-position').value.trim();
+    const goals = playerForm.querySelector('#player-editor-goals').value || '0';
+    const card = previewPanel?.querySelector('.player-preview-card');
+    if (!card) return;
+    previewPanel.querySelector('[data-preview-name]').textContent = name || 'Nombre del jugador';
+    previewPanel.querySelector('[data-preview-grade]').textContent = grade || 'Grado o sección';
+    previewPanel.querySelector('[data-preview-number]').textContent = `#${number}`;
+    previewPanel.querySelector('[data-preview-position]').textContent = abbreviatePlayerPosition(position);
+    previewPanel.querySelector('[data-preview-goals]').textContent = String(Number(goals) || 0);
+  }
+
+  function setPlayerPhoto(file) {
+    if (playerPhotoObjectUrl) URL.revokeObjectURL(playerPhotoObjectUrl);
+    playerPhotoObjectUrl = '';
+    if (!file) {
+      if (fileName) fileName.textContent = activePlayerPhoto
+        ? 'Foto actual · selecciona para reemplazar'
+        : 'JPG, PNG o WebP · Máximo 3 MB';
+      showPlayerPhotoPreview(activePlayerPhoto);
+      return;
+    }
+
+    const supportedType = ['image/jpeg', 'image/png', 'image/webp'].includes(file.type);
+    const tooLarge = file.size > 3 * 1024 * 1024;
+    photoInput.setCustomValidity(!supportedType
+      ? 'Selecciona una imagen JPG, PNG o WebP.'
+      : tooLarge ? 'La imagen debe pesar como máximo 3 MB.' : '');
+    if (fileName) {
+      fileName.textContent = !supportedType
+        ? 'Formato no compatible · usa JPG, PNG o WebP'
+        : tooLarge ? 'La imagen supera el máximo de 3 MB' : file.name;
+    }
+    if (!supportedType || tooLarge) {
+      showPlayerPhotoPreview(activePlayerPhoto);
+      return;
+    }
+    playerPhotoObjectUrl = URL.createObjectURL(file);
+    showPlayerPhotoPreview(playerPhotoObjectUrl);
   }
 
   document.addEventListener('click', (event) => {
@@ -141,6 +214,14 @@
         playerForm.reset();
         if (playerPhotoObjectUrl) URL.revokeObjectURL(playerPhotoObjectUrl);
         playerPhotoObjectUrl = '';
+        activePlayerPhoto = trigger.dataset.playerPhoto || '';
+        photoInput.setCustomValidity('');
+        if (fileName) fileName.textContent = activePlayerPhoto
+          ? 'Foto actual · selecciona para reemplazar'
+          : 'JPG, PNG o WebP · Máximo 3 MB';
+        previewPanel.hidden = true;
+        previewToggle.setAttribute('aria-expanded', 'false');
+        modal.classList.remove('has-player-preview');
         playerForm.action = playerId
           ? `/admin/jugadores/${encodeURIComponent(playerId)}/editar`
           : '/admin/jugadores';
@@ -154,7 +235,8 @@
         modal.querySelector('#player-editor-number').value = trigger.dataset.playerNumber || '0';
         modal.querySelector('#player-editor-position').value = trigger.dataset.playerPosition || '';
         modal.querySelector('#player-editor-goals').value = trigger.dataset.playerGoals || '0';
-        showPlayerPhotoPreview(trigger.dataset.playerPhoto || '');
+        showPlayerPhotoPreview(activePlayerPhoto);
+        updatePlayerCardPreview();
       }
 
       if (modal.id === 'team-editor-modal') {
@@ -231,19 +313,43 @@
     });
   });
 
-  const photoInput = document.querySelector('[data-player-photo-input]');
-  photoInput?.addEventListener('change', () => {
-    if (playerPhotoObjectUrl) URL.revokeObjectURL(playerPhotoObjectUrl);
-    playerPhotoObjectUrl = '';
-    const file = photoInput.files?.[0];
-    if (!file) return;
-    playerPhotoObjectUrl = URL.createObjectURL(file);
-    showPlayerPhotoPreview(playerPhotoObjectUrl);
+  photoInput?.addEventListener('change', () => setPlayerPhoto(photoInput.files?.[0] || null));
+  playerForm?.querySelectorAll('#player-editor-name, #player-editor-grade, #player-editor-number, #player-editor-position, #player-editor-goals')
+    .forEach((input) => input.addEventListener('input', updatePlayerCardPreview));
+  previewToggle?.addEventListener('click', () => {
+    const isVisible = !previewPanel.hidden;
+    previewPanel.hidden = isVisible;
+    previewToggle.setAttribute('aria-expanded', String(!isVisible));
+    playerModal.classList.toggle('has-player-preview', !isVisible);
   });
 
-  document.querySelector('#player-editor-modal')?.addEventListener('close', () => {
+  ['dragenter', 'dragover'].forEach((eventName) => {
+    dropzone?.addEventListener(eventName, (event) => {
+      event.preventDefault();
+      dropzone.classList.add('is-dragging');
+    });
+  });
+  dropzone?.addEventListener('dragleave', (event) => {
+    if (!dropzone.contains(event.relatedTarget)) dropzone.classList.remove('is-dragging');
+  });
+  dropzone?.addEventListener('drop', (event) => {
+    event.preventDefault();
+    dropzone.classList.remove('is-dragging');
+    const file = event.dataTransfer.files?.[0];
+    if (!file) return;
+    const transfer = new DataTransfer();
+    transfer.items.add(file);
+    photoInput.files = transfer.files;
+    photoInput.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+
+  playerModal?.addEventListener('close', () => {
     if (playerPhotoObjectUrl) URL.revokeObjectURL(playerPhotoObjectUrl);
     playerPhotoObjectUrl = '';
+    activePlayerPhoto = '';
+    previewPanel.hidden = true;
+    previewToggle.setAttribute('aria-expanded', 'false');
+    playerModal.classList.remove('has-player-preview');
   });
 })();
 
@@ -396,7 +502,7 @@
         <td data-label="Acciones"><div class="admin-player-actions"><button class="admin-change-captain" type="button" data-modal-open="player-editor-modal"
           data-player-id="${escapeHtml(player.id)}" data-team-id="${id}" data-team-name="${name}" data-player-name="${escapeHtml(player.nombre)}"
           data-player-grade="${escapeHtml(player.grado)}" data-player-position="${escapeHtml(player.posicion)}" data-player-number="${Number(player.numero_camiseta) || 0}"
-          data-player-goals="${Number(player.goles) || 0}">Editar</button>
+          data-player-goals="${Number(player.goles) || 0}" data-player-photo="${escapeHtml(player.fotoUrl || '')}">Editar</button>
           <form action="/admin/jugadores/${escapeHtml(player.id)}/eliminar" method="post"><button class="admin-delete-team" type="submit">Eliminar</button></form></div></td></tr>`).join('');
       return `<article class="result-item admin-team-item" data-team-grade="${escapeHtml(team.gradoPrincipal || '')}" data-team-name="${name}" data-admin-sport="${escapeHtml(team.deporte || 'futbol')}" data-admin-category="${category}" data-search="${escapeHtml(`${team.nombre} ${team.categoria} ${team.capitanNombre || ''}`.toLowerCase())}">
         <div class="admin-team-heading">${team.escudoUrl ? `<img class="admin-team-crest" src="${escapeHtml(team.escudoUrl)}" alt="Escudo de ${name}" loading="lazy">` : `<span class="admin-team-crest admin-team-crest--empty">${name.slice(0, 1)}</span>`}

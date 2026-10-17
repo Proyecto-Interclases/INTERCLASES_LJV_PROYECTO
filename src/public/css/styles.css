@@ -4823,6 +4823,354 @@ body.dark-mode .goal-update-form input {
   }
 }
 
+#player-editor-modal.admin-modal {
+  max-height: 94dvh;
+  overflow: visible;
+  width: min(620px, 94vw);
+}
+
+#player-editor-modal.admin-modal.has-player-preview {
+  width: min(900px, 96vw);
+}
+
+#player-editor-modal .admin-modal__surface {
+  overflow-x: hidden;
+}
+
+.player-editor-layout {
+  align-items: start;
+  display: grid;
+  gap: 22px;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+#player-editor-modal.has-player-preview .player-editor-layout {
+  grid-template-columns: minmax(0, 1fr) 190px;
+}
+
+.player-editor-layout > .admin-modal__form {
+  min-width: 0;
+}
+
+.player-editor-actions {
+  flex-wrap: wrap;
+}
+
+.player-preview-toggle {
+  margin-right: auto;
+}
+
+.player-live-preview {
+  --preview-accent: #14A85A;
+  --preview-accent-soft: rgba(20, 168, 90, .15);
+  --preview-text: #111915;
+  --preview-muted: #5D6A63;
+  --preview-line: rgba(0, 0, 0, .12);
+  --preview-glass: rgba(255, 255, 255, .72);
+  --preview-glass-border: rgba(255, 255, 255, .92);
+  --preview-shadow: 0 10px 30px rgba(0, 0, 0, .12);
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  min-width: 0;
+  padding: 13px;
+  position: sticky;
+  top: 0;
+}
+
+.player-live-preview[hidden] {
+  display: none !important;
+}
+
+.player-live-preview > .eyebrow {
+  color: #64748B;
+  font-size: .68rem;
+  margin: 0 0 12px;
+  text-align: center;
+}
+
+.player-live-preview .player-preview-card.fifa-card {
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  background:
+    radial-gradient(circle at 50% 0, var(--preview-accent-soft), transparent 58%),
+    var(--preview-glass);
+  border: 1px solid var(--preview-glass-border);
+  border-radius: 20px;
+  box-shadow: var(--preview-shadow);
+  box-sizing: border-box;
+  color: var(--preview-text);
+  flex: none;
+  height: auto;
+  margin: 0 auto;
+  max-width: 100%;
+  min-height: 0;
+  padding: 12px 10px 10px;
+  position: relative;
+  text-align: center;
+  width: 178px;
+}
+
+.player-live-preview .player-preview-card.fifa-card::before {
+  background: var(--preview-accent);
+  border-radius: 2px;
+  box-shadow: 0 0 12px var(--preview-accent);
+  content: "";
+  height: 3px;
+  left: 18%;
+  position: absolute;
+  right: 18%;
+  top: 0;
+}
+
+.player-live-preview .fifa-card__top {
+  align-items: center;
+  color: var(--preview-muted);
+  display: flex;
+  font-size: .7rem;
+  font-weight: 800;
+  justify-content: space-between;
+  min-height: 20px;
+}
+
+.player-live-preview .fifa-card__number {
+  color: var(--preview-accent);
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 900;
+}
+
+.player-live-preview .fifa-card__portrait {
+  align-items: center;
+  background: var(--preview-line);
+  border: 2px solid var(--preview-accent);
+  border-radius: 50%;
+  box-shadow: 0 0 14px var(--preview-accent-soft);
+  display: flex;
+  height: 76px;
+  justify-content: center;
+  margin: 10px auto 8px;
+  overflow: hidden;
+  width: 76px;
+}
+
+.player-live-preview .fifa-card__portrait img {
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.player-live-preview .fifa-card__portrait-placeholder {
+  background: var(--preview-muted);
+  border-radius: 50% 50% 35% 35%;
+  height: 27px;
+  margin-top: 20px;
+  opacity: .55;
+  position: relative;
+  width: 34px;
+}
+
+.player-live-preview .fifa-card__portrait-placeholder::before {
+  background: var(--preview-muted);
+  border-radius: 50%;
+  content: "";
+  height: 20px;
+  left: 7px;
+  position: absolute;
+  top: -23px;
+  width: 20px;
+}
+
+.player-live-preview .fifa-card__name {
+  color: var(--preview-text);
+  display: block;
+  font-size: .76rem;
+  font-weight: 800;
+  letter-spacing: .035em;
+  line-height: 1.2;
+  min-height: 2.4em;
+  overflow-wrap: anywhere;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.player-preview-grade {
+  color: var(--preview-muted);
+  display: block;
+  font-size: .62rem;
+  line-height: 1.2;
+  margin-top: 3px;
+  min-height: 1.2em;
+  overflow-wrap: anywhere;
+}
+
+.player-live-preview .fifa-card__stats {
+  border-top: 1px solid var(--preview-line);
+  color: var(--preview-muted);
+  display: grid;
+  font-size: .55rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  line-height: 1.2;
+  margin-top: 9px;
+  padding-top: 7px;
+  text-transform: uppercase;
+}
+
+.player-live-preview .fifa-card__stats > span {
+  min-width: 0;
+}
+
+.player-live-preview .fifa-card__stats b {
+  color: var(--preview-text);
+  display: block;
+  font-size: .88rem;
+  line-height: 1.1;
+}
+
+#player-editor-modal.has-player-preview .player-live-preview:not([hidden]) {
+  animation: player-preview-slide-in .36s cubic-bezier(.2, .75, .25, 1) both;
+}
+
+#player-editor-modal.has-player-preview .player-preview-card {
+  animation: player-preview-card-in .42s cubic-bezier(.2, .75, .25, 1) .04s both;
+}
+
+@keyframes player-preview-slide-in {
+  from { opacity: 0; transform: translateX(16px) scale(.97); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+@keyframes player-preview-card-in {
+  from { opacity: 0; transform: translateY(7px) scale(.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+body.dark-mode .player-live-preview {
+  --preview-accent: #3DDC84;
+  --preview-accent-soft: rgba(61, 220, 132, .2);
+  --preview-text: #F3F6F4;
+  --preview-muted: #AAB7AF;
+  --preview-line: rgba(255, 255, 255, .14);
+  --preview-glass: rgba(15, 23, 18, .88);
+  --preview-glass-border: rgba(255, 255, 255, .18);
+  --preview-shadow: 0 10px 30px rgba(0, 0, 0, .36);
+}
+
+.player-photo-dropzone {
+  cursor: pointer;
+  min-height: 138px;
+  position: relative;
+  transition: background .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+
+.player-photo-dropzone > svg {
+  fill: none;
+  height: 30px;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+  width: 30px;
+}
+
+.player-photo-dropzone > strong {
+  color: #0F172A;
+  font-size: .9rem;
+}
+
+.player-photo-dropzone > span {
+  color: #64748B;
+  font-size: .78rem;
+  overflow-wrap: anywhere;
+}
+
+.player-photo-dropzone input[type="file"] {
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  border-radius: 8px;
+  color: #334155;
+  cursor: pointer;
+  font: inherit;
+  font-size: .76rem;
+  max-width: 100%;
+  padding: 5px;
+}
+
+.player-photo-dropzone input[type="file"]::file-selector-button {
+  background: #F1F5F9;
+  border: 0;
+  border-radius: 6px;
+  color: #334155;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  margin-right: 8px;
+  padding: 7px 9px;
+}
+
+.player-photo-dropzone:focus-within,
+.player-photo-dropzone.is-dragging {
+  border-color: #10B981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, .13);
+}
+
+.player-photo-dropzone.is-dragging {
+  background: rgba(16, 185, 129, .14);
+}
+
+body.dark-mode .player-live-preview {
+  background: #0F172A;
+  border-color: #334155;
+}
+
+body.dark-mode .player-live-preview > .eyebrow,
+body.dark-mode .player-photo-dropzone > span {
+  color: #94A3B8;
+}
+
+body.dark-mode .player-photo-dropzone > strong {
+  color: #F8FAFC;
+}
+
+body.dark-mode .player-photo-dropzone input[type="file"] {
+  background: #1E293B;
+  border-color: #475569;
+  color: #E2E8F0;
+}
+
+body.dark-mode .player-photo-dropzone input[type="file"]::file-selector-button {
+  background: #334155;
+  color: #E2E8F0;
+}
+
+@media (max-width: 650px) {
+  #player-editor-modal.admin-modal,
+  #player-editor-modal.admin-modal.has-player-preview {
+    max-height: calc(100dvh - 24px);
+    overflow: auto;
+    width: calc(100vw - 24px);
+  }
+
+  #player-editor-modal.has-player-preview .player-editor-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .player-live-preview {
+    position: static;
+  }
+
+  .player-live-preview .player-preview-card.fifa-card {
+    width: min(178px, 100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #player-editor-modal.has-player-preview .player-live-preview:not([hidden]),
+  #player-editor-modal.has-player-preview .player-preview-card {
+    animation: none;
+  }
+}
+
 @media (max-width: 360px) {
   .teams-page .fifa-pitch__row {
     gap: 5px;
