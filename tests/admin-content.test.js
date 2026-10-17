@@ -2,6 +2,35 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { sanitizeAnnouncementHtml } = require('../src/services/admin.service');
 const { validateImageBuffer } = require('../src/services/image-validation.service');
+const { normalizeCategoryFilter, buildAdminStandings } = require('../src/controllers/admin.controller');
+
+test('admin standings category filter treats blank and all-category aliases as unfiltered', () => {
+  assert.equal(normalizeCategoryFilter(''), '');
+  assert.equal(normalizeCategoryFilter('all'), '');
+  assert.equal(normalizeCategoryFilter('todas'), '');
+  assert.equal(normalizeCategoryFilter(' Categoría A '), 'Categoría A');
+});
+
+test('admin standings preserve all teams and assign ranks independently per category', () => {
+  const categoryA = Array.from({ length: 9 }, (_, index) => ({
+    id: `team-a-${index + 1}`,
+    name: `Equipo A${index + 1}`,
+    category: 'Categoría A'
+  }));
+  const categoryB = Array.from({ length: 7 }, (_, index) => ({
+    id: `team-b-${index + 1}`,
+    name: `Equipo B${index + 1}`,
+    category: 'Categoría B'
+  }));
+  const result = buildAdminStandings([categoryA, categoryB], 'futbol');
+
+  assert.equal(result.length, 16);
+  assert.equal(result[0].rank, 1);
+  assert.equal(result[8].rank, 9);
+  assert.equal(result[9].rank, 1);
+  assert.equal(result[15].rank, 7);
+  assert.ok(result.every((team) => team.deporte === 'futbol'));
+});
 
 test('announcement rich text keeps a small safe formatting allowlist', () => {
   const sanitized = sanitizeAnnouncementHtml(

@@ -1819,6 +1819,15 @@ body.dark-mode .calendar-empty p {
 .dashboard-shell, .dashboard-content, .dashboard-content > *, .admin-team-item, .admin-roster { box-sizing: border-box; max-width: 100%; min-width: 0; }
 .dashboard-shell { padding: 24px; }
 .dashboard-content > .panel-card { overflow: hidden; }
+.dashboard-content > #posiciones.admin-tab-panel { overflow: visible; }
+.dashboard-content > #posiciones.admin-tab-panel > .sports-table-wrap {
+  max-height: none;
+  overflow-x: auto;
+  overflow-y: visible;
+}
+.dashboard-content > #posiciones.admin-tab-panel .standings-table {
+  margin-bottom: 0;
+}
 .admin-section-nav { gap: 4px; }
 .admin-section-nav button { background: transparent; border: 0; border-radius: 8px; color: #475569; min-height: 44px; padding: 10px 14px; position: relative; }
 .admin-section-nav button:hover { background: rgba(22, 101, 52, .06); color: #166534; }

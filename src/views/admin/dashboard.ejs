@@ -388,8 +388,8 @@
           <div class="admin-section-toolbar">
             <h2>Tabla de posiciones</h2>
             <div class="admin-table-tools">
-              <input type="search" data-filter-target=".admin-standing-row" placeholder="Buscar equipo..." aria-label="Buscar en posiciones">
-              <select data-filter-category aria-label="Filtrar posiciones por categoría"><option value="">Todas las categorías</option><% Array.from(new Set(equipos.map((equipo) => equipo.categoria))).sort().forEach((categoria) => { %><option value="<%= categoria %>"><%= categoria %></option><% }) %></select>
+              <input type="search" data-standings-search placeholder="Buscar equipo..." aria-label="Buscar en posiciones">
+              <select data-standings-category-filter aria-label="Filtrar posiciones por categoría"><option value="">Todas las categorías</option><% categoriasEquipo.forEach((categoria) => { %><option value="<%= categoria %>"><%= categoria %></option><% }) %></select>
             </div>
           </div>
           <div class="sports-table-wrap">
@@ -400,9 +400,26 @@
                   <tr><td colspan="10" class="sports-empty">Se calculará cuando se registren equipos y resultados finales.</td></tr>
                 <% } else { %>
                   <% posiciones.forEach((equipo) => { %>
-                    <tr class="admin-standing-row" data-category="<%= equipo.category %>" data-admin-category="<%= equipo.category %>" data-admin-sport="<%= equipo.deporte || 'futbol' %>"><td class="standings-rank"><%= equipo.rank %></td><th scope="row"><%= equipo.name %><small><%= equipo.category %></small></th><td><%= equipo.played %></td><td><%= equipo.won %></td><td><%= equipo.drawn %></td><td><%= equipo.lost %></td><td><%= equipo.goalsFor %></td><td><%= equipo.goalsAgainst %></td><td><%= equipo.goalDifference %></td><td class="standings-points"><%= equipo.points %></td></tr>
+                    <tr class="admin-standing-row" data-category="<%= equipo.category %>" data-admin-category="<%= equipo.category %>" data-admin-sport="<%= equipo.deporte || 'futbol' %>">
+                      <td class="standings-rank"><%= String(equipo.rank).padStart(2, '0') %></td>
+                      <th scope="row">
+                        <a href="/equipos?deporte=<%= encodeURIComponent(equipo.deporte || 'futbol') %>&amp;categoria=<%= encodeURIComponent(equipo.category || '') %>">
+                          <% if (equipo.escudoUrl) { %><img class="standings-crest" src="<%= equipo.escudoUrl %>" alt="" loading="lazy"><% } %><%= equipo.name %>
+                        </a>
+                        <small><%= equipo.category %></small>
+                      </th>
+                      <td><%= equipo.played %></td>
+                      <td><%= equipo.won %></td>
+                      <td><%= equipo.drawn %></td>
+                      <td><%= equipo.lost %></td>
+                      <td><%= equipo.goalsFor %></td>
+                      <td><%= equipo.goalsAgainst %></td>
+                      <td><%= equipo.goalDifference > 0 ? '+' : '' %><%= equipo.goalDifference %></td>
+                      <td class="standings-points"><%= equipo.points %></td>
+                    </tr>
                   <% }) %>
                 <% } %>
+                <tr data-standings-empty hidden><td colspan="10" class="sports-empty">No hay equipos para la categoría seleccionada.</td></tr>
               </tbody>
             </table>
           </div>
@@ -542,6 +559,6 @@
       </section>
     </main>
     <%- include('../partials/accessibility-settings') %>
-    <script src="/js/admin-dashboard.js?v=team-management-20261017" defer></script>
+    <script src="/js/admin-dashboard.js?v=admin-category-normalization-20261017" defer></script>
   </body>
 </html>

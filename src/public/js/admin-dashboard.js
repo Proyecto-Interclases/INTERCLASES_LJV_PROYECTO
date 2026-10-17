@@ -311,6 +311,8 @@
   const teamOrder = document.querySelector('[data-admin-team-order]');
   const matchList = document.querySelector('[data-admin-panel="matches"] .result-list.dashboard-list');
   const standingsBody = document.querySelector('.standings-table tbody');
+  const standingsSearch = document.querySelector('[data-standings-search]');
+  const standingsCategoryFilter = document.querySelector('[data-standings-category-filter]');
   const requests = Array.from(document.querySelectorAll('.enrollment-request-card'));
   const matchModal = document.querySelector('#match-editor-modal');
   const matchHome = matchModal?.querySelector('#match-editor-home');
@@ -325,6 +327,16 @@
   const needsUrlNormalization = !validSports.has(params.get('deporte'))
     || (requestedCategory && !validCategories.has(requestedCategory));
   let requestController;
+
+  function normalizeCategory(value) {
+    const category = String(value || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim()
+      .toLocaleLowerCase('es');
+    if (['', 'all', 'todas', 'todos'].includes(category)) return '';
+    return category.replace(/^(categoria|category)\s*/, '').replace(/\s+/g, ' ');
+  }
 
   if (categoryFilter) categoryFilter.value = validCategories.has(requestedCategory) ? requestedCategory : '';
 
@@ -416,9 +428,51 @@
 
   function renderStandings(rows) {
     if (!standingsBody) return;
-    standingsBody.innerHTML = rows.length ? rows.map((team) => `<tr class="admin-standing-row" data-category="${escapeHtml(team.category)}" data-admin-category="${escapeHtml(team.category)}" data-admin-sport="${escapeHtml(team.deporte)}" data-search="${escapeHtml(`${team.name} ${team.category}`.toLowerCase())}">
-      <td class="standings-rank">${team.rank}</td><th scope="row">${escapeHtml(team.name)}<small>${escapeHtml(team.category)}</small></th><td>${team.played}</td><td>${team.won}</td><td>${team.drawn}</td><td>${team.lost}</td><td>${team.goalsFor}</td><td>${team.goalsAgainst}</td><td>${team.goalDifference}</td><td class="standings-points">${team.points}</td></tr>`).join('')
-      : '<tr><td colspan="10" class="sports-empty">No hay equipos ni resultados para esta selección.</td></tr>';
+    const standings = Array.isArray(rows) ? rows.flat() : [];
+    const showCombinedRanking = !normalizeCategory(categoryFilter?.value)
+      && !normalizeCategory(standingsCategoryFilter?.value);
+    const standingsRows = standings.map((team, index) => {
+      const sport = encodeURIComponent(team.deporte || 'futbol');
+      const category = encodeURIComponent(team.category || '');
+      const crest = team.escudoUrl
+        ? `<img class="standings-crest" src="${escapeHtml(team.escudoUrl)}" alt="" loading="lazy">`
+        : '';
+      const goalDifference = Number(team.goalDifference) || 0;
+      const rank = showCombinedRanking ? index + 1 : Number(team.rank) || index + 1;
+      return `<tr class="admin-standing-row" data-category="${escapeHtml(team.category)}" data-admin-category="${escapeHtml(team.category)}" data-admin-sport="${escapeHtml(team.deporte)}" data-search="${escapeHtml(`${team.name} ${team.category}`.toLowerCase())}">
+      <td class="standings-rank">${String(rank).padStart(2, '0')}</td><th scope="row"><a href="/equipos?deporte=${sport}&amp;categoria=${category}">${crest}${escapeHtml(team.name)}</a><small>${escapeHtml(team.category)}</small></th><td>${Number(team.played) || 0}</td><td>${Number(team.won) || 0}</td><td>${Number(team.drawn) || 0}</td><td>${Number(team.lost) || 0}</td><td>${Number(team.goalsFor) || 0}</td><td>${Number(team.goalsAgainst) || 0}</td><td>${goalDifference > 0 ? '+' : ''}${goalDifference}</td><td class="standings-points">${Number(team.points) || 0}</td></tr>`;
+    }).join('');
+    standingsBody.replaceChildren();
+    standingsBody.insertAdjacentHTML(
+      'beforeend',
+      `${standingsRows}<tr data-standings-empty${standings.length ? ' hidden' : ''}><td colspan="10" class="sports-empty">No hay equipos para la categoría seleccionada.</td></tr>`
+    );
+    applyStandingsFilters();
+  }
+
+  function applyStandingsFilters() {
+    if (!standingsBody) return;
+    const query = standingsSearch?.value.trim().toLocaleLowerCase() || '';
+    const globalCategory = normalizeCategory(categoryFilter?.value || '');
+    const category = normalizeCategory(standingsCategoryFilter?.value || '');
+    let visibleCount = 0;
+
+    standingsBody.querySelectorAll('.admin-standing-row').forEach((row) => {
+      row.classList.remove('d-none', 'hidden');
+      row.style.removeProperty('display');
+      row.hidden = false;
+      const rowCategory = normalizeCategory(row.dataset.category);
+      const matchesCategory = (!globalCategory || rowCategory === globalCategory)
+        && (!category || rowCategory === category);
+      const matchesQuery = !query || (row.dataset.search || row.textContent)
+        .toLocaleLowerCase()
+        .includes(query);
+      row.hidden = !matchesCategory || !matchesQuery;
+      if (!row.hidden) visibleCount += 1;
+    });
+
+    const emptyState = standingsBody.querySelector('[data-standings-empty]');
+    if (emptyState) emptyState.hidden = visibleCount > 0;
   }
 
   function applyTextFilters() {
@@ -470,6 +524,7 @@
       document.querySelector('[data-kpi="goals"]').textContent = String(totals.goles ?? 0);
       requests.forEach((request) => { request.hidden = (request.dataset.adminSport !== currentSport) || Boolean(category && request.dataset.adminCategory !== category); });
       applyTextFilters();
+      applyStandingsFilters();
       filterMatchTeamOptions();
       setStatus(`${sportName(currentSport)}${category ? ` · ${category}` : ' · todas las categorías'}`);
     } catch (error) {
@@ -509,6 +564,8 @@
     input.parentElement.querySelector('[data-filter-status]')?.addEventListener('change', applyTextFilters);
     input.parentElement.querySelector('[data-filter-category]')?.addEventListener('change', applyTextFilters);
   });
+  standingsSearch?.addEventListener('input', applyStandingsFilters);
+  standingsCategoryFilter?.addEventListener('change', applyStandingsFilters);
   document.addEventListener('input', (event) => {
     if (event.target.matches('.goal-update-form input[name="goles"], [data-roster-number], [data-roster-search]')) applyTextFilters();
   });

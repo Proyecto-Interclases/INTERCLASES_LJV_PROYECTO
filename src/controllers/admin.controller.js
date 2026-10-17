@@ -8,6 +8,23 @@ const { SPORTS, SPORT_IDS } = require('../constants/sports');
 const enrollmentService = require('../services/enrollment.service');
 const { savePlayerPhoto, removePlayerPhoto } = require('../services/player-photo.service');
 
+function normalizeCategoryFilter(value) {
+  const category = String(value || '').trim();
+  return ['', 'all', 'todas'].includes(category.toLocaleLowerCase('es')) ? '' : category;
+}
+
+function buildAdminStandings(standingsGroups, sport) {
+  return standingsGroups.flatMap((group) => {
+    const ranksByCategory = new Map();
+    return group.map((team) => {
+      const category = team.category || team.categoria || '';
+      const rank = (ranksByCategory.get(category) || 0) + 1;
+      ranksByCategory.set(category, rank);
+      return { ...team, deporte: sport, category, rank };
+    });
+  });
+}
+
 async function dashboardData(order = 'desc') {
   const standingsGroups = SPORTS.flatMap((sport) => TEAM_CATEGORIES.map((categoria) => ({ sport: sport.id, categoria })));
   const [equipos, partidos, popup, jugadores, usuarios, posicionesPorGrupo, galleryImages, enrollmentRequests, enrollmentConfig] = await Promise.all([
@@ -112,7 +129,7 @@ async function restablecerContrasenaUsuario(req, res) {
 
 async function adminOverview(req, res) {
   const sport = String(req.query.deporte || 'futbol').trim().toLowerCase();
-  const category = String(req.query.categoria || '').trim();
+  const category = normalizeCategoryFilter(req.query.categoria);
   if (sport && !SPORT_IDS.includes(sport)) {
     return res.status(400).json({ ok: false, message: 'El deporte seleccionado no es válido.' });
   }
@@ -121,12 +138,11 @@ async function adminOverview(req, res) {
   }
 
   try {
-    const categories = category ? [category] : TEAM_CATEGORIES;
     const [allTeams, allMatches, allPlayers, standingsGroups] = await Promise.all([
       listAdminTeams(),
       listarPartidos(),
       listPlayers(),
-      Promise.all(categories.map((entry) => tournamentService.getStandings(entry, sport)))
+      Promise.all(TEAM_CATEGORIES.map((entry) => tournamentService.getStandings(entry, sport)))
     ]);
     const equipos = allTeams.filter((team) => team.deporte === sport
       && (!category || team.categoria === category));
@@ -149,12 +165,7 @@ async function adminOverview(req, res) {
       const away = teamById.get(match.equipo_visitante_id) || teamByName.get(match.equipo_visitante);
       return { ...match, categoria: home?.categoria || away?.categoria || '' };
     });
-    const posiciones = standingsGroups.flatMap((group, index) => group.map((team, rank) => ({
-      ...team,
-      deporte: sport,
-      category: categories[index],
-      rank: rank + 1
-    })));
+    const posiciones = buildAdminStandings(standingsGroups, sport);
     const goals = players.reduce((total, player) => total + Number(player.goles || 0), 0);
     return res.json({
       ok: true,
@@ -434,6 +445,8 @@ module.exports = {
   dashboard,
   restablecerContrasenaUsuario,
   adminOverview,
+  normalizeCategoryFilter,
+  buildAdminStandings,
   guardarPopup,
   guardarPartido,
   editarPartido,
