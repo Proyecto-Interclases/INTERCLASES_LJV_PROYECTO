@@ -20,6 +20,11 @@
             <option value="<%= category %>" <%= selectedCategory === category ? 'selected' : '' %>><%= category %></option>
           <% }) %>
         </select>
+        <label for="teams-order">Ordenar</label>
+        <select id="teams-order" name="orden" onchange="this.form.submit()">
+          <option value="desc" <%= selectedOrder === 'desc' ? 'selected' : '' %>>Grado: mayor a menor</option>
+          <option value="asc" <%= selectedOrder === 'asc' ? 'selected' : '' %>>Grado: menor a mayor</option>
+        </select>
       </form>
     </header>
     <%- include('../partials/sport-tabs', { sports, selectedSport }) %>
@@ -37,7 +42,7 @@
       <% } else { %>
         <div class="teams-grid">
           <% teams.forEach((team) => { %>
-            <article class="team-card">
+            <article class="team-card" data-team-grade="<%= team.grado %>" data-team-name="<%= team.nombre %>">
               <div class="team-card-top">
                 <% if (team.escudoUrl) { %>
                   <img class="team-crest" src="<%= team.escudoUrl %>" alt="Bandera de <%= team.nombre %>" loading="lazy">
@@ -50,8 +55,8 @@
                   <p class="team-captain">Capitán: <%= team.capitanEmail || 'Por asignar' %></p>
                 </div>
               </div>
-              <details class="team-roster">
-                <summary>Ver plantilla <span><%= team.jugadores.length %></span></summary>
+              <details class="team-roster" data-roster-accordion>
+                <summary><span data-roster-toggle-label>Desplegar plantilla</span><span class="team-roster-toggle-count"><%= team.jugadores.length %></span></summary>
                 <% const topTeamGoals = team.jugadores.length ? Math.max(...team.jugadores.map((player) => Number(player.goles || 0))) : 0; %>
                 <% if (selectedSport === 'futbol') { %>
                   <div class="lineup-pitch" role="group" aria-label="Formación de fútbol cinco de <%= team.nombre %>">

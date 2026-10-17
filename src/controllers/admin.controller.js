@@ -8,10 +8,10 @@ const { SPORTS, SPORT_IDS } = require('../constants/sports');
 const enrollmentService = require('../services/enrollment.service');
 const { savePlayerPhoto, removePlayerPhoto } = require('../services/player-photo.service');
 
-async function dashboardData() {
+async function dashboardData(order = 'desc') {
   const standingsGroups = SPORTS.flatMap((sport) => TEAM_CATEGORIES.map((categoria) => ({ sport: sport.id, categoria })));
   const [equipos, partidos, popup, jugadores, usuarios, posicionesPorGrupo, galleryImages, enrollmentRequests, enrollmentConfig] = await Promise.all([
-    listAdminTeams(),
+    listAdminTeams(order),
     listarPartidos(),
     getPopup(),
     listPlayers(),
@@ -59,12 +59,14 @@ async function dashboardData() {
 
 async function renderDashboard(req, res, { error = null, success = null } = {}) {
   try {
-    const data = await dashboardData();
+    const selectedOrder = req.query.orden === 'asc' ? 'asc' : 'desc';
+    const data = await dashboardData(selectedOrder);
     return res.render('admin/dashboard', {
       title: 'Panel administrador | Interclases Lucrecio Jaramillo',
       user: req.session.user,
       error,
       success,
+      selectedOrder,
       selectedSport: SPORT_IDS.includes(req.query.deporte) ? req.query.deporte : 'futbol',
       selectedCategory: TEAM_CATEGORIES.includes(req.query.categoria) ? req.query.categoria : '',
       ...data
@@ -73,6 +75,7 @@ async function renderDashboard(req, res, { error = null, success = null } = {}) 
     return res.status(500).render('admin/dashboard', {
       title: 'Panel administrador | Interclases Lucrecio Jaramillo',
       user: req.session.user,
+      selectedOrder: req.query.orden === 'asc' ? 'asc' : 'desc',
       equipos: [],
       partidos: [],
       popup: { titulo: '', mensaje: '', activo: 0 },

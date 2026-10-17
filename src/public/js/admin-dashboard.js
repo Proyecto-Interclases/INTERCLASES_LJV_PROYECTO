@@ -308,6 +308,7 @@
   const status = document.querySelector('[data-admin-scope-status]');
   const errorBox = document.querySelector('[data-admin-scope-error]');
   const teamList = document.querySelector('#equipos .result-list.dashboard-list');
+  const teamOrder = document.querySelector('[data-admin-team-order]');
   const matchList = document.querySelector('[data-admin-panel="matches"] .result-list.dashboard-list');
   const standingsBody = document.querySelector('.standings-table tbody');
   const requests = Array.from(document.querySelectorAll('.enrollment-request-card'));
@@ -318,6 +319,8 @@
   const validSports = new Set(sportChoices.map((choice) => choice.dataset.adminSportChoice));
   const validCategories = new Set(Array.from(categoryFilter?.options || []).map((option) => option.value));
   let currentSport = validSports.has(params.get('deporte')) ? params.get('deporte') : 'futbol';
+  const requestedOrder = params.get('orden') === 'asc' ? 'asc' : (teamOrder?.value || 'desc');
+  if (teamOrder) teamOrder.value = requestedOrder;
   const requestedCategory = params.get('categoria') || '';
   const needsUrlNormalization = !validSports.has(params.get('deporte'))
     || (requestedCategory && !validCategories.has(requestedCategory));
@@ -330,6 +333,33 @@
   })[character]);
   const sportName = (id) => sportChoices.find((choice) => choice.dataset.adminSportChoice === id)?.querySelector('span')?.textContent || 'Fútbol';
   const setStatus = (message) => { if (status) status.textContent = message; };
+  const gradeParts = (value) => Array.from(String(value || '').matchAll(/(\d{1,2})\s*(?:\.\s*)?(?:º|°)\s*(\d{1,2})|(\d{1,2})\s*-\s*(\d{1,2})/g))
+    .map((match) => ({ grade: Number(match[1] || match[3]), section: Number(match[2] || match[4]) }));
+
+  function sortAdminTeams() {
+    if (!teamList || !teamOrder) return;
+    const descending = teamOrder.value !== 'asc';
+    const cards = Array.from(teamList.querySelectorAll('.admin-team-item'));
+    cards.sort((first, second) => {
+      const firstGermany = first.dataset.teamName?.trim().toLocaleLowerCase('es') === 'alemania';
+      const secondGermany = second.dataset.teamName?.trim().toLocaleLowerCase('es') === 'alemania';
+      const getGrade = (card, isGermany) => {
+        if (isGermany && descending) return { grade: 11, section: 2.5 };
+        return gradeParts(card.dataset.teamGrade)
+          .reduce((highest, part) => part.grade > highest.grade
+            || (part.grade === highest.grade && part.section > highest.section) ? part : highest, { grade: 0, section: 0 });
+      };
+      const firstGrade = getGrade(first, firstGermany);
+      const secondGrade = getGrade(second, secondGermany);
+      const gradeOrder = descending
+        ? secondGrade.grade - firstGrade.grade || firstGrade.section - secondGrade.section
+        : firstGrade.grade - secondGrade.grade || secondGrade.section - firstGrade.section;
+      return gradeOrder
+        || first.dataset.adminCategory.localeCompare(second.dataset.adminCategory, 'es')
+        || first.dataset.teamName.localeCompare(second.dataset.teamName, 'es');
+    });
+    cards.forEach((card) => teamList.append(card));
+  }
 
   function renderTeams(teams) {
     if (!teamList) return;
@@ -356,16 +386,17 @@
           data-player-grade="${escapeHtml(player.grado)}" data-player-position="${escapeHtml(player.posicion)}" data-player-number="${Number(player.numero_camiseta) || 0}"
           data-player-goals="${Number(player.goles) || 0}">Editar</button>
           <form action="/admin/jugadores/${escapeHtml(player.id)}/eliminar" method="post"><button class="admin-delete-team" type="submit">Eliminar</button></form></div></td></tr>`).join('');
-      return `<article class="result-item admin-team-item" data-admin-sport="${escapeHtml(team.deporte || 'futbol')}" data-admin-category="${category}" data-search="${escapeHtml(`${team.nombre} ${team.categoria} ${team.capitanNombre || ''}`.toLowerCase())}">
+      return `<article class="result-item admin-team-item" data-team-grade="${escapeHtml(team.gradoPrincipal || '')}" data-team-name="${name}" data-admin-sport="${escapeHtml(team.deporte || 'futbol')}" data-admin-category="${category}" data-search="${escapeHtml(`${team.nombre} ${team.categoria} ${team.capitanNombre || ''}`.toLowerCase())}">
         <div class="admin-team-heading">${team.escudoUrl ? `<img class="admin-team-crest" src="${escapeHtml(team.escudoUrl)}" alt="Bandera de ${name}" loading="lazy">` : `<span class="admin-team-crest admin-team-crest--empty">${name.slice(0, 1)}</span>`}
         <div><strong>${name}${team.gradoPrincipal ? ` <span class="admin-team-primary-grade">· ${escapeHtml(team.gradoPrincipal)}</span>` : ''}</strong><small>${escapeHtml(sportName(team.deporte))} · ${category} · Capitán: ${captain}</small>${team.capitanEmail ? `<small>${escapeHtml(team.capitanEmail)}</small>` : ''}</div></div>
         <div class="admin-team-actions"><button class="admin-change-captain" type="button" data-modal-open="team-editor-modal" data-team-id="${id}" data-team-name="${name}" data-team-category="${category}" data-team-sport="${escapeHtml(team.deporte)}" data-team-crest="${escapeHtml(team.escudoUrl || '')}">Editar equipo</button>
         <button class="admin-change-captain" type="button" data-modal-open="captain-editor-modal" data-team-id="${id}" data-team-name="${name}" data-captain-email="${escapeHtml(team.capitanEmail || '')}">${team.capitanEmail ? 'Cambiar capitán' : 'Asignar capitán'}</button>
         <button class="admin-add-player" type="button" data-modal-open="player-editor-modal" data-team-id="${id}" data-team-name="${name}">+ Agregar jugador</button>
         <form action="/admin/equipos/${id}/eliminar" method="post" onsubmit="return confirm('Solo se eliminará el equipo si no tiene jugadores ni partidos asociados. ¿Continuar?')"><button class="admin-delete-team" type="submit">Eliminar equipo</button></form></div>
-        <div class="admin-roster"><div class="admin-roster-heading"><strong>Plantilla</strong><span>${players.length} jugadores</span></div>${roster}
+        <details class="admin-roster" data-roster-accordion><summary class="admin-roster-heading"><strong data-roster-toggle-label>Desplegar plantilla</strong><span>${players.length} jugadores</span></summary>
+        <div class="admin-roster-content">${roster}
         ${players.length ? `<div class="admin-roster-table-wrap"><table class="admin-roster-table"><thead><tr><th scope="col">Jugador</th><th scope="col">Grado / sección</th><th scope="col">Posición</th><th scope="col">Camiseta</th><th scope="col">Goles</th><th scope="col">Acciones</th></tr></thead><tbody>${rows}</tbody></table></div>
-          <div class="admin-roster-save"><p class="admin-roster-feedback" role="status" aria-live="polite" data-roster-feedback hidden></p><button class="admin-roster-save-button" type="button" data-save-roster aria-label="Confirmar y guardar cambios de camiseta y goles"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m5 12 4 4L19 6"></path></svg>Guardar cambios</button></div>` : '<p class="form-hint">Todavía no hay jugadores para este equipo.</p>'}</div></article>`;
+          <div class="admin-roster-save"><p class="admin-roster-feedback" role="status" aria-live="polite" data-roster-feedback hidden></p><button class="admin-roster-save-button" type="button" data-save-roster aria-label="Confirmar y guardar cambios de camiseta y goles"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m5 12 4 4L19 6"></path></svg>Guardar cambios</button></div>` : '<p class="form-hint">Todavía no hay jugadores para este equipo.</p>'}</div></details></article>`;
     }).join('');
   }
 
@@ -418,17 +449,19 @@
       next.searchParams.set('deporte', currentSport);
       if (category) next.searchParams.set('categoria', category);
       else next.searchParams.delete('categoria');
+      next.searchParams.set('orden', teamOrder?.value || 'desc');
       window.history[pushState ? 'pushState' : 'replaceState']({}, '', next);
     }
     if (errorBox) { errorBox.hidden = true; errorBox.textContent = ''; }
     setStatus(`Cargando ${sportName(currentSport)}${category ? ` · ${category}` : ''}…`);
     document.querySelectorAll('#equipos .result-list, [data-admin-panel="matches"] .result-list').forEach((list) => list.setAttribute('aria-busy', 'true'));
     try {
-      const query = new URLSearchParams({ deporte: currentSport, categoria: category });
+      const query = new URLSearchParams({ deporte: currentSport, categoria: category, orden: teamOrder?.value || 'desc' });
       const response = await fetch(`/admin/api/torneo?${query}`, { headers: { Accept: 'application/json' }, signal: controller.signal });
       const data = await response.json();
       if (!response.ok || !data.ok) throw new Error(data.message || 'No se pudieron cargar los datos del torneo.');
       renderTeams(data.equipos || []);
+      sortAdminTeams();
       renderMatches(data.partidos || []);
       renderStandings(data.posiciones || []);
       const totals = data.resumen || {};
@@ -465,6 +498,12 @@
     loadScope({ pushState: true });
   }));
   categoryFilter?.addEventListener('change', () => loadScope({ pushState: true }));
+  teamOrder?.addEventListener('change', () => {
+    sortAdminTeams();
+    const next = new URL(window.location.href);
+    next.searchParams.set('orden', teamOrder.value);
+    window.history.pushState({}, '', next);
+  });
   document.querySelectorAll('[data-filter-target]').forEach((input) => {
     input.addEventListener('input', applyTextFilters);
     input.parentElement.querySelector('[data-filter-status]')?.addEventListener('change', applyTextFilters);
@@ -473,6 +512,7 @@
   document.addEventListener('input', (event) => {
     if (event.target.matches('.goal-update-form input[name="goles"], [data-roster-number], [data-roster-search]')) applyTextFilters();
   });
+  sortAdminTeams();
   document.addEventListener('click', async (event) => {
     const button = event.target.closest('[data-save-roster]');
     if (!button) return;

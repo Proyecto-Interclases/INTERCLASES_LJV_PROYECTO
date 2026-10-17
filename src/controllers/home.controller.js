@@ -15,6 +15,7 @@ function buildSportLinks(path, query = {}) {
   const sports = SPORTS.map((sport) => {
     const params = new URLSearchParams({ deporte: sport.id });
     if (selectedCategory) params.set('categoria', selectedCategory);
+    if (query.orden === 'asc') params.set('orden', 'asc');
     if (query.tab) params.set('tab', String(query.tab));
     return { ...sport, href: `${path}?${params.toString()}` };
   });
@@ -105,7 +106,7 @@ async function showStandings(req, res, next) {
     res.render('pages/standings', {
       title: 'Posiciones | Interclases Lucrecio Jaramillo',
       standings,
-      categories: categories.sort(),
+      categories: [...categories].sort(),
       selectedCategory,
       selectedSport,
       sports,
@@ -120,9 +121,10 @@ async function showTeams(req, res, next) {
   try {
     const requestedCategory = String(req.query.categoria || '').trim();
     const selectedCategory = TEAM_CATEGORIES.includes(requestedCategory) ? requestedCategory : '';
+    const selectedOrder = req.query.orden === 'asc' ? 'asc' : 'desc';
     const { selectedSport, sports } = buildSportLinks(req.path, req.query);
     const [{ teams, categories }, topScorers] = await Promise.all([
-      tournamentService.getTeamsPageData(selectedCategory, selectedSport),
+      tournamentService.getTeamsPageData(selectedCategory, selectedSport, selectedOrder),
       tournamentService.getTopScorers(10, selectedCategory, selectedSport)
     ]);
 
@@ -131,6 +133,7 @@ async function showTeams(req, res, next) {
       teams,
       categories,
       selectedCategory,
+      selectedOrder,
       selectedSport,
       sports,
       topScorers,

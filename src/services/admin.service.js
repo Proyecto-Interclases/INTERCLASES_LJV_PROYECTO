@@ -8,6 +8,7 @@ const mongoose = require('mongoose');
 const TEAM_CATEGORIES = require('../constants/team-categories');
 const { SPORT_IDS, normalizeSport } = require('../constants/sports');
 const { isManagedPlayerPhotoUrl, removePlayerPhoto } = require('./player-photo.service');
+const { sortTeamsByGrade } = require('./team-order.service');
 
 const MATCH_STATUSES = ['Por jugar', 'Jugando', 'Finalizado'];
 const ANNOUNCEMENT_TAGS = new Set(['p', 'div', 'br', 'strong', 'b', 'em', 'i', 'u', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'blockquote', 'a']);
@@ -171,20 +172,31 @@ async function deleteTeam(teamId) {
   return team;
 }
 
-async function listAdminTeams() {
+async function listAdminTeams(order = 'desc') {
   const teams = await Team.find({ categoria: { $in: TEAM_CATEGORIES } }).sort({ categoria: 1, nombre: 1 }).lean();
   const captainEmails = teams.map((team) => team.capitanEmail).filter(Boolean);
-  const captains = captainEmails.length
-    ? await User.find({ email: { $in: captainEmails } }, 'nombre email').lean()
-    : [];
+  const [captains, players] = await Promise.all([
+    captainEmails.length
+      ? User.find({ email: { $in: captainEmails } }, 'nombre email').lean()
+      : Promise.resolve([]),
+    Player.find({ equipo_id: { $in: teams.map((team) => team._id) } }, 'equipo_id grado').lean()
+  ]);
   const captainsByEmail = new Map(captains.map((captain) => [captain.email, captain]));
 
-  return teams.map((team) => ({
+  const playersByTeam = new Map();
+  players.forEach((player) => {
+    const id = player.equipo_id.toString();
+    if (!playersByTeam.has(id)) playersByTeam.set(id, []);
+    playersByTeam.get(id).push({ grado: player.grado });
+  });
+
+  return sortTeamsByGrade(teams.map((team) => ({
     ...team,
     id: team._id.toString(),
     deporte: normalizeSport(team.deporte),
+    gradoPrincipal: getPrimaryTeamGrade(playersByTeam.get(team._id.toString()) || []),
     capitanNombre: captainsByEmail.get(team.capitanEmail)?.nombre || null
-  }));
+  })), order);
 }
 
 async function updateTeamCaptain(teamId, requestedEmail) {

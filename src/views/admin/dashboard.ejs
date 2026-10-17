@@ -260,6 +260,11 @@
           </dialog>
 
           <div class="admin-table-tools admin-team-filter">
+            <label for="admin-team-order">Ordenar por grado</label>
+            <select id="admin-team-order" data-admin-team-order aria-label="Ordenar equipos por grado">
+              <option value="desc" <%= selectedOrder === 'desc' ? 'selected' : '' %>>Mayor a menor</option>
+              <option value="asc" <%= selectedOrder === 'asc' ? 'selected' : '' %>>Menor a mayor</option>
+            </select>
             <input type="search" data-filter-target=".admin-team-item" placeholder="Buscar equipo o categoría..." aria-label="Buscar equipos">
           </div>
           <div class="result-list dashboard-list">
@@ -267,7 +272,7 @@
               <p>Aún no hay equipos creados.</p>
             <% } else { %>
               <% equipos.forEach((equipo) => { %>
-                <article class="result-item admin-team-item" data-admin-sport="<%= equipo.deporte || 'futbol' %>" data-admin-category="<%= equipo.categoria || '' %>" data-search="<%= `${equipo.nombre} ${equipo.categoria} ${equipo.capitanNombre || ''}`.toLowerCase() %>">
+                <article class="result-item admin-team-item" data-team-grade="<%= equipo.gradoPrincipal || '' %>" data-team-name="<%= equipo.nombre %>" data-admin-sport="<%= equipo.deporte || 'futbol' %>" data-admin-category="<%= equipo.categoria || '' %>" data-search="<%= `${equipo.nombre} ${equipo.categoria} ${equipo.capitanNombre || ''}`.toLowerCase() %>">
                   <div class="admin-team-heading">
                     <% if (equipo.escudoUrl) { %>
                       <img class="admin-team-crest" src="<%= equipo.escudoUrl %>" alt="Bandera de <%= equipo.nombre %>" loading="lazy">
@@ -282,9 +287,10 @@
                     <button class="admin-add-player" type="button" data-modal-open="player-editor-modal" data-team-id="<%= equipo.id %>" data-team-name="<%= equipo.nombre %>">+ Agregar jugador</button>
                     <form action="/admin/equipos/<%= equipo.id %>/eliminar" method="post" onsubmit="return confirm('Solo se eliminará el equipo si no tiene jugadores ni partidos asociados. ¿Continuar?')"><button class="admin-delete-team" type="submit">Eliminar equipo</button></form>
                   </div>
-                  <div class="admin-roster">
-                    <% const teamPlayers = jugadores.filter((jugador) => jugador.equipo_id === equipo.id); %>
-                    <div class="admin-roster-heading"><strong>Plantilla</strong><span><%= teamPlayers.length %> jugadores</span></div>
+                  <% const teamPlayers = jugadores.filter((jugador) => jugador.equipo_id === equipo.id); %>
+                  <details class="admin-roster" data-roster-accordion>
+                    <summary class="admin-roster-heading"><strong data-roster-toggle-label>Desplegar plantilla</strong><span class="admin-roster-count"><%= teamPlayers.length %> jugadores</span></summary>
+                    <div class="admin-roster-content">
                     <% if (teamPlayers.length) { %><input class="admin-player-search" type="search" placeholder="Buscar jugador en <%= equipo.nombre %>..." aria-label="Buscar jugadores de <%= equipo.nombre %>" data-roster-search><% } %>
                     <% if (!teamPlayers.length) { %>
                       <p class="form-hint">Todavía no hay jugadores para este equipo.</p>
@@ -337,7 +343,8 @@
                         </button>
                       </div>
                     <% } %>
-                  </div>
+                    </div>
+                  </details>
                 </article>
               <% }) %>
             <% } %>
@@ -535,6 +542,6 @@
       </section>
     </main>
     <%- include('../partials/accessibility-settings') %>
-    <script src="/js/admin-dashboard.js?v=admin-users-20261017" defer></script>
+    <script src="/js/admin-dashboard.js?v=team-management-20261017" defer></script>
   </body>
 </html>

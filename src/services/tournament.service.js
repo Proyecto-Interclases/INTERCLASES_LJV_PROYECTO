@@ -5,6 +5,7 @@ const TEAM_CATEGORIES = require('../constants/team-categories');
 const { normalizeSport, sportQuery } = require('../constants/sports');
 const { isManagedPlayerPhotoUrl } = require('./player-photo.service');
 const { groupPlayersByPosition, buildFootballLineup } = require('./player-lineup.service');
+const { sortTeamsByGrade } = require('./team-order.service');
 
 function normalizeMatchStatus(status = 'Por jugar') {
   const normalized = String(status).trim().toLowerCase();
@@ -110,14 +111,25 @@ function buildStandings(teams, matches, selectedSport = 'futbol') {
 async function getTeams(selectedSport = 'futbol') {
   const teams = await Team.find({ ...sportQuery(selectedSport), categoria: { $in: TEAM_CATEGORIES } })
     .sort({ nombre: 1 }).lean();
+  const teamIds = teams.map((team) => team._id);
+  const players = await Player.find({ equipo_id: { $in: teamIds } }, 'equipo_id grado').lean();
+  const gradesByTeam = new Map();
+  players.forEach((player) => {
+    const id = player.equipo_id.toString();
+    if (!gradesByTeam.has(id)) gradesByTeam.set(id, []);
+    gradesByTeam.get(id).push(player.grado);
+  });
 
-  return teams.map((team) => ({
+  return sortTeamsByGrade(teams.map((team) => ({
     id: team._id.toString(),
+    nombre: team.nombre,
     name: team.nombre,
     category: team.categoria,
+    categoria: team.categoria,
     deporte: normalizeSport(team.deporte),
-    escudoUrl: team.escudoUrl || ''
-  }));
+    escudoUrl: team.escudoUrl || '',
+    grado: formatTeamGrades(gradesByTeam.get(team._id.toString()) || [])
+  })));
 }
 
 async function getMatches(selectedSport = 'futbol') {
@@ -206,7 +218,7 @@ async function getStandings(category, selectedSport = 'futbol') {
   return buildStandings(teams, matches, sport);
 }
 
-async function getTeamsPageData(category, selectedSport = 'futbol') {
+async function getTeamsPageData(category, selectedSport = 'futbol', order = 'desc') {
   const sport = normalizeSport(selectedSport);
   const baseFilter = { ...sportQuery(sport), categoria: { $in: TEAM_CATEGORIES } };
   const filter = TEAM_CATEGORIES.includes(category) ? { ...baseFilter, categoria: category } : baseFilter;
@@ -242,9 +254,10 @@ async function getTeamsPageData(category, selectedSport = 'futbol') {
   });
 
   return {
-    teams: teamsWithRoster,
+    teams: sortTeamsByGrade(teamsWithRoster, order),
     categories: TEAM_CATEGORIES,
-    selectedCategory: TEAM_CATEGORIES.includes(category) ? category : ''
+    selectedCategory: TEAM_CATEGORIES.includes(category) ? category : '',
+    selectedOrder: order === 'asc' ? 'asc' : 'desc'
   };
 }
 
@@ -269,4 +282,4 @@ async function getTopScorers(limit = 10, category, selectedSport = 'futbol') {
   }));
 }
 
-module.exports = { getTeams, getMatches, getCalendarMatches, getSummary, getStandings, getTeamsPageData, getTopScorers, buildStandings, formatTeamGrades };
+module.exports = { getTeams, getMatches, getCalendarMatches, getSummary, getStandings, getTeamsPageData, getTopScorers, buildStandings, formatTeamGrades, sortTeamsByGrade };

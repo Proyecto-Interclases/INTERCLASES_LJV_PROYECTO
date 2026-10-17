@@ -2668,6 +2668,172 @@ body.dark-mode .admin-form-feedback.is-success { background: #052E16; border-col
   }
 }
 
+@media (max-width: 768px) {
+  .teams-page .sports-main {
+    margin-block: 0;
+    min-height: 0;
+    padding-block: 12px 20px;
+  }
+
+  .teams-page .sports-heading {
+    gap: 8px;
+    margin: 0;
+    padding-bottom: 10px;
+  }
+
+  .teams-page .sports-heading > div > p:last-child {
+    margin-top: 5px;
+  }
+
+  .teams-page .sports-filter {
+    align-items: center;
+    display: grid;
+    gap: 5px 8px;
+    grid-template-columns: auto minmax(0, 1fr);
+    margin: 4px 0 0;
+  }
+
+  .teams-page .sports-filter select {
+    box-sizing: border-box;
+    min-height: 38px;
+    padding: 6px 30px 6px 10px;
+    width: 100%;
+  }
+
+  .teams-page .sport-tabs {
+    margin: 0 0 8px;
+    padding-block: 2px 5px;
+  }
+
+  .teams-page .sports-section {
+    margin: 0;
+    padding-top: 12px;
+  }
+
+  .teams-page .sports-section-heading {
+    margin: 0;
+    padding-bottom: 8px;
+  }
+
+  .teams-page .teams-grid {
+    gap: 8px;
+    padding-top: 8px;
+  }
+
+  .teams-page .team-card {
+    padding: 10px;
+  }
+
+  .teams-page .team-card-top {
+    min-height: 0;
+  }
+
+  .teams-page .team-captain {
+    margin-top: 4px;
+  }
+
+  .teams-page .team-roster {
+    margin-top: 8px;
+    padding-top: 7px;
+  }
+
+  .teams-page .scorers-section {
+    margin-top: 16px;
+    padding-top: 12px;
+  }
+
+  .dashboard-page .dashboard-shell {
+    gap: 8px;
+    padding-bottom: 16px;
+  }
+
+  .dashboard-page .dashboard-content {
+    gap: 10px;
+  }
+
+  .dashboard-page #equipos {
+    padding: 12px;
+  }
+
+  .dashboard-page #equipos .admin-section-toolbar {
+    margin-bottom: 12px;
+  }
+
+  .dashboard-page .admin-team-filter {
+    align-items: stretch;
+    display: grid;
+    gap: 6px 8px;
+    grid-template-columns: auto minmax(0, 1fr);
+    margin: 0 0 8px;
+    width: 100%;
+  }
+
+  .dashboard-page .admin-team-filter label {
+    align-self: center;
+    font-size: .76rem;
+  }
+
+  .dashboard-page .admin-team-filter select {
+    box-sizing: border-box;
+    min-height: 38px;
+    min-width: 0;
+    padding: 6px 26px 6px 9px;
+    width: 100%;
+  }
+
+  .dashboard-page .admin-team-filter input {
+    box-sizing: border-box;
+    grid-column: 1 / -1;
+    margin: 0;
+    min-height: 38px;
+    min-width: 0;
+    padding: 7px 10px;
+    width: 100%;
+  }
+
+  .dashboard-page .admin-team-item.result-item {
+    margin-block: 0;
+    padding: 10px;
+  }
+
+  .dashboard-page .admin-team-actions {
+    gap: 5px 8px;
+    margin-block: 7px 0;
+  }
+
+  .dashboard-page .admin-roster {
+    margin-top: 7px;
+    padding-top: 7px;
+  }
+
+  .dashboard-page .admin-roster > summary {
+    margin: 0;
+    padding: 2px 0;
+  }
+
+  .dashboard-page .admin-roster-content {
+    padding-top: 6px;
+  }
+
+  .dashboard-page .admin-roster-table td[data-label="Posición"],
+  .dashboard-page .admin-roster-table td:nth-child(3) {
+    display: none;
+  }
+
+  .dashboard-page .admin-roster-table td[data-label="Grado / sección"],
+  .dashboard-page .admin-roster-table td:nth-child(2) {
+    grid-column: 2;
+    grid-row: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .team-roster[open] > :not(summary),
+  .admin-roster[open] > .admin-roster-content {
+    animation: none;
+  }
+}
+
 .admin-navigation-toggle {
   align-items: center;
   background: #FFFFFF;
@@ -3088,6 +3254,406 @@ body.dark-mode .admin-navigation-toggle {
 
   body.dark-mode .admin-roster-table td::before {
     color: #94A3B8;
+  }
+}
+
+.team-roster > summary {
+  background: #F8FAFC;
+  border: 1px solid #CBD5E1;
+  border-radius: 9px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .05);
+  color: #047857;
+  gap: 10px;
+  justify-content: flex-start;
+  min-height: 42px;
+  padding: 8px 12px;
+  transition: background .16s ease, border-color .16s ease, box-shadow .16s ease;
+}
+
+.team-roster > summary [data-roster-toggle-label] {
+  flex: 1 1 auto;
+  text-align: left;
+}
+
+.team-roster > summary .team-roster-toggle-count {
+  color: #475569;
+  font-size: .82rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.team-roster > summary:hover,
+.admin-roster > summary:hover {
+  background: #F0FDF4;
+  border-color: #86EFAC;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, .09);
+}
+
+.team-roster > summary:focus-visible,
+.admin-roster > summary:focus-visible {
+  outline: 3px solid rgba(16, 185, 129, .3);
+  outline-offset: 2px;
+}
+
+.admin-roster > summary {
+  align-items: center;
+  background: #F8FAFC;
+  border: 1px solid #CBD5E1;
+  border-radius: 9px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .05);
+  color: #047857;
+  gap: 10px;
+  justify-content: flex-start;
+  min-height: 42px;
+  padding: 8px 12px;
+  transition: background .16s ease, border-color .16s ease, box-shadow .16s ease;
+}
+
+.admin-roster > summary strong {
+  flex: 1 1 auto;
+  text-align: left;
+}
+
+.admin-roster > summary .admin-roster-count {
+  color: #475569;
+  font-size: .82rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.team-roster[open] > summary,
+.admin-roster[open] > summary {
+  background: #ECFDF5;
+  border-color: #6EE7B7;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, .08);
+}
+
+body.dark-mode .team-roster > summary,
+body.dark-mode .admin-roster > summary {
+  background: #111827;
+  border-color: #475569;
+  color: #6EE7B7;
+}
+
+body.dark-mode .team-roster > summary .team-roster-toggle-count,
+body.dark-mode .admin-roster > summary .admin-roster-count {
+  color: #CBD5E1;
+}
+
+body.dark-mode .team-roster > summary:hover,
+body.dark-mode .admin-roster > summary:hover,
+body.dark-mode .team-roster[open] > summary,
+body.dark-mode .admin-roster[open] > summary {
+  background: #064E3B;
+  border-color: #10B981;
+}
+
+.squad-player-card__top {
+  font-size: .7rem;
+}
+
+.squad-player-card__goals {
+  font-size: .68rem;
+}
+
+.squad-player-card__details {
+  min-width: 0;
+}
+
+.squad-player-card__details strong {
+  font-size: .74rem;
+  line-height: 1.16;
+  overflow-wrap: anywhere;
+}
+
+.squad-player-card__details span,
+.squad-player-card__details small {
+  font-size: .62rem;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.admin-roster-table td:first-child strong {
+  font-size: .9rem;
+  line-height: 1.25;
+}
+
+@media (max-width: 768px) {
+  .squad-player-card__top {
+    font-size: .66rem;
+  }
+
+  .squad-player-card__goals {
+    font-size: .62rem;
+  }
+
+  .squad-player-card__details strong {
+    font-size: .69rem;
+    line-height: 1.18;
+  }
+
+  .squad-player-card__details span,
+  .squad-player-card__details small {
+    font-size: .58rem;
+    line-height: 1.18;
+  }
+
+  .player-card-row--bench .squad-player-card__top {
+    font-size: .58rem;
+  }
+
+  .player-card-row--bench .squad-player-card__goals {
+    font-size: .54rem;
+  }
+
+  .player-card-row--bench .squad-player-card__details strong {
+    font-size: .6rem;
+    line-height: 1.16;
+  }
+
+  .player-card-row--bench .squad-player-card__details span,
+  .player-card-row--bench .squad-player-card__details small {
+    font-size: .52rem;
+    line-height: 1.15;
+  }
+
+  .admin-roster > summary {
+    gap: 8px;
+    min-height: 40px;
+    padding: 7px 10px;
+  }
+
+  .admin-roster > summary strong,
+  .admin-roster > summary .admin-roster-count {
+    font-size: .82rem;
+  }
+
+  .team-roster > summary {
+    min-height: 40px;
+    padding: 7px 10px;
+  }
+
+  .team-roster > summary .team-roster-toggle-count {
+    font-size: .78rem;
+  }
+
+  .admin-roster-table td:first-child strong {
+    font-size: .88rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .squad-player-card__details strong {
+    font-size: .66rem;
+  }
+
+  .squad-player-card__details span,
+  .squad-player-card__details small {
+    font-size: .56rem;
+  }
+
+  .player-card-row--bench .squad-player-card__details strong {
+    font-size: .57rem;
+  }
+
+  .player-card-row--bench .squad-player-card__details span,
+  .player-card-row--bench .squad-player-card__details small {
+    font-size: .5rem;
+  }
+}
+
+.team-roster summary,
+.admin-roster > summary {
+  list-style: none;
+}
+
+.team-roster summary::-webkit-details-marker,
+.admin-roster > summary::-webkit-details-marker {
+  display: none;
+}
+
+.team-roster summary::after,
+.admin-roster > summary::after {
+  border-bottom: 2px solid currentColor;
+  border-right: 2px solid currentColor;
+  content: "";
+  flex: 0 0 8px;
+  height: 8px;
+  margin-left: 10px;
+  transform: rotate(45deg) translateY(-2px);
+  transition: transform .18s ease;
+  width: 8px;
+}
+
+.team-roster[open] > summary::after,
+.admin-roster[open] > summary::after {
+  transform: rotate(225deg) translate(-2px, -1px);
+}
+
+.team-roster[open] > :not(summary),
+.admin-roster[open] > .admin-roster-content {
+  animation: roster-expand .2s ease-out both;
+}
+
+.admin-roster > summary {
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+}
+
+.admin-roster > summary strong {
+  color: #047857;
+  font-size: .84rem;
+}
+
+.admin-roster > summary > span {
+  color: #64748B;
+  font-size: .75rem;
+}
+
+.admin-roster[open] {
+  padding-bottom: 12px;
+}
+
+@keyframes roster-expand {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+  .sports-main {
+    min-height: 0;
+    padding-bottom: 28px;
+    padding-top: 20px;
+  }
+
+  .sports-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+    padding-bottom: 14px;
+  }
+
+  .sports-heading h1 {
+    font-size: clamp(2.1rem, 9vw, 3rem);
+  }
+
+  .sports-heading > div > p:last-child {
+    margin-top: 7px;
+  }
+
+  .sports-filter {
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .sports-filter select {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .sports-section {
+    padding-top: 20px;
+  }
+
+  .sports-section-heading {
+    gap: 12px;
+    padding-bottom: 10px;
+  }
+
+  .teams-grid {
+    gap: 10px;
+    grid-template-columns: minmax(0, 1fr);
+    padding-top: 10px;
+  }
+
+  .team-card {
+    border-radius: 10px;
+    padding: 12px;
+  }
+
+  .team-card-top {
+    gap: 10px;
+    min-height: 0;
+  }
+
+  .team-crest {
+    flex-basis: 48px;
+    height: 48px;
+    width: 48px;
+  }
+
+  .team-card h3 {
+    font-size: 1.22rem;
+  }
+
+  .team-roster {
+    margin-top: 10px;
+    padding-top: 9px;
+  }
+
+  .team-roster ul {
+    margin-top: 6px;
+  }
+
+  .team-roster li {
+    padding: 7px 0;
+  }
+
+  .scorers-section {
+    margin-top: 24px;
+  }
+
+  .admin-team-filter {
+    align-items: stretch;
+    margin: 4px 0 10px;
+    width: 100%;
+  }
+
+  .admin-team-filter input {
+    box-sizing: border-box;
+    min-height: 40px;
+    min-width: 0;
+    padding: 8px 10px;
+    width: 100%;
+  }
+
+  .admin-team-item.result-item {
+    padding: 12px;
+  }
+
+  .admin-roster {
+    margin-top: 9px;
+    padding-top: 9px;
+  }
+
+  .admin-roster-content {
+    padding-top: 8px;
+  }
+
+  .admin-roster[open] {
+    padding-bottom: 8px;
+  }
+
+  body.dark-mode .admin-roster > summary strong {
+    color: #6EE7B7;
+  }
+
+  body.dark-mode .admin-roster > summary > span {
+    color: #94A3B8;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .team-roster summary::after,
+  .admin-roster > summary::after,
+  .team-roster[open] > :not(summary),
+  .admin-roster[open] > .admin-roster-content {
+    animation: none;
+    transition: none;
   }
 }
 
@@ -3552,7 +4118,7 @@ body.dark-mode .goal-update-form input {
 }
 
 .squad-player-card__top {
-  font-size: .64rem;
+  font-size: .68rem;
   min-height: 17px;
 }
 
@@ -3568,13 +4134,13 @@ body.dark-mode .goal-update-form input {
 }
 
 .squad-player-card__details strong {
-  font-size: .69rem;
+  font-size: .74rem;
   line-height: 1.08;
 }
 
 .squad-player-card__details span,
 .squad-player-card__details small {
-  font-size: .57rem;
+  font-size: .61rem;
 }
 
 .player-card-row--bench {
@@ -3596,7 +4162,7 @@ body.dark-mode .goal-update-form input {
 }
 
 .player-card-row--bench .squad-player-card__top {
-  font-size: .55rem;
+  font-size: .59rem;
   min-height: 14px;
 }
 
@@ -3612,18 +4178,18 @@ body.dark-mode .goal-update-form input {
 }
 
 .player-card-row--bench .squad-player-card__details strong {
-  font-size: .56rem;
+  font-size: .6rem;
   line-height: 1.08;
 }
 
 .player-card-row--bench .squad-player-card__details span,
 .player-card-row--bench .squad-player-card__details small {
-  font-size: .48rem;
+  font-size: .52rem;
   line-height: 1.1;
 }
 
 .player-card-row--bench .squad-player-card__goals {
-  font-size: .48rem;
+  font-size: .52rem;
 }
 
 @media (max-width: 560px) {
@@ -3654,7 +4220,7 @@ body.dark-mode .goal-update-form input {
   }
 
   .squad-player-card__top {
-    font-size: .6rem;
+    font-size: .64rem;
     min-height: 16px;
   }
 
@@ -3664,12 +4230,12 @@ body.dark-mode .goal-update-form input {
   }
 
   .squad-player-card__details strong {
-    font-size: .64rem;
+    font-size: .69rem;
   }
 
   .squad-player-card__details span,
   .squad-player-card__details small {
-    font-size: .54rem;
+    font-size: .58rem;
   }
 
   .player-card-row--bench {
@@ -3691,12 +4257,12 @@ body.dark-mode .goal-update-form input {
   }
 
   .player-card-row--bench .squad-player-card__details strong {
-    font-size: .55rem;
+    font-size: .59rem;
   }
 
   .player-card-row--bench .squad-player-card__details span,
   .player-card-row--bench .squad-player-card__details small {
-    font-size: .48rem;
+    font-size: .51rem;
   }
 }
 
@@ -3871,4 +4437,35 @@ body.dark-mode .goal-update-form input {
   body.dark-mode .admin-roster-table td::before {
     color: #94A3B8;
   }
+}
+@media (max-width: 768px) {
+  .teams-page .sports-main { margin-block: 0; min-height: 0; padding-block: 12px 20px; }
+  .teams-page .sports-heading { gap: 8px; margin: 0; padding-bottom: 10px; }
+  .teams-page .sports-heading > div > p:last-child { margin-top: 5px; }
+  .teams-page .sports-filter { align-items: center; display: grid; gap: 5px 8px; grid-template-columns: auto minmax(0, 1fr); margin: 4px 0 0; width: 100%; }
+  .teams-page .sports-filter select { box-sizing: border-box; min-height: 38px; padding: 6px 30px 6px 10px; width: 100%; }
+  .teams-page .sport-tabs { margin: 0 0 8px; padding-block: 2px 5px; }
+  .teams-page .sports-section { margin: 0; padding-top: 12px; }
+  .teams-page .sports-section-heading { margin: 0; padding-bottom: 8px; }
+  .teams-page .teams-grid { gap: 8px; padding-top: 8px; }
+  .teams-page .team-card { padding: 10px; }
+  .teams-page .team-card-top { min-height: 0; }
+  .teams-page .team-captain { margin-top: 4px; }
+  .teams-page .team-roster { margin-top: 8px; padding-top: 7px; }
+  .teams-page .scorers-section { margin-top: 16px; padding-top: 12px; }
+  .dashboard-page .dashboard-shell { gap: 8px; padding-bottom: 16px; }
+  .dashboard-page .dashboard-content { gap: 10px; }
+  .dashboard-page #equipos { padding: 12px; }
+  .dashboard-page #equipos .admin-section-toolbar { margin-bottom: 12px; }
+  .dashboard-page .admin-team-filter { align-items: stretch; display: grid; gap: 6px 8px; grid-template-columns: auto minmax(0, 1fr); margin: 0 0 8px; width: 100%; }
+  .dashboard-page .admin-team-filter label { align-self: center; font-size: .76rem; }
+  .dashboard-page .admin-team-filter select { box-sizing: border-box; min-height: 38px; min-width: 0; padding: 6px 26px 6px 9px; width: 100%; }
+  .dashboard-page .admin-team-filter input { box-sizing: border-box; grid-column: 1 / -1; margin: 0; min-height: 38px; min-width: 0; padding: 7px 10px; width: 100%; }
+  .dashboard-page .admin-team-item.result-item { margin-block: 0; padding: 10px; }
+  .dashboard-page .admin-team-actions { gap: 5px 8px; margin-block: 7px 0; }
+  .dashboard-page .admin-roster { margin-top: 7px; padding-top: 7px; }
+  .dashboard-page .admin-roster > summary { margin: 0; padding: 2px 0; }
+  .dashboard-page .admin-roster-content { padding-top: 6px; }
+  .dashboard-page .admin-roster-table td:nth-child(3) { display: none; }
+  .dashboard-page .admin-roster-table td:nth-child(2) { grid-column: 2; grid-row: 1; }
 }
