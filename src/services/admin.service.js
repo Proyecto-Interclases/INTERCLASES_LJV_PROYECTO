@@ -6,6 +6,7 @@ const User = require('../models/User');
 const mongoose = require('mongoose');
 const TEAM_CATEGORIES = require('../constants/team-categories');
 const { SPORT_IDS, normalizeSport } = require('../constants/sports');
+const { isManagedPlayerPhotoUrl, removePlayerPhoto } = require('./player-photo.service');
 
 const MATCH_STATUSES = ['Por jugar', 'Jugando', 'Finalizado'];
 const ANNOUNCEMENT_TAGS = new Set(['p', 'div', 'br', 'strong', 'b', 'em', 'i', 'u', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'blockquote', 'a']);
@@ -252,6 +253,7 @@ async function listPlayers() {
     nombre: player.nombre,
     grado: player.grado || '',
     posicion: player.posicion,
+    fotoUrl: isManagedPlayerPhotoUrl(player.fotoUrl) ? player.fotoUrl : '',
     numero_camiseta: player.numero_camiseta || 0,
     goles: player.goles || 0,
     equipo_nombre: player.equipo_id ? player.equipo_id.nombre : null
@@ -364,7 +366,7 @@ async function updatePlayerGoals(playerId, goals) {
 }
 
 async function updatePlayerData(playerId, payload) {
-  const { equipo_id, nombre, grado, numero_camiseta, posicion, goles } = requirePayload(payload, 'Los datos del jugador');
+  const { equipo_id, nombre, grado, numero_camiseta, posicion, goles, fotoUrl } = requirePayload(payload, 'Los datos del jugador');
   if (!mongoose.isValidObjectId(playerId) || !mongoose.isValidObjectId(equipo_id)) {
     throw new Error('Selecciona un equipo y un jugador válidos.');
   }
@@ -381,6 +383,9 @@ async function updatePlayerData(playerId, payload) {
   if (!Number.isInteger(goalCount) || goalCount < 0) {
     throw new Error('Los goles deben ser un número entero no negativo.');
   }
+  if (fotoUrl !== undefined && fotoUrl !== '' && !isManagedPlayerPhotoUrl(fotoUrl)) {
+    throw new Error('La foto del jugador debe cargarse como una imagen JPG, PNG o WebP.');
+  }
 
   const [player, team] = await Promise.all([
     Player.findById(playerId),
@@ -395,13 +400,16 @@ async function updatePlayerData(playerId, payload) {
   });
   if (duplicateNumber) throw new Error('Ese número de camiseta ya está asignado en el equipo.');
 
+  const previousPhotoUrl = player.fotoUrl;
   player.equipo_id = team._id;
   player.nombre = cleanName;
   player.grado = cleanGrade;
   player.numero_camiseta = shirtNumber;
   player.posicion = String(posicion || '').trim();
   player.goles = goalCount;
+  if (fotoUrl !== undefined && fotoUrl !== '') player.fotoUrl = fotoUrl;
   await player.save();
+  if (fotoUrl && previousPhotoUrl !== fotoUrl) await removePlayerPhoto(previousPhotoUrl).catch(() => {});
 
   return player.toObject();
 }
@@ -468,6 +476,7 @@ async function deleteMatch(matchId) {
 async function deletePlayer(playerId) {
   const player = await Player.findByIdAndDelete(playerId);
   if (!player) throw new Error('No existe ese jugador.');
+  await removePlayerPhoto(player.fotoUrl).catch(() => {});
   return player;
 }
 

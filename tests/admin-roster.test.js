@@ -7,16 +7,71 @@ const mongoose = require('mongoose');
 const { connectDB } = require('../src/config/db');
 const Team = require('../src/models/Team');
 const Player = require('../src/models/Player');
+const { addJugador } = require('../src/services/gestion.service');
 const {
   getPrimaryTeamGrade,
+  listPlayers,
+  updatePlayerData,
   validatePlayerStatsBatch,
   updatePlayerStatsBatch
 } = require('../src/services/admin.service');
+const tournamentService = require('../src/services/tournament.service');
 
 const testTeamNames = [];
 
 before(async () => {
   await connectDB();
+});
+
+test('admin player data includes only managed photo URLs', async () => {
+  const teamName = `Photo roster ${randomUUID()}`;
+  testTeamNames.push(teamName);
+  const team = await Team.create({ nombre: teamName, categoria: 'Categoría A', deporte: 'futbol' });
+  const [player] = await Player.create([
+    { equipo_id: team._id, nombre: 'Foto válida', grado: '7.º 2', fotoUrl: '/uploads/jugadores/jugador-123e4567-e89b-42d3-a456-426614174000.jpg' },
+    { equipo_id: team._id, nombre: 'URL ajena', grado: '7.º 2', fotoUrl: 'data:image/png;base64,AAAA' }
+  ]);
+
+  const adminPlayers = await listPlayers();
+  assert.equal(adminPlayers.find((entry) => entry.id === player._id.toString()).fotoUrl, '/uploads/jugadores/jugador-123e4567-e89b-42d3-a456-426614174000.jpg');
+  assert.equal(adminPlayers.find((entry) => entry.nombre === 'URL ajena').fotoUrl, '');
+});
+
+test('public team roster receives the persisted player photo and filters unmanaged photo URLs', async () => {
+  const teamName = `Public photo roster ${randomUUID()}`;
+  testTeamNames.push(teamName);
+  const team = await Team.create({ nombre: teamName, categoria: 'Categoría A', deporte: 'futbol' });
+  const created = await addJugador({
+    equipo_id: team._id.toString(),
+    nombre: 'Portero con foto',
+    grado: '7.º 2',
+    posicion: 'Portero',
+    numero_camiseta: 1,
+    fotoUrl: '/uploads/jugadores/jugador-123e4567-e89b-42d3-a456-426614174000.jpg'
+  });
+  await updatePlayerData(created.id, {
+    equipo_id: team._id.toString(),
+    nombre: 'Portero con foto',
+    grado: '7.º 2',
+    posicion: 'Portero',
+    numero_camiseta: 1,
+    goles: 0,
+    fotoUrl: '/uploads/jugadores/jugador-223e4567-e89b-42d3-a456-426614174000.webp'
+  });
+  await Player.create({
+    equipo_id: team._id,
+    nombre: 'URL ajena',
+    grado: '7.º 2',
+    posicion: 'Defensa',
+    numero_camiseta: 2,
+    fotoUrl: 'data:image/png;base64,AAAA'
+  });
+
+  const { teams } = await tournamentService.getTeamsPageData('Categoría A', 'futbol');
+  const rosterTeam = teams.find((entry) => entry._id === team._id.toString());
+  assert.equal(rosterTeam.jugadores.find((player) => player.nombre === 'Portero con foto').fotoUrl, '/uploads/jugadores/jugador-223e4567-e89b-42d3-a456-426614174000.webp');
+  assert.equal(rosterTeam.jugadores.find((player) => player.nombre === 'URL ajena').fotoUrl, '');
+  assert.equal(rosterTeam.alineacion.find((line) => line.id === 'goalkeeper').players[0].fotoUrl, '/uploads/jugadores/jugador-223e4567-e89b-42d3-a456-426614174000.webp');
 });
 
 after(async () => {

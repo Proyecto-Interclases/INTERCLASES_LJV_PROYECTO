@@ -2,6 +2,8 @@ const Match = require('../models/Match');
 const Team = require('../models/Team');
 const Player = require('../models/Player');
 const { normalizeSport, sportQuery } = require('../constants/sports');
+const { isManagedPlayerPhotoUrl } = require('./player-photo.service');
+const { groupPlayersByPosition, buildFootballLineup } = require('./player-lineup.service');
 
 function normalizeMatchStatus(status = 'Por jugar') {
   const normalized = String(status).trim().toLowerCase();
@@ -202,17 +204,24 @@ async function getTeamsPageData(category, selectedSport = 'futbol') {
     const teamPlayers = players.filter((player) => (
       player.equipo_id && player.equipo_id._id.toString() === team._id.toString()
     ));
+    const roster = teamPlayers.map((player) => ({
+      nombre: player.nombre,
+      grado: player.grado || '',
+      posicion: player.posicion,
+      fotoUrl: isManagedPlayerPhotoUrl(player.fotoUrl) ? player.fotoUrl : '',
+      numero_camiseta: player.numero_camiseta || 0,
+      goles: player.goles || 0
+    }));
+    const footballLineup = buildFootballLineup(roster);
     return {
       ...team,
       _id: team._id.toString(),
       grado: formatTeamGrades(teamPlayers.map((player) => player.grado)),
-      jugadores: teamPlayers.map((player) => ({
-        nombre: player.nombre,
-        grado: player.grado || '',
-        posicion: player.posicion,
-        numero_camiseta: player.numero_camiseta || 0,
-        goles: player.goles || 0
-      }))
+      jugadores: roster,
+      alineacion: sport === 'futbol'
+        ? footballLineup.lines
+        : groupPlayersByPosition(roster),
+      banca: sport === 'futbol' ? footballLineup.bench : []
     };
   });
 
@@ -228,6 +237,7 @@ async function getTopScorers(limit = 10, category, selectedSport = 'futbol') {
     nombre: player.nombre,
     grado: player.grado || '',
     posicion: player.posicion,
+    fotoUrl: isManagedPlayerPhotoUrl(player.fotoUrl) ? player.fotoUrl : '',
     numero_camiseta: player.numero_camiseta || 0,
     goles: player.goles || 0,
     equipo: player.equipo_id ? player.equipo_id.nombre : 'Sin equipo',

@@ -52,16 +52,51 @@
               </div>
               <details class="team-roster">
                 <summary>Ver plantilla <span><%= team.jugadores.length %></span></summary>
-                <% if (team.jugadores.length) { %>
-                  <ul>
-                    <% team.jugadores.forEach((player) => { %>
-                      <li>
-                        <span class="roster-number"><%= player.numero_camiseta %></span>
-                        <span class="roster-name"><strong><%= player.nombre %></strong><small><%= player.grado %></small><% if (player.posicion) { %><small><%= player.posicion %></small><% } %></span>
-                        <span class="roster-goals"><%= player.goles %> gol<%= player.goles === 1 ? '' : 'es' %></span>
-                      </li>
-                    <% }) %>
-                  </ul>
+                <% const topTeamGoals = team.jugadores.length ? Math.max(...team.jugadores.map((player) => Number(player.goles || 0))) : 0; %>
+                <% if (selectedSport === 'futbol') { %>
+                  <div class="lineup-pitch" role="group" aria-label="Formación de fútbol cinco de <%= team.nombre %>">
+                    <div class="lineup-pitch__markings" aria-hidden="true"></div>
+                    <div class="lineup-pitch__groups">
+                      <% team.alineacion.forEach((line) => { %>
+                        <section class="lineup-line lineup-line--<%= line.id %>" aria-labelledby="lineup-<%= team._id %>-<%= line.id %>">
+                          <h4 id="lineup-<%= team._id %>-<%= line.id %>"><%= line.label %></h4>
+                          <ul class="player-card-row">
+                            <% line.players.forEach((player) => { %>
+                              <li><%- include('../partials/player-card', { player, compact: false, topTeamGoals }) %></li>
+                            <% }) %>
+                          </ul>
+                        </section>
+                      <% }) %>
+                    </div>
+                  </div>
+                  <% if (team.banca.length) { %>
+                    <section class="team-bench" aria-labelledby="bench-<%= team._id %>">
+                      <div class="team-bench__heading">
+                        <h4 id="bench-<%= team._id %>">Suplentes</h4>
+                        <span><%= team.banca.length %></span>
+                      </div>
+                      <ul class="player-card-row player-card-row--bench">
+                        <% team.banca.forEach((player) => { %>
+                          <li><%- include('../partials/player-card', { player, compact: true, topTeamGoals }) %></li>
+                        <% }) %>
+                      </ul>
+                    </section>
+                  <% } else if (!team.jugadores.length) { %>
+                    <p class="roster-empty">Aún no hay jugadores inscritos; las cinco posiciones están disponibles.</p>
+                  <% } %>
+                <% } else if (team.jugadores.length) { %>
+                  <section class="team-roster__other-sport" aria-label="Plantilla de <%= team.nombre %>">
+                    <% team.alineacion.forEach((line) => { if (line.players.length) { %>
+                      <div class="other-sport-line">
+                        <h4><%= line.label %></h4>
+                        <ul class="player-card-row">
+                          <% line.players.forEach((player) => { %>
+                            <li><%- include('../partials/player-card', { player, compact: false, topTeamGoals }) %></li>
+                          <% }) %>
+                        </ul>
+                      </div>
+                    <% } }) %>
+                  </section>
                 <% } else { %>
                   <p class="roster-empty">La plantilla aún no tiene jugadores.</p>
                 <% } %>

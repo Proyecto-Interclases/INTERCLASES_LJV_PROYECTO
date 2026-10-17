@@ -27,6 +27,12 @@ const playerSchema = new mongoose.Schema({
     default: '',
     trim: true
   },
+  fotoUrl: {
+    type: String,
+    default: '',
+    trim: true,
+    maxlength: 300
+  },
   goles: {
     type: Number,
     default: 0,

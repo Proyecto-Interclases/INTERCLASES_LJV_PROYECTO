@@ -114,6 +114,18 @@
 })();
 
 (function initializeAdminModals() {
+  let playerPhotoObjectUrl = '';
+
+  function showPlayerPhotoPreview(source) {
+    const preview = document.querySelector('[data-player-photo-preview]');
+    const image = preview?.querySelector('img');
+    const placeholder = preview?.querySelector('span');
+    if (!preview || !image || !placeholder) return;
+    image.src = source || '';
+    image.hidden = !source;
+    placeholder.hidden = Boolean(source);
+  }
+
   document.addEventListener('click', (event) => {
       const trigger = event.target.closest('[data-modal-open]');
       if (!trigger) return;
@@ -126,6 +138,9 @@
         const playerName = trigger.dataset.playerName || '';
         const teamName = trigger.dataset.teamName || '';
 
+        playerForm.reset();
+        if (playerPhotoObjectUrl) URL.revokeObjectURL(playerPhotoObjectUrl);
+        playerPhotoObjectUrl = '';
         playerForm.action = playerId
           ? `/admin/jugadores/${encodeURIComponent(playerId)}/editar`
           : '/admin/jugadores';
@@ -139,6 +154,7 @@
         modal.querySelector('#player-editor-number').value = trigger.dataset.playerNumber || '0';
         modal.querySelector('#player-editor-position').value = trigger.dataset.playerPosition || '';
         modal.querySelector('#player-editor-goals').value = trigger.dataset.playerGoals || '0';
+        showPlayerPhotoPreview(trigger.dataset.playerPhoto || '');
       }
 
       if (modal.id === 'team-editor-modal') {
@@ -201,6 +217,21 @@
     modal.addEventListener('click', (event) => {
       if (event.target === modal) modal.close();
     });
+  });
+
+  const photoInput = document.querySelector('[data-player-photo-input]');
+  photoInput?.addEventListener('change', () => {
+    if (playerPhotoObjectUrl) URL.revokeObjectURL(playerPhotoObjectUrl);
+    playerPhotoObjectUrl = '';
+    const file = photoInput.files?.[0];
+    if (!file) return;
+    playerPhotoObjectUrl = URL.createObjectURL(file);
+    showPlayerPhotoPreview(playerPhotoObjectUrl);
+  });
+
+  document.querySelector('#player-editor-modal')?.addEventListener('close', () => {
+    if (playerPhotoObjectUrl) URL.revokeObjectURL(playerPhotoObjectUrl);
+    playerPhotoObjectUrl = '';
   });
 })();
 

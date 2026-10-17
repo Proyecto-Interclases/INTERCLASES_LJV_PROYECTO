@@ -1,6 +1,7 @@
 const Team = require('../models/Team');
 const Player = require('../models/Player');
 const Match = require('../models/Match');
+const { isManagedPlayerPhotoUrl } = require('./player-photo.service');
 const User = require('../models/User');
 const mongoose = require('mongoose');
 const TEAM_CATEGORIES = require('../constants/team-categories');
@@ -80,7 +81,7 @@ async function createEquipo(payload) {
 }
 
 async function addJugador(payload) {
-  const { equipoId, equipo_id, nombre, grado, numero_camiseta, numeroCamiseta, posicion, goles = 0 } = requirePayload(payload, 'Los datos del jugador');
+  const { equipoId, equipo_id, nombre, grado, numero_camiseta, numeroCamiseta, posicion, goles = 0, fotoUrl = '' } = requirePayload(payload, 'Los datos del jugador');
   const teamId = equipoId || equipo_id;
   const trimmedNombre = String(nombre || '').trim();
   const trimmedGrade = String(grado || '').trim();
@@ -93,6 +94,9 @@ async function addJugador(payload) {
   }
   if (!Number.isInteger(shirtNumber) || shirtNumber < 0 || shirtNumber > 99 || !Number.isInteger(goalCount) || goalCount < 0) {
     throw new Error('El número de camiseta debe estar entre 0 y 99 y los goles deben ser un entero no negativo.');
+  }
+  if (fotoUrl && !isManagedPlayerPhotoUrl(fotoUrl)) {
+    throw new Error('La foto del jugador debe cargarse como una imagen JPG, PNG o WebP.');
   }
 
   const equipo = await Team.findById(teamId);
@@ -109,6 +113,7 @@ async function addJugador(payload) {
     nombre: trimmedNombre,
     grado: trimmedGrade,
     posicion: trimmedPosicion,
+    fotoUrl: fotoUrl || '',
     numero_camiseta: shirtNumber,
     goles: goalCount
   });
@@ -119,6 +124,7 @@ async function addJugador(payload) {
     nombre: jugador.nombre,
     grado: jugador.grado,
     posicion: jugador.posicion,
+    fotoUrl: jugador.fotoUrl || '',
     numero_camiseta: jugador.numero_camiseta,
     goles: jugador.goles
   };

@@ -1,0 +1,29 @@
+<% if (player.isPlaceholder) { %>
+  <article class="squad-player-card squad-player-card--empty" role="status" aria-label="Espacio disponible: <%= player.lineupRole %>">
+    <div class="squad-player-card__top"><span>--</span></div>
+    <div class="squad-player-card__portrait" aria-hidden="true"><span class="squad-player-card__empty-mark">+</span></div>
+    <div class="squad-player-card__details">
+      <strong>Vacante</strong>
+      <span><%= player.lineupRole %></span>
+    </div>
+  </article>
+<% } else { %>
+  <article class="squad-player-card <%= compact ? 'squad-player-card--compact' : '' %> <%= player.goles > 0 ? 'squad-player-card--scorer' : '' %> <%= player.goles > 0 && player.goles === topTeamGoals ? 'squad-player-card--top-scorer' : '' %>">
+    <div class="squad-player-card__top">
+      <span><%= player.numero_camiseta ? `#${player.numero_camiseta}` : 'PLANTEL' %></span>
+      <% if (player.goles > 0) { %><span class="squad-player-card__goals" aria-label="<%= player.goles %> goles">⚽ <%= player.goles %></span><% } %>
+    </div>
+    <div class="squad-player-card__portrait">
+      <% if (player.fotoUrl) { %>
+        <img src="<%= player.fotoUrl %>" alt="Foto de <%= player.nombre %>" loading="lazy">
+      <% } else { %>
+        <svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><circle cx="32" cy="22" r="12"></circle><path d="M9 59c2-13 10-20 23-20s21 7 23 20"></path></svg>
+      <% } %>
+    </div>
+    <div class="squad-player-card__details">
+      <strong><%= player.nombre %></strong>
+      <span><%= player.lineupRole || player.posicion || 'Jugador' %></span>
+      <small><%= player.grado %></small>
+    </div>
+  </article>
+<% } %>

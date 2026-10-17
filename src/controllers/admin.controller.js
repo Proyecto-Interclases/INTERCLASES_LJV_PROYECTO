@@ -6,6 +6,7 @@ const tournamentService = require('../services/tournament.service');
 const TEAM_CATEGORIES = require('../constants/team-categories');
 const { SPORTS, SPORT_IDS } = require('../constants/sports');
 const enrollmentService = require('../services/enrollment.service');
+const { savePlayerPhoto, removePlayerPhoto } = require('../services/player-photo.service');
 
 async function dashboardData() {
   const standingsGroups = SPORTS.flatMap((sport) => TEAM_CATEGORIES.map((categoria) => ({ sport: sport.id, categoria })));
@@ -280,17 +281,30 @@ const actualizarCapitanEquipo = (req, res) => runDashboardAction(
   'Capitán del equipo actualizado.'
 );
 
+async function withUploadedPlayerPhoto(req, action) {
+  const fotoUrl = req.file ? await savePlayerPhoto(req.file) : '';
+  try {
+    const payload = { ...req.body };
+    delete payload.fotoUrl;
+    if (fotoUrl) payload.fotoUrl = fotoUrl;
+    return await action(payload);
+  } catch (error) {
+    if (fotoUrl) await removePlayerPhoto(fotoUrl).catch(() => {});
+    throw error;
+  }
+}
+
 const guardarJugador = (req, res) => runDashboardAction(
   req,
   res,
-  () => addJugador(req.body),
+  () => withUploadedPlayerPhoto(req, (payload) => addJugador(payload)),
   'Jugador agregado a la plantilla.'
 );
 
 const editarJugador = (req, res) => runDashboardAction(
   req,
   res,
-  () => updatePlayerData(req.params.id, req.body),
+  () => withUploadedPlayerPhoto(req, (payload) => updatePlayerData(req.params.id, payload)),
   'Datos del jugador actualizados.'
 );
 

@@ -77,4 +77,10 @@ const uploadAnnouncementImage = createImageUpload({
   maxCount: 5
 });
 
-module.exports = { uploadShield, uploadGalleryImage, uploadAnnouncementImage };
+const uploadPlayerPhoto = createImageUpload({
+  field: 'foto',
+  maxSize: 3 * 1024 * 1024,
+  label: 'La foto del jugador'
+});
+
+module.exports = { uploadShield, uploadGalleryImage, uploadAnnouncementImage, uploadPlayerPhoto };

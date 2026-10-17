@@ -1,7 +1,7 @@
 const express = require('express');
 const adminController = require('../controllers/admin.controller');
 const { esAdmin } = require('../middlewares/auth.middleware');
-const { uploadShield, uploadGalleryImage, uploadAnnouncementImage } = require('../middlewares/upload.middleware');
+const { uploadShield, uploadGalleryImage, uploadAnnouncementImage, uploadPlayerPhoto } = require('../middlewares/upload.middleware');
 
 const router = express.Router();
 
@@ -22,9 +22,9 @@ router.post('/equipos/:id/editar', uploadShield, adminController.editarEquipo);
 router.post('/equipos/:id/eliminar', adminController.eliminarEquipo);
 router.post('/equipos/:id/estadisticas', adminController.guardarEstadisticasEquipo);
 router.post('/equipos/:id/capitan', adminController.actualizarCapitanEquipo);
-router.post('/jugadores', adminController.guardarJugador);
+router.post('/jugadores', uploadPlayerPhoto, adminController.guardarJugador);
 router.post('/jugadores/actualizacion-lote', adminController.guardarEstadisticasJugadores);
-router.post('/jugadores/:id/editar', adminController.editarJugador);
+router.post('/jugadores/:id/editar', uploadPlayerPhoto, adminController.editarJugador);
 router.post('/jugadores/:id/goles', adminController.guardarGolesJugador);
 router.post('/jugadores/:id/eliminar', adminController.eliminarJugador);
 router.post('/partidos', adminController.guardarPartido);
