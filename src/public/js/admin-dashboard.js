@@ -6,6 +6,7 @@
 
   const tabs = Array.from(navigation.querySelectorAll('[data-admin-tab]'));
   const panels = Array.from(document.querySelectorAll('[data-admin-panel]'));
+  const sportScope = document.querySelector('[data-admin-sport-scope]');
   const mobileNavigation = window.matchMedia('(max-width: 760px)');
 
   if (!tabs.length || !panels.length) return;
@@ -68,6 +69,11 @@
     panels.forEach((panel) => {
       panel.hidden = panel.dataset.adminPanel !== section;
     });
+    if (sportScope) {
+      sportScope.hidden = panels.some((panel) => (
+        panel.dataset.adminPanel === section && panel.dataset.adminGlobal === 'true'
+      ));
+    }
 
     const activeSectionLabel = mobileNavigationToggle?.querySelector('[data-active-admin-section]');
     if (activeSectionLabel) activeSectionLabel.textContent = activeTab.textContent.trim();
@@ -108,8 +114,9 @@
 })();
 
 (function initializeAdminModals() {
-  document.querySelectorAll('[data-modal-open]').forEach((trigger) => {
-    trigger.addEventListener('click', () => {
+  document.addEventListener('click', (event) => {
+      const trigger = event.target.closest('[data-modal-open]');
+      if (!trigger) return;
       const modal = document.getElementById(trigger.dataset.modalOpen);
       if (!modal) return;
 
@@ -141,6 +148,10 @@
         modal.querySelector('#team-editor-category').value = trigger.dataset.teamCategory || '';
         modal.querySelector('#team-editor-sport').value = trigger.dataset.teamSport || 'futbol';
         modal.querySelector('#team-editor-shield').value = '';
+        const crestPreview = modal.querySelector('#team-editor-crest-preview');
+        crestPreview.src = trigger.dataset.teamCrest || '';
+        crestPreview.alt = `Bandera de ${trigger.dataset.teamName || 'equipo'}`;
+        crestPreview.hidden = !trigger.dataset.teamCrest;
       }
 
       if (modal.id === 'match-editor-modal') {
@@ -180,7 +191,6 @@
       if (typeof modal.showModal === 'function') modal.showModal();
       else modal.setAttribute('open', '');
       modal.querySelector('input:not([type="hidden"])')?.focus();
-    });
   });
 
   document.querySelectorAll('[data-modal-close]').forEach((button) => {
@@ -195,34 +205,298 @@
 })();
 
 (function initializeAdminFilters() {
-  document.querySelectorAll('[data-filter-target]').forEach((input) => {
-    const targets = Array.from(document.querySelectorAll(input.dataset.filterTarget));
-    const statusFilter = input.parentElement.querySelector('[data-filter-status]');
-    const categoryFilter = input.parentElement.querySelector('[data-filter-category]');
-    const filter = () => {
+  const sportChoices = Array.from(document.querySelectorAll('[data-admin-sport-choice]'));
+  const categoryFilter = document.querySelector('[data-admin-category-filter]');
+  const status = document.querySelector('[data-admin-scope-status]');
+  const errorBox = document.querySelector('[data-admin-scope-error]');
+  const teamList = document.querySelector('#equipos .result-list.dashboard-list');
+  const matchList = document.querySelector('[data-admin-panel="matches"] .result-list.dashboard-list');
+  const standingsBody = document.querySelector('.standings-table tbody');
+  const requests = Array.from(document.querySelectorAll('.enrollment-request-card'));
+  const matchModal = document.querySelector('#match-editor-modal');
+  const matchHome = matchModal?.querySelector('#match-editor-home');
+  const matchAway = matchModal?.querySelector('#match-editor-away');
+  const params = new URLSearchParams(window.location.search);
+  const validSports = new Set(sportChoices.map((choice) => choice.dataset.adminSportChoice));
+  const validCategories = new Set(Array.from(categoryFilter?.options || []).map((option) => option.value));
+  let currentSport = validSports.has(params.get('deporte')) ? params.get('deporte') : 'futbol';
+  const requestedCategory = params.get('categoria') || '';
+  const needsUrlNormalization = !validSports.has(params.get('deporte'))
+    || (requestedCategory && !validCategories.has(requestedCategory));
+  let requestController;
+
+  if (categoryFilter) categoryFilter.value = validCategories.has(requestedCategory) ? requestedCategory : '';
+
+  const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (character) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  })[character]);
+  const sportName = (id) => sportChoices.find((choice) => choice.dataset.adminSportChoice === id)?.querySelector('span')?.textContent || 'Fútbol';
+  const setStatus = (message) => { if (status) status.textContent = message; };
+
+  function renderTeams(teams) {
+    if (!teamList) return;
+    if (!teams.length) {
+      teamList.innerHTML = '<p>No hay equipos para este deporte y categoría.</p>';
+      return;
+    }
+    teamList.innerHTML = teams.map((team) => {
+      const id = escapeHtml(team.id);
+      const name = escapeHtml(team.nombre);
+      const category = escapeHtml(team.categoria);
+      const captain = escapeHtml(team.capitanNombre || 'Sin asignar');
+      const players = team.jugadores || [];
+      const roster = players.length ? `<input class="admin-player-search" type="search" placeholder="Buscar jugador en ${name}..." aria-label="Buscar jugadores de ${name}" data-roster-search>` : '';
+      const rows = players.map((player) => `
+        <tr><td data-label="Jugador"><span class="admin-player-avatar" aria-hidden="true"></span><strong>${escapeHtml(player.nombre)}</strong></td>
+        <td data-label="Grado / sección"><span class="admin-player-grade">${escapeHtml(player.grado || '')}</span></td><td data-label="Posición">${escapeHtml(player.posicion || '—')}</td>
+        <td data-label="Camiseta"><input class="admin-roster-number" type="number" min="0" max="99" step="1" value="${Number(player.numero_camiseta) || 0}" aria-label="Número de camiseta de ${escapeHtml(player.nombre)}" data-roster-number data-player-id="${escapeHtml(player.id)}" data-initial-value="${Number(player.numero_camiseta) || 0}" required></td>
+        <td data-label="Goles"><form class="goal-update-form" action="/admin/jugadores/${escapeHtml(player.id)}/goles" method="post">
+          <input type="number" name="goles" min="0" step="1" value="${Number(player.goles) || 0}" aria-label="Goles de ${escapeHtml(player.nombre)}" data-roster-goals data-player-id="${escapeHtml(player.id)}" data-initial-value="${Number(player.goles) || 0}" required>
+          <button class="icon-action" type="submit" aria-label="Guardar goles">✓</button></form></td>
+        <td data-label="Acciones"><div class="admin-player-actions"><button class="admin-change-captain" type="button" data-modal-open="player-editor-modal"
+          data-player-id="${escapeHtml(player.id)}" data-team-id="${id}" data-team-name="${name}" data-player-name="${escapeHtml(player.nombre)}"
+          data-player-grade="${escapeHtml(player.grado)}" data-player-position="${escapeHtml(player.posicion)}" data-player-number="${Number(player.numero_camiseta) || 0}"
+          data-player-goals="${Number(player.goles) || 0}">Editar</button>
+          <form action="/admin/jugadores/${escapeHtml(player.id)}/eliminar" method="post"><button class="admin-delete-team" type="submit">Eliminar</button></form></div></td></tr>`).join('');
+      return `<article class="result-item admin-team-item" data-admin-sport="${escapeHtml(team.deporte || 'futbol')}" data-admin-category="${category}" data-search="${escapeHtml(`${team.nombre} ${team.categoria} ${team.capitanNombre || ''}`.toLowerCase())}">
+        <div class="admin-team-heading">${team.escudoUrl ? `<img class="admin-team-crest" src="${escapeHtml(team.escudoUrl)}" alt="Bandera de ${name}" loading="lazy">` : `<span class="admin-team-crest admin-team-crest--empty">${name.slice(0, 1)}</span>`}
+        <div><strong>${name}${team.gradoPrincipal ? ` <span class="admin-team-primary-grade">· ${escapeHtml(team.gradoPrincipal)}</span>` : ''}</strong><small>${escapeHtml(sportName(team.deporte))} · ${category} · Capitán: ${captain}</small>${team.capitanEmail ? `<small>${escapeHtml(team.capitanEmail)}</small>` : ''}</div></div>
+        <div class="admin-team-actions"><button class="admin-change-captain" type="button" data-modal-open="team-editor-modal" data-team-id="${id}" data-team-name="${name}" data-team-category="${category}" data-team-sport="${escapeHtml(team.deporte)}" data-team-crest="${escapeHtml(team.escudoUrl || '')}">Editar equipo</button>
+        <button class="admin-change-captain" type="button" data-modal-open="captain-editor-modal" data-team-id="${id}" data-team-name="${name}" data-captain-email="${escapeHtml(team.capitanEmail || '')}">${team.capitanEmail ? 'Cambiar capitán' : 'Asignar capitán'}</button>
+        <button class="admin-add-player" type="button" data-modal-open="player-editor-modal" data-team-id="${id}" data-team-name="${name}">+ Agregar jugador</button>
+        <form action="/admin/equipos/${id}/eliminar" method="post" onsubmit="return confirm('Solo se eliminará el equipo si no tiene jugadores ni partidos asociados. ¿Continuar?')"><button class="admin-delete-team" type="submit">Eliminar equipo</button></form></div>
+        <div class="admin-roster"><div class="admin-roster-heading"><strong>Plantilla</strong><span>${players.length} jugadores</span></div>${roster}
+        ${players.length ? `<div class="admin-roster-table-wrap"><table class="admin-roster-table"><thead><tr><th scope="col">Jugador</th><th scope="col">Grado / sección</th><th scope="col">Posición</th><th scope="col">Camiseta</th><th scope="col">Goles</th><th scope="col">Acciones</th></tr></thead><tbody>${rows}</tbody></table></div>
+          <div class="admin-roster-save"><p class="admin-roster-feedback" role="status" aria-live="polite" data-roster-feedback hidden></p><button class="admin-roster-save-button" type="button" data-save-roster aria-label="Confirmar y guardar cambios de camiseta y goles"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m5 12 4 4L19 6"></path></svg>Guardar cambios</button></div>` : '<p class="form-hint">Todavía no hay jugadores para este equipo.</p>'}</div></article>`;
+    }).join('');
+  }
+
+  function renderMatches(matches) {
+    if (!matchList) return;
+    if (!matches.length) {
+      matchList.innerHTML = '<p>No hay partidos para este deporte y categoría.</p>';
+      return;
+    }
+    matchList.innerHTML = matches.map((match) => `<article class="match-admin-item" data-match-status="${escapeHtml(match.estado)}" data-admin-sport="${escapeHtml(match.deporte)}" data-admin-category="${escapeHtml(match.categoria)}" data-search="${escapeHtml(`${match.equipo_local} ${match.equipo_visitante} ${match.cancha || ''}`.toLowerCase())}">
+      <div class="result-item"><div class="match-admin-teams"><strong>${escapeHtml(match.equipo_local)}</strong><span>vs.</span><strong>${escapeHtml(match.equipo_visitante)}</strong><small>${Number(match.goles_local) || 0} - ${Number(match.goles_visitante) || 0}</small></div>
+      <span>${escapeHtml(sportName(match.deporte))} · ${escapeHtml(match.fecha_partido)} · ${escapeHtml(match.hora_partido)} · ${escapeHtml(match.cancha || '')} · ${escapeHtml(match.estado)}</span>
+      <button class="btn btn-secondary dark" type="button" data-modal-open="match-editor-modal" data-match-id="${escapeHtml(match.id)}" data-match-home-id="${escapeHtml(match.equipo_local_id || '')}" data-match-away-id="${escapeHtml(match.equipo_visitante_id || '')}" data-match-date="${escapeHtml(match.fecha_partido)}" data-match-time="${escapeHtml(match.hora_partido)}" data-match-venue="${escapeHtml(match.cancha || '')}" data-match-status="${escapeHtml(match.estado)}">Editar partido</button></div>
+      <div class="result-item"><span>Marcador: <strong>${escapeHtml(match.resultado || '')}</strong></span><form action="/admin/partidos/${escapeHtml(match.id)}/resultados" method="post" class="score-form"><input type="number" name="golesLocal" min="0" value="${Number(match.goles_local) || 0}" required><span>-</span><input type="number" name="golesVisitante" min="0" value="${Number(match.goles_visitante) || 0}" required><button type="submit" class="btn btn-secondary dark">Guardar marcador</button></form>
+      <form action="/admin/partidos/${escapeHtml(match.id)}/eliminar" method="post"><button type="submit" class="btn btn-danger">Eliminar</button></form></div></article>`).join('');
+  }
+
+  function renderStandings(rows) {
+    if (!standingsBody) return;
+    standingsBody.innerHTML = rows.length ? rows.map((team) => `<tr class="admin-standing-row" data-category="${escapeHtml(team.category)}" data-admin-category="${escapeHtml(team.category)}" data-admin-sport="${escapeHtml(team.deporte)}" data-search="${escapeHtml(`${team.name} ${team.category}`.toLowerCase())}">
+      <td class="standings-rank">${team.rank}</td><th scope="row">${escapeHtml(team.name)}<small>${escapeHtml(team.category)}</small></th><td>${team.played}</td><td>${team.won}</td><td>${team.drawn}</td><td>${team.lost}</td><td>${team.goalsFor}</td><td>${team.goalsAgainst}</td><td>${team.goalDifference}</td><td class="standings-points">${team.points}</td></tr>`).join('')
+      : '<tr><td colspan="10" class="sports-empty">No hay equipos ni resultados para esta selección.</td></tr>';
+  }
+
+  function applyTextFilters() {
+    document.querySelectorAll('[data-filter-target]').forEach((input) => {
+      const statusFilter = input.parentElement.querySelector('[data-filter-status]');
       const query = input.value.trim().toLocaleLowerCase();
-      const status = statusFilter?.value || '';
-      const category = categoryFilter?.value || '';
-      targets.forEach((item) => {
-        const text = item.dataset.search || item.textContent;
-        const matchesText = !query || text.toLocaleLowerCase().includes(query);
-        const matchesStatus = !status || item.dataset.matchStatus === status;
-        const matchesCategory = !category || item.dataset.category === category;
-        item.hidden = !(matchesText && matchesStatus && matchesCategory);
+      document.querySelectorAll(input.dataset.filterTarget).forEach((item) => {
+        item.hidden = Boolean((query && !(item.dataset.search || item.textContent).toLocaleLowerCase().includes(query))
+          || (statusFilter?.value && item.dataset.matchStatus !== statusFilter.value));
       });
-    };
-    input.addEventListener('input', filter);
-    statusFilter?.addEventListener('change', filter);
-    categoryFilter?.addEventListener('change', filter);
+    });
+    document.querySelectorAll('[data-roster-search]').forEach((input) => {
+      const query = input.value.trim().toLocaleLowerCase();
+      input.closest('.admin-roster')?.querySelectorAll('tbody tr').forEach((row) => {
+        row.hidden = !row.textContent.toLocaleLowerCase().includes(query);
+      });
+    });
+  }
+
+  async function loadScope({ updateUrl = true, pushState = false } = {}) {
+    if (requestController) requestController.abort();
+    const controller = new AbortController();
+    requestController = controller;
+    const category = categoryFilter?.value || '';
+    sportChoices.forEach((choice) => choice.setAttribute('aria-pressed', String(choice.dataset.adminSportChoice === currentSport)));
+    if (updateUrl) {
+      const next = new URL(window.location.href);
+      next.searchParams.set('deporte', currentSport);
+      if (category) next.searchParams.set('categoria', category);
+      else next.searchParams.delete('categoria');
+      window.history[pushState ? 'pushState' : 'replaceState']({}, '', next);
+    }
+    if (errorBox) { errorBox.hidden = true; errorBox.textContent = ''; }
+    setStatus(`Cargando ${sportName(currentSport)}${category ? ` · ${category}` : ''}…`);
+    document.querySelectorAll('#equipos .result-list, [data-admin-panel="matches"] .result-list').forEach((list) => list.setAttribute('aria-busy', 'true'));
+    try {
+      const query = new URLSearchParams({ deporte: currentSport, categoria: category });
+      const response = await fetch(`/admin/api/torneo?${query}`, { headers: { Accept: 'application/json' }, signal: controller.signal });
+      const data = await response.json();
+      if (!response.ok || !data.ok) throw new Error(data.message || 'No se pudieron cargar los datos del torneo.');
+      renderTeams(data.equipos || []);
+      renderMatches(data.partidos || []);
+      renderStandings(data.posiciones || []);
+      const totals = data.resumen || {};
+      document.querySelector('[data-kpi="teams"]').textContent = String(totals.equipos ?? 0);
+      document.querySelector('[data-kpi="matches"]').textContent = String(totals.partidosPendientes ?? 0);
+      document.querySelector('[data-kpi="goals"]').textContent = String(totals.goles ?? 0);
+      requests.forEach((request) => { request.hidden = (request.dataset.adminSport !== currentSport) || Boolean(category && request.dataset.adminCategory !== category); });
+      applyTextFilters();
+      filterMatchTeamOptions();
+      setStatus(`${sportName(currentSport)}${category ? ` · ${category}` : ' · todas las categorías'}`);
+    } catch (error) {
+      if (error.name === 'AbortError') return;
+      if (errorBox) {
+        errorBox.replaceChildren(document.createTextNode(error.message || 'No fue posible cargar esta selección.'));
+        const retry = document.createElement('button');
+        retry.type = 'button';
+        retry.className = 'admin-quiet-button';
+        retry.textContent = 'Reintentar';
+        retry.addEventListener('click', () => loadScope({ updateUrl: false }));
+        errorBox.append(' ', retry);
+        errorBox.hidden = false;
+      }
+      setStatus('No se pudo actualizar la selección.');
+    } finally {
+      if (!controller.signal.aborted) {
+        document.querySelectorAll('#equipos .result-list, [data-admin-panel="matches"] .result-list').forEach((list) => list.removeAttribute('aria-busy'));
+      }
+    }
+  }
+
+  sportChoices.forEach((choice) => choice.addEventListener('click', () => {
+    if (currentSport === choice.dataset.adminSportChoice) return;
+    currentSport = choice.dataset.adminSportChoice;
+    loadScope({ pushState: true });
+  }));
+  categoryFilter?.addEventListener('change', () => loadScope({ pushState: true }));
+  document.querySelectorAll('[data-filter-target]').forEach((input) => {
+    input.addEventListener('input', applyTextFilters);
+    input.parentElement.querySelector('[data-filter-status]')?.addEventListener('change', applyTextFilters);
+    input.parentElement.querySelector('[data-filter-category]')?.addEventListener('change', applyTextFilters);
+  });
+  document.addEventListener('input', (event) => {
+    if (event.target.matches('.goal-update-form input[name="goles"], [data-roster-number], [data-roster-search]')) applyTextFilters();
+  });
+  document.addEventListener('click', async (event) => {
+    const button = event.target.closest('[data-save-roster]');
+    if (!button) return;
+
+    const roster = button.closest('.admin-roster');
+    const feedback = roster?.querySelector('[data-roster-feedback]');
+    if (!roster || !feedback) return;
+    const rows = Array.from(roster.querySelectorAll('tbody tr'));
+    const changedPlayers = [];
+
+    for (const row of rows) {
+      const numberInput = row.querySelector('[data-roster-number]');
+      const goalsInput = row.querySelector('[data-roster-goals]');
+      if (!numberInput || !goalsInput) continue;
+      if (!numberInput.checkValidity()) {
+        numberInput.reportValidity();
+        numberInput.focus();
+        return;
+      }
+      if (!goalsInput.checkValidity()) {
+        goalsInput.reportValidity();
+        goalsInput.focus();
+        return;
+      }
+      if (numberInput.value !== numberInput.dataset.initialValue
+        || goalsInput.value !== goalsInput.dataset.initialValue) {
+        changedPlayers.push({
+          id: numberInput.dataset.playerId,
+          numero_camiseta: numberInput.value,
+          goles: goalsInput.value
+        });
+      }
+    }
+
+    feedback.className = 'admin-roster-feedback';
+    feedback.setAttribute('role', 'status');
+    if (!changedPlayers.length) {
+      feedback.hidden = false;
+      feedback.textContent = 'No hay cambios pendientes en esta plantilla.';
+      return;
+    }
+    if (!window.confirm(`¿Guardar los cambios de camiseta y goles de ${changedPlayers.length} ${changedPlayers.length === 1 ? 'jugador' : 'jugadores'}?`)) {
+      feedback.hidden = true;
+      return;
+    }
+
+    feedback.hidden = false;
+    button.disabled = true;
+    button.setAttribute('aria-busy', 'true');
+    feedback.textContent = 'Guardando cambios…';
+    try {
+      const response = await fetch('/admin/jugadores/actualizacion-lote', {
+        method: 'POST',
+        headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        body: JSON.stringify({ jugadores: changedPlayers })
+      });
+      const result = await response.json();
+      if (!response.ok || !result.ok) throw new Error(result.message || 'No se pudieron guardar los cambios.');
+
+      changedPlayers.forEach((player) => {
+        const numberInput = Array.from(roster.querySelectorAll('[data-roster-number]'))
+          .find((input) => input.dataset.playerId === player.id);
+        const goalsInput = Array.from(roster.querySelectorAll('[data-roster-goals]'))
+          .find((input) => input.dataset.playerId === player.id);
+        if (numberInput) numberInput.dataset.initialValue = numberInput.value;
+        if (goalsInput) goalsInput.dataset.initialValue = goalsInput.value;
+        const editButton = rowButtonForPlayer(roster, player.id);
+        if (editButton) {
+          editButton.dataset.playerNumber = player.numero_camiseta;
+          editButton.dataset.playerGoals = player.goles;
+        }
+      });
+      feedback.classList.add('is-success');
+      feedback.textContent = result.message || 'Se guardaron los cambios de la plantilla.';
+    } catch (error) {
+      feedback.classList.add('is-error');
+      feedback.setAttribute('role', 'alert');
+      feedback.textContent = error.message || 'No fue posible guardar los cambios. Verifica tu conexión e inténtalo de nuevo.';
+    } finally {
+      button.disabled = false;
+      button.removeAttribute('aria-busy');
+    }
   });
 
-  document.querySelectorAll('[data-roster-search]').forEach((input) => {
-    const rows = Array.from(input.closest('.admin-roster').querySelectorAll('tbody tr'));
-    input.addEventListener('input', () => {
-      const query = input.value.trim().toLocaleLowerCase();
-      rows.forEach((row) => { row.hidden = !row.textContent.toLocaleLowerCase().includes(query); });
+  function rowButtonForPlayer(roster, playerId) {
+    return Array.from(roster.querySelectorAll('[data-player-id][data-player-number]'))
+      .find((button) => button.dataset.playerId === playerId);
+  }
+  function filterMatchTeamOptions() {
+    if (!matchHome || !matchAway) return;
+    const editMode = Boolean(matchModal.dataset.editing === 'true');
+    const selected = matchHome.selectedOptions[0]?.value ? matchHome.selectedOptions[0] : matchAway.selectedOptions[0];
+    const sport = selected?.dataset.sport || currentSport;
+    const category = selected?.dataset.category || categoryFilter?.value || '';
+    [matchHome, matchAway].forEach((select) => {
+      const other = select === matchHome ? matchAway.selectedOptions[0] : matchHome.selectedOptions[0];
+      Array.from(select.options).forEach((option) => {
+        if (!option.value) { option.hidden = false; return; }
+        const sameScope = option.dataset.sport === sport && (!category || option.dataset.category === category);
+        const sameOpponentGroup = !other?.value || (option.dataset.sport === other.dataset.sport
+          && option.dataset.category === other.dataset.category);
+        option.hidden = !(editMode ? sameOpponentGroup : sameScope && sameOpponentGroup);
+      });
+      if (select.selectedOptions[0]?.hidden) select.value = '';
     });
+  }
+  matchHome?.addEventListener('change', filterMatchTeamOptions);
+  matchAway?.addEventListener('change', filterMatchTeamOptions);
+  matchModal?.addEventListener('close', () => { matchModal.dataset.editing = 'false'; });
+  document.addEventListener('click', (event) => {
+    const trigger = event.target.closest('[data-modal-open="match-editor-modal"]');
+    if (!trigger || !matchModal) return;
+    matchModal.dataset.editing = String(Boolean(trigger.dataset.matchId));
+    filterMatchTeamOptions();
   });
+  window.addEventListener('popstate', () => {
+    const restored = new URLSearchParams(window.location.search);
+    currentSport = validSports.has(restored.get('deporte')) ? restored.get('deporte') : 'futbol';
+    if (categoryFilter) categoryFilter.value = restored.get('categoria') || '';
+    loadScope({ updateUrl: false });
+  });
+  loadScope({ updateUrl: needsUrlNormalization });
 })();
 
 (function initializeAnnouncementEditor() {
@@ -385,8 +659,9 @@
 })();
 
 (function initializeAdminAjaxForms() {
-  document.querySelectorAll('.dashboard-content form[method="post"]:not([data-enrollment-toggle])').forEach((form) => {
-    form.addEventListener('submit', async (event) => {
+  document.addEventListener('submit', async (event) => {
+      const form = event.target.closest('.dashboard-content form[method="post"]:not([data-enrollment-toggle])');
+      if (!form) return;
       if (event.defaultPrevented) return;
       event.preventDefault();
 
@@ -443,7 +718,6 @@
         feedback.setAttribute('role', 'alert');
         feedback.textContent = 'No se pudo completar la solicitud. Verifica tu conexión e inténtalo de nuevo.';
       }
-    });
   });
 })();
 

@@ -1,32 +1,57 @@
 const { createEquipo, addJugador, createPartido, actualizarResultadoPartido, listarPartidos } = require('../services/gestion.service');
-const { listAdminTeams, MATCH_STATUSES, getPopup, updatePopup, listPlayers, listUsers, updateTeamStats, updateTeamCaptain, updateTeam, deleteTeam, updateMatch, updatePlayerGoals, updatePlayerData, deleteMatch, deletePlayer } = require('../services/admin.service');
+const { listAdminTeams, MATCH_STATUSES, getPopup, updatePopup, listPlayers, getPrimaryTeamGrade, updatePlayerStatsBatch, listUsers, updateTeamStats, updateTeamCaptain, updateTeam, deleteTeam, updateMatch, updatePlayerGoals, updatePlayerData, deleteMatch, deletePlayer } = require('../services/admin.service');
 const { listGalleryImages, saveGalleryImages, deleteGalleryImage, toggleGalleryImage } = require('../services/gallery.service');
 const { saveAnnouncementImages, removeAnnouncementImage } = require('../services/announcement-image.service');
 const tournamentService = require('../services/tournament.service');
 const TEAM_CATEGORIES = require('../constants/team-categories');
-const { SPORTS } = require('../constants/sports');
+const { SPORTS, SPORT_IDS } = require('../constants/sports');
 const enrollmentService = require('../services/enrollment.service');
 
 async function dashboardData() {
-  const [equipos, partidos, popup, jugadores, usuarios, posiciones, galleryImages, enrollmentRequests, enrollmentConfig] = await Promise.all([
+  const standingsGroups = SPORTS.flatMap((sport) => TEAM_CATEGORIES.map((categoria) => ({ sport: sport.id, categoria })));
+  const [equipos, partidos, popup, jugadores, usuarios, posicionesPorGrupo, galleryImages, enrollmentRequests, enrollmentConfig] = await Promise.all([
     listAdminTeams(),
     listarPartidos(),
     getPopup(),
     listPlayers(),
     listUsers(),
-    tournamentService.getStandings(),
+    Promise.all(standingsGroups.map(({ sport, categoria }) => tournamentService.getStandings(categoria, sport))),
     listGalleryImages(),
     enrollmentService.listEnrollmentRequests(),
     enrollmentService.getEnrollmentConfig()
   ]);
 
+  const posiciones = posicionesPorGrupo.flatMap((group, groupIndex) => {
+    const { sport, categoria } = standingsGroups[groupIndex];
+    return group.map((team, index) => ({ ...team, deporte: sport, category: categoria, rank: index + 1 }));
+  });
+  const playersByTeam = new Map();
+  jugadores.forEach((jugador) => {
+    if (!jugador.equipo_id) return;
+    if (!playersByTeam.has(jugador.equipo_id)) playersByTeam.set(jugador.equipo_id, []);
+    playersByTeam.get(jugador.equipo_id).push(jugador);
+  });
+  const equiposConGrado = equipos.map((equipo) => ({
+    ...equipo,
+    gradoPrincipal: getPrimaryTeamGrade(playersByTeam.get(equipo.id) || [])
+  }));
+  const teamById = new Map(equipos.map((team) => [team.id, team]));
+  const teamByName = new Map(equipos.map((team) => [team.nombre, team]));
+  const partidosConCategoria = partidos.map((partido) => {
+    const homeTeam = teamById.get(partido.equipo_local_id) || teamByName.get(partido.equipo_local);
+    const awayTeam = teamById.get(partido.equipo_visitante_id) || teamByName.get(partido.equipo_visitante);
+    return {
+      ...partido,
+      categoria: homeTeam?.categoria || awayTeam?.categoria || ''
+    };
+  });
   const kpis = {
     equipos: equipos.length,
-    partidosPendientes: partidos.filter((partido) => partido.estado !== 'Finalizado').length,
+    partidosPendientes: partidosConCategoria.filter((partido) => partido.estado !== 'Finalizado').length,
     goles: jugadores.reduce((total, jugador) => total + Number(jugador.goles || 0), 0),
     anunciosActivos: popup.activo ? 1 : 0
   };
-  return { equipos, partidos, popup, jugadores, usuarios, posiciones, galleryImages, enrollmentRequests, enrollmentConfig, sports: SPORTS, estadosPartido: MATCH_STATUSES, categoriasEquipo: TEAM_CATEGORIES, kpis };
+  return { equipos: equiposConGrado, partidos: partidosConCategoria, popup, jugadores, usuarios, posiciones, galleryImages, enrollmentRequests, enrollmentConfig, sports: SPORTS, estadosPartido: MATCH_STATUSES, categoriasEquipo: TEAM_CATEGORIES, kpis };
 }
 
 async function renderDashboard(req, res, { error = null, success = null } = {}) {
@@ -37,6 +62,8 @@ async function renderDashboard(req, res, { error = null, success = null } = {}) 
       user: req.session.user,
       error,
       success,
+      selectedSport: SPORT_IDS.includes(req.query.deporte) ? req.query.deporte : 'futbol',
+      selectedCategory: TEAM_CATEGORIES.includes(req.query.categoria) ? req.query.categoria : '',
       ...data
     });
   } catch (loadError) {
@@ -53,6 +80,8 @@ async function renderDashboard(req, res, { error = null, success = null } = {}) 
       enrollmentRequests: [],
       enrollmentConfig: { inscripcionesAbiertas: false },
       sports: SPORTS,
+      selectedSport: SPORT_IDS.includes(req.query.deporte) ? req.query.deporte : 'futbol',
+      selectedCategory: TEAM_CATEGORIES.includes(req.query.categoria) ? req.query.categoria : '',
       kpis: { equipos: 0, partidosPendientes: 0, goles: 0, anunciosActivos: 0 },
       estadosPartido: MATCH_STATUSES,
       categoriasEquipo: TEAM_CATEGORIES,
@@ -64,6 +93,73 @@ async function renderDashboard(req, res, { error = null, success = null } = {}) 
 
 function dashboard(req, res) {
   return renderDashboard(req, res, { error: req.query.error || null });
+}
+
+async function adminOverview(req, res) {
+  const sport = String(req.query.deporte || 'futbol').trim().toLowerCase();
+  const category = String(req.query.categoria || '').trim();
+  if (sport && !SPORT_IDS.includes(sport)) {
+    return res.status(400).json({ ok: false, message: 'El deporte seleccionado no es válido.' });
+  }
+  if (category && !TEAM_CATEGORIES.includes(category)) {
+    return res.status(400).json({ ok: false, message: 'La categoría seleccionada no es válida.' });
+  }
+
+  try {
+    const categories = category ? [category] : TEAM_CATEGORIES;
+    const [allTeams, allMatches, allPlayers, standingsGroups] = await Promise.all([
+      listAdminTeams(),
+      listarPartidos(),
+      listPlayers(),
+      Promise.all(categories.map((entry) => tournamentService.getStandings(entry, sport)))
+    ]);
+    const equipos = allTeams.filter((team) => team.deporte === sport
+      && (!category || team.categoria === category));
+    const teamIds = new Set(equipos.map((team) => team.id));
+    const players = allPlayers.filter((player) => teamIds.has(player.equipo_id));
+    const playersByTeam = new Map();
+    players.forEach((player) => {
+      if (!playersByTeam.has(player.equipo_id)) playersByTeam.set(player.equipo_id, []);
+      playersByTeam.get(player.equipo_id).push(player);
+    });
+    const teamById = new Map(allTeams.map((team) => [team.id, team]));
+    const teamByName = new Map(allTeams.map((team) => [team.nombre, team]));
+    const partidos = allMatches.filter((match) => {
+      const home = teamById.get(match.equipo_local_id) || teamByName.get(match.equipo_local);
+      const away = teamById.get(match.equipo_visitante_id) || teamByName.get(match.equipo_visitante);
+      return match.deporte === sport && (!category || (home?.categoria || away?.categoria) === category);
+    }).map((match) => {
+      const home = teamById.get(match.equipo_local_id) || teamByName.get(match.equipo_local);
+      const away = teamById.get(match.equipo_visitante_id) || teamByName.get(match.equipo_visitante);
+      return { ...match, categoria: home?.categoria || away?.categoria || '' };
+    });
+    const posiciones = standingsGroups.flatMap((group, index) => group.map((team, rank) => ({
+      ...team,
+      deporte: sport,
+      category: categories[index],
+      rank: rank + 1
+    })));
+    const goals = players.reduce((total, player) => total + Number(player.goles || 0), 0);
+    return res.json({
+      ok: true,
+      filtros: { deporte: sport, categoria: category || 'todas' },
+      equipos: equipos.map((team) => ({
+        ...team,
+        jugadores: playersByTeam.get(team.id) || [],
+        gradoPrincipal: getPrimaryTeamGrade(playersByTeam.get(team.id) || [])
+      })),
+      jugadores: players,
+      partidos,
+      posiciones,
+      resumen: {
+        equipos: equipos.length,
+        partidosPendientes: partidos.filter((match) => match.estado !== 'Finalizado').length,
+        goles: goals
+      }
+    });
+  } catch (error) {
+    return res.status(500).json({ ok: false, message: 'No fue posible cargar el resumen administrativo.' });
+  }
 }
 
 async function runDashboardAction(req, res, action, success, { requireBody = true } = {}) {
@@ -235,6 +331,23 @@ const guardarGolesJugador = (req, res) => runDashboardAction(
   'Goles del jugador actualizados.'
 );
 
+async function guardarEstadisticasJugadores(req, res) {
+  if (!req.body || typeof req.body !== 'object' || Array.isArray(req.body)) {
+    return res.status(400).json({ ok: false, message: 'Los datos de la actualización no son válidos.' });
+  }
+
+  try {
+    const result = await updatePlayerStatsBatch(req.body.jugadores);
+    return res.json({
+      ok: true,
+      message: `Se actualizaron ${result.updated} ${result.updated === 1 ? 'jugador' : 'jugadores'}.`,
+      updated: result.updated
+    });
+  } catch (error) {
+    return res.status(422).json({ ok: false, message: error.message || 'No se pudieron actualizar los jugadores.' });
+  }
+}
+
 async function actualizarDisponibilidadInscripcion(req, res) {
   if (!req.body || typeof req.body !== 'object' || Array.isArray(req.body) || Object.keys(req.body).length === 0) {
     return res.status(400).json({ success: false, message: 'Cuerpo de la petición vacío.' });
@@ -290,6 +403,7 @@ const eliminarSolicitudInscripcion = (req, res) => runDashboardAction(
 
 module.exports = {
   dashboard,
+  adminOverview,
   guardarPopup,
   guardarPartido,
   editarPartido,
@@ -303,6 +417,7 @@ module.exports = {
   guardarJugador,
   editarJugador,
   guardarGolesJugador,
+  guardarEstadisticasJugadores,
   eliminarJugador,
   subirImagenGaleria,
   eliminarImagenGaleria,

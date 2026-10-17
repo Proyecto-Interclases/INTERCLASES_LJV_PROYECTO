@@ -18,7 +18,7 @@ test('el seed Mundialito 2026 contiene equipos, categorías, grados y banderas o
     }, {}),
     { 'Categoría A': 9, 'Categoría B': 7 }
   );
-  assert.deepEqual(TEAM_CATEGORIES, ['Categoría A', 'Categoría B']);
+  assert.deepEqual(TEAM_CATEGORIES, ['Categoría A', 'Categoría B', 'Docentes']);
 
   for (const team of teams) {
     assert.ok(team.grado);

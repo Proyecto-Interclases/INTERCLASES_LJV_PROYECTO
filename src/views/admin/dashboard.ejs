@@ -51,10 +51,28 @@
           <div class="auth-alert success" role="status"><%= success %></div>
         <% } %>
         <section class="admin-kpis" aria-label="Resumen del torneo">
-          <article><span>Equipos inscritos</span><strong><%= kpis.equipos %></strong><small>En el torneo</small></article>
-          <article><span>Partidos pendientes</span><strong><%= kpis.partidosPendientes %></strong><small>Por jugar o en curso</small></article>
-          <article><span>Goles registrados</span><strong><%= kpis.goles %></strong><small>En todas las plantillas</small></article>
+          <article><span>Equipos inscritos</span><strong data-kpi="teams"><%= kpis.equipos %></strong><small>En la selección actual</small></article>
+          <article><span>Partidos pendientes</span><strong data-kpi="matches"><%= kpis.partidosPendientes %></strong><small>Por jugar o en curso</small></article>
+          <article><span>Goles registrados</span><strong data-kpi="goals"><%= kpis.goles %></strong><small>En las plantillas visibles</small></article>
           <article><span>Anuncios activos</span><strong><%= kpis.anunciosActivos %></strong><small>Visible en la página principal</small></article>
+        </section>
+        <section class="admin-scope-filter" data-admin-sport-scope aria-label="Seleccionar deporte y categoría">
+          <fieldset class="admin-sport-picker">
+            <legend>Selecciona un deporte</legend>
+            <% sports.forEach((sport) => { %>
+              <button type="button" class="admin-sport-card" data-admin-sport-choice="<%= sport.id %>" aria-pressed="<%= (selectedSport || 'futbol') === sport.id ? 'true' : 'false' %>">
+                <span><%= sport.name %></span><small>Ver torneo</small>
+              </button>
+            <% }) %>
+          </fieldset>
+          <label>Categoría
+            <select data-admin-category-filter aria-label="Filtrar por categoría">
+              <option value="">Todas las categorías</option>
+              <% categoriasEquipo.forEach((categoria) => { %><option value="<%= categoria %>" <%= selectedCategory === categoria ? 'selected' : '' %>><%= categoria %></option><% }) %>
+            </select>
+          </label>
+          <p data-admin-scope-status role="status" aria-live="polite">Cargando datos del torneo…</p>
+          <div class="admin-scope-error" data-admin-scope-error role="alert" hidden></div>
         </section>
 
         <section class="panel-card admin-tab-panel" id="inscripciones" data-admin-panel="enrollments" role="tabpanel" aria-labelledby="admin-tab-enrollments" hidden>
@@ -75,7 +93,7 @@
           <% } else { %>
             <div class="enrollment-request-list">
               <% enrollmentRequests.forEach((request) => { %>
-                <article class="enrollment-request-card">
+                <article class="enrollment-request-card" data-admin-sport="<%= request.deporte || 'futbol' %>" data-admin-category="<%= request.categoria || '' %>">
                   <div class="enrollment-request-title"><div><p class="eyebrow"><%= sports.find((sport) => sport.id === request.deporte)?.name || request.deporte %> · <%= request.categoria %></p><h3><%= request.nombreEquipo %></h3></div><span class="enrollment-status enrollment-status--<%= request.estado %>"><%= request.estado %></span></div>
                   <p><strong>Grado/sección:</strong> <%= request.grado %> · <strong>Responsable:</strong> <%= request.responsable %> · <strong>Contacto:</strong> <%= request.contacto %></p>
                   <details><summary>Ver plantilla (<%= request.jugadores.length %>)</summary><ul><% request.jugadores.forEach((player) => { %><li><strong>#<%= player.numero_camiseta %></strong> <%= player.nombre %></li><% }) %></ul></details>
@@ -111,7 +129,7 @@
               <p>No hay partidos registrados.</p>
             <% } else { %>
               <% partidos.forEach((partido) => { %>
-                <article class="match-admin-item" data-match-status="<%= partido.estado %>">
+                <article class="match-admin-item" data-match-status="<%= partido.estado %>" data-admin-sport="<%= partido.deporte || 'futbol' %>" data-admin-category="<%= partido.categoria || '' %>">
                 <div class="result-item">
                   <div class="match-admin-teams"><strong><%= partido.equipo_local %></strong><span>vs.</span><strong><%= partido.equipo_visitante %></strong><small><%= partido.goles_local %> - <%= partido.goles_visitante %></small></div>
                   <span><%= sports.find((sport) => sport.id === partido.deporte)?.name || 'Fútbol' %> · <%= partido.fecha_partido %> · <%= partido.hora_partido %> · <%= partido.cancha %> · <%= partido.estado %></span>
@@ -143,8 +161,8 @@
               </div>
               <form class="dashboard-form admin-modal__form" id="match-editor-form" action="/admin/partidos" method="post">
                 <div class="field-row">
-                  <label>Equipo local *<select name="equipoLocalId" id="match-editor-home" required><option value="">Selecciona</option><% equipos.forEach((equipo) => { %><option value="<%= equipo.id %>"><%= sports.find((sport) => sport.id === equipo.deporte)?.name || 'Fútbol' %> · <%= equipo.nombre %></option><% }) %></select></label>
-                  <label>Equipo visitante *<select name="equipoVisitanteId" id="match-editor-away" required><option value="">Selecciona</option><% equipos.forEach((equipo) => { %><option value="<%= equipo.id %>"><%= sports.find((sport) => sport.id === equipo.deporte)?.name || 'Fútbol' %> · <%= equipo.nombre %></option><% }) %></select></label>
+                  <label>Equipo local *<select name="equipoLocalId" id="match-editor-home" required><option value="">Selecciona</option><% equipos.forEach((equipo) => { %><option value="<%= equipo.id %>" data-sport="<%= equipo.deporte || 'futbol' %>" data-category="<%= equipo.categoria %>"><%= sports.find((sport) => sport.id === equipo.deporte)?.name || 'Fútbol' %> · <%= equipo.categoria %> · <%= equipo.nombre %></option><% }) %></select></label>
+                  <label>Equipo visitante *<select name="equipoVisitanteId" id="match-editor-away" required><option value="">Selecciona</option><% equipos.forEach((equipo) => { %><option value="<%= equipo.id %>" data-sport="<%= equipo.deporte || 'futbol' %>" data-category="<%= equipo.categoria %>"><%= sports.find((sport) => sport.id === equipo.deporte)?.name || 'Fútbol' %> · <%= equipo.categoria %> · <%= equipo.nombre %></option><% }) %></select></label>
                 </div>
                 <div class="field-row">
                   <label>Fecha *<input type="date" name="fechaPartido" id="match-editor-date" required></label>
@@ -230,6 +248,10 @@
               <div class="admin-modal__heading"><div><p class="eyebrow">TORNEO</p><h2 id="team-editor-title">Editar equipo</h2></div><button class="icon-action" type="button" data-modal-close aria-label="Cerrar formulario">&times;</button></div>
               <form class="dashboard-form admin-modal__form" id="team-editor-form" action="#" method="post" enctype="multipart/form-data">
                 <div class="field-row"><label>Nombre *<input type="text" name="nombre" id="team-editor-name" maxlength="80" required></label><label>Categoría *<select name="categoria" id="team-editor-category" required><% categoriasEquipo.forEach((categoria) => { %><option value="<%= categoria %>"><%= categoria %></option><% }) %></select></label><label>Deporte *<select name="deporte" id="team-editor-sport" required><% sports.forEach((sport) => { %><option value="<%= sport.id %>"><%= sport.name %></option><% }) %></select></label></div>
+                <div class="team-editor-crest-preview">
+                  <img class="admin-team-crest" id="team-editor-crest-preview" alt="Bandera del equipo" hidden>
+                  <span class="form-hint">Vista previa de la bandera actual</span>
+                </div>
                 <div class="field-row"><label>Subir escudo<input type="file" name="escudo" accept="image/jpeg,image/png,image/webp"></label><label>URL HTTPS del escudo<input type="url" name="escudoUrl" id="team-editor-shield" placeholder="https://..."></label></div>
                 <div class="admin-modal__actions"><button class="admin-quiet-button" type="button" data-modal-close>Cancelar</button><button class="btn btn-primary" type="submit">Guardar cambios</button></div>
               </form>
@@ -244,17 +266,17 @@
               <p>Aún no hay equipos creados.</p>
             <% } else { %>
               <% equipos.forEach((equipo) => { %>
-                <article class="result-item admin-team-item" data-search="<%= `${equipo.nombre} ${equipo.categoria} ${equipo.capitanNombre || ''}`.toLowerCase() %>">
+                <article class="result-item admin-team-item" data-admin-sport="<%= equipo.deporte || 'futbol' %>" data-admin-category="<%= equipo.categoria || '' %>" data-search="<%= `${equipo.nombre} ${equipo.categoria} ${equipo.capitanNombre || ''}`.toLowerCase() %>">
                   <div class="admin-team-heading">
                     <% if (equipo.escudoUrl) { %>
                       <img class="admin-team-crest" src="<%= equipo.escudoUrl %>" alt="Bandera de <%= equipo.nombre %>" loading="lazy">
                     <% } else { %>
                       <span class="admin-team-crest admin-team-crest--empty" aria-hidden="true"><%= equipo.nombre.slice(0, 1).toUpperCase() %></span>
                     <% } %>
-                    <div><strong><%= equipo.nombre %></strong><small><%= sports.find((sport) => sport.id === equipo.deporte)?.name || 'Fútbol' %> · <%= equipo.categoria %> · Capitán: <%= equipo.capitanNombre || 'Sin asignar' %></small><% if (equipo.capitanEmail) { %><small><%= equipo.capitanEmail %></small><% } %></div>
+                    <div><strong><%= equipo.nombre %><% if (equipo.gradoPrincipal) { %> <span class="admin-team-primary-grade">· <%= equipo.gradoPrincipal %></span><% } %></strong><small><%= sports.find((sport) => sport.id === equipo.deporte)?.name || 'Fútbol' %> · <%= equipo.categoria %> · Capitán: <%= equipo.capitanNombre || 'Sin asignar' %></small><% if (equipo.capitanEmail) { %><small><%= equipo.capitanEmail %></small><% } %></div>
                   </div>
                   <div class="admin-team-actions">
-                    <button class="admin-change-captain" type="button" data-modal-open="team-editor-modal" data-team-id="<%= equipo.id %>" data-team-name="<%= equipo.nombre %>" data-team-category="<%= equipo.categoria %>" data-team-sport="<%= equipo.deporte || 'futbol' %>">Editar equipo</button>
+                    <button class="admin-change-captain" type="button" data-modal-open="team-editor-modal" data-team-id="<%= equipo.id %>" data-team-name="<%= equipo.nombre %>" data-team-category="<%= equipo.categoria %>" data-team-sport="<%= equipo.deporte || 'futbol' %>" data-team-crest="<%= equipo.escudoUrl || '' %>">Editar equipo</button>
                     <button class="admin-change-captain" type="button" data-modal-open="captain-editor-modal" data-team-id="<%= equipo.id %>" data-team-name="<%= equipo.nombre %>" data-captain-email="<%= equipo.capitanEmail || '' %>"><%= equipo.capitanEmail ? 'Cambiar capitán' : 'Asignar capitán' %></button>
                     <button class="admin-add-player" type="button" data-modal-open="player-editor-modal" data-team-id="<%= equipo.id %>" data-team-name="<%= equipo.nombre %>">+ Agregar jugador</button>
                     <form action="/admin/equipos/<%= equipo.id %>/eliminar" method="post" onsubmit="return confirm('Solo se eliminará el equipo si no tiene jugadores ni partidos asociados. ¿Continuar?')"><button class="admin-delete-team" type="submit">Eliminar equipo</button></form>
@@ -268,7 +290,7 @@
                     <% } else { %>
                       <div class="admin-roster-table-wrap">
                         <table class="admin-roster-table">
-                          <thead><tr><th>Jugador</th><th>Grado / sección</th><th>Posición</th><th>Camiseta</th><th>Goles</th><th>Acciones</th></tr></thead>
+                          <thead><tr><th scope="col">Jugador</th><th scope="col">Grado / sección</th><th scope="col">Posición</th><th scope="col">Camiseta</th><th scope="col">Goles</th><th scope="col">Acciones</th></tr></thead>
                           <tbody>
                             <% teamPlayers.forEach((jugador) => { %>
                               <tr>
@@ -276,12 +298,14 @@
                                   <span class="admin-player-avatar" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="8" r="3.2"></circle><path d="M5.5 20c.8-3.2 3-5 6.5-5s5.7 1.8 6.5 5"></path></svg></span>
                                   <strong><%= jugador.nombre %></strong>
                                 </td>
-                                <td data-label="Grado / sección"><%= jugador.grado %></td>
+                                <td data-label="Grado / sección"><span class="admin-player-grade"><%= jugador.grado %></span></td>
                                 <td data-label="Posición"><%= jugador.posicion || '—' %></td>
-                                <td data-label="Camiseta"><%= jugador.numero_camiseta %></td>
+                                <td data-label="Camiseta">
+                                  <input class="admin-roster-number" type="number" name="numero_camiseta" min="0" max="99" step="1" value="<%= jugador.numero_camiseta %>" aria-label="Número de camiseta de <%= jugador.nombre %>" data-roster-number data-player-id="<%= jugador.id %>" data-initial-value="<%= jugador.numero_camiseta %>" required>
+                                </td>
                                 <td data-label="Goles">
                                   <form class="goal-update-form" action="/admin/jugadores/<%= jugador.id %>/goles" method="post">
-                                    <input type="number" name="goles" min="0" step="1" value="<%= jugador.goles %>" aria-label="Goles de <%= jugador.nombre %>" required>
+                                    <input type="number" name="goles" min="0" step="1" value="<%= jugador.goles %>" aria-label="Goles de <%= jugador.nombre %>" data-roster-goals data-player-id="<%= jugador.id %>" data-initial-value="<%= jugador.goles %>" required>
                                     <button class="icon-action" type="submit" aria-label="Guardar goles de <%= jugador.nombre %>" title="Guardar goles">
                                       <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m5 12 4 4L19 6"></path></svg>
                                     </button>
@@ -303,6 +327,13 @@
                             <% }) %>
                           </tbody>
                         </table>
+                      </div>
+                      <div class="admin-roster-save">
+                        <p class="admin-roster-feedback" role="status" aria-live="polite" data-roster-feedback hidden></p>
+                        <button class="admin-roster-save-button" type="button" data-save-roster aria-label="Confirmar y guardar cambios de camiseta y goles">
+                          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m5 12 4 4L19 6"></path></svg>
+                          Guardar cambios
+                        </button>
                       </div>
                     <% } %>
                   </div>
@@ -350,8 +381,8 @@
                 <% if (!posiciones.length) { %>
                   <tr><td colspan="10" class="sports-empty">Se calculará cuando se registren equipos y resultados finales.</td></tr>
                 <% } else { %>
-                  <% posiciones.forEach((equipo, index) => { %>
-                    <tr class="admin-standing-row" data-category="<%= equipo.category %>"><td class="standings-rank"><%= index + 1 %></td><th scope="row"><%= equipo.name %><small><%= equipo.category %></small></th><td><%= equipo.played %></td><td><%= equipo.won %></td><td><%= equipo.drawn %></td><td><%= equipo.lost %></td><td><%= equipo.goalsFor %></td><td><%= equipo.goalsAgainst %></td><td><%= equipo.goalDifference %></td><td class="standings-points"><%= equipo.points %></td></tr>
+                  <% posiciones.forEach((equipo) => { %>
+                    <tr class="admin-standing-row" data-category="<%= equipo.category %>" data-admin-category="<%= equipo.category %>" data-admin-sport="<%= equipo.deporte || 'futbol' %>"><td class="standings-rank"><%= equipo.rank %></td><th scope="row"><%= equipo.name %><small><%= equipo.category %></small></th><td><%= equipo.played %></td><td><%= equipo.won %></td><td><%= equipo.drawn %></td><td><%= equipo.lost %></td><td><%= equipo.goalsFor %></td><td><%= equipo.goalsAgainst %></td><td><%= equipo.goalDifference %></td><td class="standings-points"><%= equipo.points %></td></tr>
                   <% }) %>
                 <% } %>
               </tbody>
@@ -359,7 +390,7 @@
           </div>
         </section>
 
-        <section class="panel-card admin-tab-panel" id="anuncios" data-admin-panel="announcements" role="tabpanel" aria-labelledby="admin-tab-announcements" hidden>
+        <section class="panel-card admin-tab-panel" id="anuncios" data-admin-panel="announcements" data-admin-global="true" role="tabpanel" aria-labelledby="admin-tab-announcements" hidden>
           <div class="admin-section-toolbar">
             <div><p class="eyebrow">COMUNICACIÓN</p><h2>Noticias y avisos</h2></div>
             <button class="btn btn-primary" type="button" data-modal-open="announcement-editor-modal">Editar aviso</button>
@@ -402,7 +433,7 @@
            </div>
           </dialog>
         </section>
-        <section class="panel-card admin-tab-panel" id="galeria" data-admin-panel="gallery" role="tabpanel" aria-labelledby="admin-tab-gallery" hidden>
+        <section class="panel-card admin-tab-panel" id="galeria" data-admin-panel="gallery" data-admin-global="true" role="tabpanel" aria-labelledby="admin-tab-gallery" hidden>
           <div class="admin-section-toolbar">
             <div><p class="eyebrow">FOTOS DEL TORNEO</p><h2>Galería / Carrusel</h2></div>
             <button class="btn btn-primary" type="button" data-modal-open="gallery-upload-modal">+ Subir foto</button>

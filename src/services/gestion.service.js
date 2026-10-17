@@ -145,6 +145,9 @@ async function createPartido(payload) {
   if (normalizeSport(local.deporte) !== normalizeSport(visitante.deporte)) {
     throw new Error('Un partido debe enfrentar equipos del mismo deporte.');
   }
+  if (local.categoria !== visitante.categoria) {
+    throw new Error('Un partido debe enfrentar equipos de la misma categoría.');
+  }
 
   const partido = await Match.create({
     equipoLocalId: local._id,

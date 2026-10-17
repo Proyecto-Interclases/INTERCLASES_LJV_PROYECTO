@@ -16,6 +16,7 @@ const {
 } = require('../src/services/enrollment.service');
 const { buildSportLinks } = require('../src/controllers/home.controller');
 const { sportQuery } = require('../src/constants/sports');
+const TEAM_CATEGORIES = require('../src/constants/team-categories');
 
 test('sport tabs keep category and calendar tab query parameters', () => {
   const links = buildSportLinks('/calendario', { deporte: 'baloncesto', tab: 'jugados', categoria: 'Categoría A' });
@@ -44,6 +45,24 @@ test('team and match models default to football', () => {
   assert.equal(team.deporte, 'futbol');
   assert.equal(match.deporte, 'futbol');
   assert.equal(new EnrollmentSetting({ deporte: 'futbol' }).abierto, false);
+});
+
+test('Docentes is a supported team and enrollment category alongside existing categories', () => {
+  assert.deepEqual(TEAM_CATEGORIES, ['Categoría A', 'Categoría B', 'Docentes']);
+  const team = new Team({ nombre: 'Docentes', categoria: 'Docentes', deporte: 'voleibol' });
+  assert.equal(team.validateSync(), undefined);
+
+  const request = validateEnrollmentPayload({
+    deporte: 'baloncesto',
+    nombreEquipo: 'Profesores',
+    categoria: 'Docentes',
+    grado: 'Docentes',
+    responsable: 'Persona Responsable',
+    contacto: 'responsable@example.edu',
+    jugadorNombre: ['Ana Pérez'],
+    jugadorNumero: ['8']
+  });
+  assert.equal(request.categoria, 'Docentes');
 });
 
 test('global tournament config starts closed and enables all three sports', () => {

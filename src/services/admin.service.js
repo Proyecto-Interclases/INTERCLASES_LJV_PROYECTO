@@ -258,6 +258,97 @@ async function listPlayers() {
   }));
 }
 
+function getPrimaryTeamGrade(players) {
+  const gradeCounts = new Map();
+  players.forEach((player) => {
+    const grade = String(player.grado || '').trim();
+    if (grade) gradeCounts.set(grade, (gradeCounts.get(grade) || 0) + 1);
+  });
+
+  let primaryGrade = '';
+  let highestCount = 0;
+  gradeCounts.forEach((count, grade) => {
+    if (count > highestCount) {
+      primaryGrade = grade;
+      highestCount = count;
+    }
+  });
+
+  return primaryGrade.replace(/(\d+)\s*\.?\s*(?:º|°)\s*(\d+)/g, '$1°$2');
+}
+
+function validatePlayerStatsBatch(updates) {
+  if (!Array.isArray(updates) || updates.length === 0 || updates.length > 100) {
+    throw new Error('Selecciona entre 1 y 100 jugadores para actualizar.');
+  }
+
+  const playerIds = new Set();
+  return updates.map((update) => {
+    if (!update || typeof update !== 'object' || Array.isArray(update)
+      || !mongoose.isValidObjectId(update.id)) {
+      throw new Error('Uno de los jugadores seleccionados no es válido.');
+    }
+
+    const playerId = String(update.id).toLowerCase();
+    if (playerIds.has(playerId)) throw new Error('No repitas jugadores en la actualización.');
+    playerIds.add(playerId);
+
+    const isIntegerInput = (value) => (typeof value === 'number' && Number.isSafeInteger(value))
+      || (typeof value === 'string' && /^\d+$/.test(value.trim()));
+    if (!isIntegerInput(update.numero_camiseta) || !isIntegerInput(update.goles)) {
+      throw new Error('Completa el número de camiseta y los goles de cada jugador.');
+    }
+
+    const shirtNumber = Number(update.numero_camiseta);
+    const goalCount = Number(update.goles);
+    if (!Number.isSafeInteger(shirtNumber) || shirtNumber < 0 || shirtNumber > 99) {
+      throw new Error('El número de camiseta debe ser un entero entre 0 y 99.');
+    }
+    if (!Number.isSafeInteger(goalCount) || goalCount < 0) {
+      throw new Error('Los goles deben ser un número entero no negativo.');
+    }
+
+    return { id: playerId, numero_camiseta: shirtNumber, goles: goalCount };
+  });
+}
+
+async function updatePlayerStatsBatch(updates) {
+  const cleanUpdates = validatePlayerStatsBatch(updates);
+  const playerIds = cleanUpdates.map((update) => update.id);
+  const players = await Player.find({ _id: { $in: playerIds } });
+  if (players.length !== cleanUpdates.length) throw new Error('No se encontró uno o más jugadores.');
+
+  const playersById = new Map(players.map((player) => [player._id.toString(), player]));
+  const teamId = players[0].equipo_id.toString();
+  if (players.some((player) => player.equipo_id.toString() !== teamId)) {
+    throw new Error('Solo puedes actualizar jugadores de un mismo equipo a la vez.');
+  }
+
+  const shirtNumbers = new Set();
+  cleanUpdates.forEach((update) => {
+    if (shirtNumbers.has(update.numero_camiseta)) {
+      throw new Error('No se puede repetir el número de camiseta dentro del equipo.');
+    }
+    shirtNumbers.add(update.numero_camiseta);
+  });
+
+  const duplicate = await Player.findOne({
+    equipo_id: players[0].equipo_id,
+    numero_camiseta: { $in: [...shirtNumbers] },
+    _id: { $nin: playerIds }
+  }).select('numero_camiseta');
+  if (duplicate) throw new Error(`El número de camiseta ${duplicate.numero_camiseta} ya está asignado en el equipo.`);
+
+  await Player.bulkWrite(cleanUpdates.map((update) => ({
+    updateOne: {
+      filter: { _id: playersById.get(update.id)._id },
+      update: { $set: { numero_camiseta: update.numero_camiseta, goles: update.goles } }
+    }
+  })));
+
+  return { updated: cleanUpdates.length };
+}
+
 async function updatePlayerGoals(playerId, goals) {
   const goalCount = Number(goals);
   if (!playerId || !Number.isInteger(goalCount) || goalCount < 0) {
@@ -350,6 +441,9 @@ async function updateMatch(payload) {
   if (normalizeSport(local.deporte) !== normalizeSport(visitante.deporte)) {
     throw new Error('Un partido debe enfrentar equipos del mismo deporte.');
   }
+  if (local.categoria !== visitante.categoria) {
+    throw new Error('Un partido debe enfrentar equipos de la misma categoría.');
+  }
 
   match.equipoLocalId = local._id;
   match.equipoVisitanteId = visitante._id;
@@ -388,6 +482,9 @@ module.exports = {
   updateTeamCaptain,
   updateTeamStats,
   listPlayers,
+  getPrimaryTeamGrade,
+  validatePlayerStatsBatch,
+  updatePlayerStatsBatch,
   updatePlayerGoals,
   updatePlayerData,
   listUsers,
