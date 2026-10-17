@@ -3713,3 +3713,162 @@ body.dark-mode .goal-update-form input {
     gap: 6px;
   }
 }
+
+@media (max-width: 768px) {
+  .admin-roster {
+    padding: 10px;
+  }
+
+  .admin-roster-heading {
+    margin-bottom: 6px;
+  }
+
+  .admin-player-search {
+    box-sizing: border-box;
+    margin: 8px 0 10px;
+    max-width: none;
+    width: 100%;
+  }
+
+  .admin-roster-table-wrap {
+    overflow: visible;
+  }
+
+  .admin-roster-table {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .admin-roster-table thead {
+    display: none;
+  }
+
+  .admin-roster-table tbody {
+    display: grid;
+    gap: 8px;
+  }
+
+  .admin-roster-table tr {
+    align-items: center;
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 10px;
+    display: grid;
+    gap: 5px 10px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    padding: 9px 10px;
+  }
+
+  .admin-roster-table td,
+  .admin-roster-table td:first-child {
+    align-items: center;
+    border: 0;
+    display: flex;
+    gap: 7px;
+    min-width: 0;
+    padding: 2px 0;
+    text-align: left;
+  }
+
+  .admin-roster-table td::before {
+    color: #64748B;
+    content: attr(data-label);
+    flex: 0 0 auto;
+    font-size: .66rem;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .admin-roster-table td:first-child {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .admin-roster-table td:first-child::before,
+  .admin-roster-table td[data-label="Posición"] {
+    display: none;
+  }
+
+  .admin-roster-table td:first-child .admin-player-avatar {
+    flex: 0 0 36px;
+    height: 36px;
+    margin: 0;
+    width: 36px;
+  }
+
+  .admin-roster-table td:first-child strong {
+    font-size: .82rem;
+    line-height: 1.2;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .admin-roster-table td[data-label="Grado / sección"] {
+    grid-column: 2;
+    grid-row: 1;
+    justify-content: flex-end;
+  }
+
+  .admin-roster-table td[data-label="Camiseta"] {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .admin-roster-table td[data-label="Goles"] {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .admin-roster-table td[data-label="Acciones"] {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    justify-content: flex-end;
+  }
+
+  .admin-roster-table .admin-player-grade {
+    font-size: .78rem;
+    padding: 3px 8px;
+  }
+
+  .admin-roster-table .admin-roster-number,
+  .admin-roster-table .goal-update-form input {
+    box-sizing: border-box;
+    flex: 0 0 56px;
+    max-width: 60px;
+    min-height: 36px;
+    padding: 4px;
+    text-align: center;
+    width: 56px;
+  }
+
+  .admin-roster-table .goal-update-form {
+    align-items: center;
+    gap: 5px;
+  }
+
+  .admin-roster-table .goal-update-form .icon-action,
+  .admin-roster-table .admin-player-actions .icon-action {
+    height: 34px;
+    min-height: 34px;
+    width: 34px;
+  }
+
+  .admin-roster-table .admin-player-actions {
+    gap: 6px;
+    justify-content: flex-end;
+  }
+
+  .admin-roster-table .admin-player-actions form {
+    display: inline-flex;
+    margin: 0;
+  }
+
+  body.dark-mode .admin-roster-table tr {
+    background: #111827;
+    border-color: #334155;
+  }
+
+  body.dark-mode .admin-roster-table td::before {
+    color: #94A3B8;
+  }
+}
