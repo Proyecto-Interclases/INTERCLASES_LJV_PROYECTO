@@ -47,7 +47,7 @@
             <% standings.forEach((team, index) => { %>
               <tr>
                 <td class="standings-rank"><%= String(index + 1).padStart(2, '0') %></td>
-                <th scope="row"><a href="/equipos?deporte=<%= encodeURIComponent(selectedSport) %>&amp;categoria=<%= encodeURIComponent(team.category || '') %>"><% if (team.escudoUrl) { %><img class="standings-flag" src="<%= team.escudoUrl %>" alt="" loading="lazy"><% } %><%= team.name %></a><small><%= team.category %></small></th>
+                <th scope="row"><a href="/equipos?deporte=<%= encodeURIComponent(selectedSport) %>&amp;categoria=<%= encodeURIComponent(team.category || '') %>"><% if (team.escudoUrl) { %><img class="standings-crest" src="<%= team.escudoUrl %>" alt="" loading="lazy"><% } %><%= team.name %></a><small><%= team.category %></small></th>
                 <td><%= team.played %></td>
                 <td><%= team.won %></td>
                 <td><%= team.drawn %></td>

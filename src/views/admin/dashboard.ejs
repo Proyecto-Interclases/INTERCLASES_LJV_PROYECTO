@@ -250,8 +250,8 @@
               <form class="dashboard-form admin-modal__form" id="team-editor-form" action="#" method="post" enctype="multipart/form-data">
                 <div class="field-row"><label>Nombre *<input type="text" name="nombre" id="team-editor-name" maxlength="80" required></label><label>Categoría *<select name="categoria" id="team-editor-category" required><% categoriasEquipo.forEach((categoria) => { %><option value="<%= categoria %>"><%= categoria %></option><% }) %></select></label><label>Deporte *<select name="deporte" id="team-editor-sport" required><% sports.forEach((sport) => { %><option value="<%= sport.id %>"><%= sport.name %></option><% }) %></select></label></div>
                 <div class="team-editor-crest-preview">
-                  <img class="admin-team-crest" id="team-editor-crest-preview" alt="Bandera del equipo" hidden>
-                  <span class="form-hint">Vista previa de la bandera actual</span>
+                  <img class="admin-team-crest" id="team-editor-crest-preview" alt="Escudo del equipo" hidden>
+                  <span class="form-hint">Vista previa del escudo actual</span>
                 </div>
                 <div class="field-row"><label>Subir escudo<input type="file" name="escudo" accept="image/jpeg,image/png,image/webp"></label><label>URL HTTPS del escudo<input type="url" name="escudoUrl" id="team-editor-shield" placeholder="https://..."></label></div>
                 <div class="admin-modal__actions"><button class="admin-quiet-button" type="button" data-modal-close>Cancelar</button><button class="btn btn-primary" type="submit">Guardar cambios</button></div>
@@ -275,7 +275,7 @@
                 <article class="result-item admin-team-item" data-team-grade="<%= equipo.gradoPrincipal || '' %>" data-team-name="<%= equipo.nombre %>" data-admin-sport="<%= equipo.deporte || 'futbol' %>" data-admin-category="<%= equipo.categoria || '' %>" data-search="<%= `${equipo.nombre} ${equipo.categoria} ${equipo.capitanNombre || ''}`.toLowerCase() %>">
                   <div class="admin-team-heading">
                     <% if (equipo.escudoUrl) { %>
-                      <img class="admin-team-crest" src="<%= equipo.escudoUrl %>" alt="Bandera de <%= equipo.nombre %>" loading="lazy">
+                      <img class="admin-team-crest" src="<%= equipo.escudoUrl %>" alt="Escudo de <%= equipo.nombre %>" loading="lazy">
                     <% } else { %>
                       <span class="admin-team-crest admin-team-crest--empty" aria-hidden="true"><%= equipo.nombre.slice(0, 1).toUpperCase() %></span>
                     <% } %>

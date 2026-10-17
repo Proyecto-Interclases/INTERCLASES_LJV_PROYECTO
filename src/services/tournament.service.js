@@ -6,6 +6,7 @@ const { normalizeSport, sportQuery } = require('../constants/sports');
 const { isManagedPlayerPhotoUrl } = require('./player-photo.service');
 const { groupPlayersByPosition, buildFootballLineup } = require('./player-lineup.service');
 const { sortTeamsByGrade } = require('./team-order.service');
+const { getTeamCrestUrl } = require('./team-crest.service');
 
 function normalizeMatchStatus(status = 'Por jugar') {
   const normalized = String(status).trim().toLowerCase();
@@ -49,7 +50,7 @@ function buildStandings(teams, matches, selectedSport = 'futbol') {
       name: team.nombre || team.name,
       category: team.categoria || team.category,
       deporte: teamSport,
-      escudoUrl: team.escudoUrl || '',
+      escudoUrl: getTeamCrestUrl(team.escudoUrl),
       played: 0,
       won: 0,
       drawn: 0,
@@ -127,7 +128,7 @@ async function getTeams(selectedSport = 'futbol') {
     category: team.categoria,
     categoria: team.categoria,
     deporte: normalizeSport(team.deporte),
-    escudoUrl: team.escudoUrl || '',
+    escudoUrl: getTeamCrestUrl(team.escudoUrl),
     grado: formatTeamGrades(gradesByTeam.get(team._id.toString()) || [])
   })));
 }
@@ -244,6 +245,7 @@ async function getTeamsPageData(category, selectedSport = 'futbol', order = 'des
     return {
       ...team,
       _id: team._id.toString(),
+      escudoUrl: getTeamCrestUrl(team.escudoUrl),
       grado: formatTeamGrades(teamPlayers.map((player) => player.grado)),
       jugadores: roster,
       alineacion: sport === 'futbol'
@@ -278,7 +280,7 @@ async function getTopScorers(limit = 10, category, selectedSport = 'futbol') {
     numero_camiseta: player.numero_camiseta || 0,
     goles: player.goles || 0,
     equipo: player.equipo_id ? player.equipo_id.nombre : 'Sin equipo',
-    escudoUrl: player.equipo_id ? player.equipo_id.escudoUrl : ''
+    escudoUrl: player.equipo_id ? getTeamCrestUrl(player.equipo_id.escudoUrl) : ''
   }));
 }
 

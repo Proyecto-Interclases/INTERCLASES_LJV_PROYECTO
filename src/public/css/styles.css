@@ -948,7 +948,7 @@ body.dark-mode .welcome-card .welcome-button:hover {
 .sports-table tbody th a:hover { text-decoration: underline; }
 .standings-table td:not(:nth-child(2)), .standings-table thead th:not(:nth-child(2)) { text-align: center; }
 .standings-rank { color: #64748B; font-family: 'Barlow Condensed', sans-serif; font-size: 1.1rem; font-weight: 700; }
-.standings-flag { border-radius: 3px; height: 20px; margin-right: 8px; object-fit: cover; vertical-align: middle; width: 30px; }
+.standings-crest { height: 28px; margin-right: 8px; object-fit: contain; vertical-align: middle; width: 28px; }
 .standings-points { color: #166534; font-size: 1.05rem; font-weight: 800; text-align: center; }
 .sports-empty { color: #64748B; padding: 30px !important; text-align: center; }
 .sports-legend { color: #64748B; font-size: .78rem; line-height: 1.6; margin: 12px 0 0; }
@@ -959,10 +959,26 @@ body.dark-mode .welcome-card .welcome-button:hover {
 .teams-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); padding-top: 18px; }
 .team-card { background: #FFFFFF; border: 1px solid #CBD5E1; border-radius: 8px; min-width: 0; padding: 18px; }
 .team-card-top { align-items: center; display: flex; gap: 14px; min-height: 84px; }
-.team-crest, .admin-team-crest { background: #F1F5F9; border: 1px solid #CBD5E1; border-radius: 8px; flex: 0 0 64px; height: 64px; object-fit: contain; padding: 4px; width: 64px; }
-.team-crest--empty, .admin-team-crest--empty { align-items: center; color: #166534; display: flex; font-family: 'Barlow Condensed', sans-serif; font-size: 1.9rem; font-weight: 700; justify-content: center; }
-body:not(.dark-mode) .admin-team-crest { background: #F8FAFC; border-color: #E2E8F0; box-shadow: 0 1px 3px rgba(15, 23, 42, .08); }
-body.dark-mode .admin-team-crest { background: rgba(30, 41, 59, .78); border-color: rgba(71, 85, 105, .62); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06), 0 3px 10px rgba(2, 6, 23, .22); }
+.team-crest, .admin-team-crest { background: transparent; border: 0; border-radius: 0; filter: drop-shadow(0 0 6px rgba(148, 163, 184, .55)); flex: 0 0 64px; height: 64px; object-fit: contain; padding: 0; width: 64px; }
+.team-crest--empty, .admin-team-crest--empty { align-items: center; background: #F1F5F9; border: 1px solid #CBD5E1; border-radius: 8px; color: #166534; display: flex; filter: none; font-family: 'Barlow Condensed', sans-serif; font-size: 1.9rem; font-weight: 700; justify-content: center; }
+.team-crest[src*="/argentina.png"], .admin-team-crest[src*="/argentina.png"], .standings-crest[src*="/argentina.png"] { filter: drop-shadow(0 0 6px rgba(125, 211, 252, .8)) drop-shadow(0 0 13px rgba(56, 189, 248, .45)); }
+.team-crest[src*="/australia.png"], .admin-team-crest[src*="/australia.png"], .standings-crest[src*="/australia.png"] { filter: drop-shadow(0 0 6px rgba(96, 165, 250, .75)) drop-shadow(0 0 13px rgba(239, 68, 68, .4)); }
+.team-crest[src*="/brasil.png"], .admin-team-crest[src*="/brasil.png"], .standings-crest[src*="/brasil.png"] { filter: drop-shadow(0 0 6px rgba(250, 204, 21, .8)) drop-shadow(0 0 13px rgba(34, 197, 94, .45)); }
+.team-crest[src*="/colombia.png"], .admin-team-crest[src*="/colombia.png"], .standings-crest[src*="/colombia.png"] { filter: drop-shadow(0 0 6px rgba(250, 204, 21, .8)) drop-shadow(0 0 13px rgba(239, 68, 68, .42)); }
+.team-crest[src*="/costa-de-marfil.png"], .admin-team-crest[src*="/costa-de-marfil.png"], .standings-crest[src*="/costa-de-marfil.png"] { filter: drop-shadow(0 0 6px rgba(249, 115, 22, .8)) drop-shadow(0 0 13px rgba(16, 185, 129, .48)); }
+.team-crest[src*="/egipto.png"], .admin-team-crest[src*="/egipto.png"], .standings-crest[src*="/egipto.png"] { filter: drop-shadow(0 0 6px rgba(248, 113, 113, .75)) drop-shadow(0 0 13px rgba(250, 204, 21, .42)); }
+.team-crest[src*="/espana.png"], .admin-team-crest[src*="/espana.png"], .standings-crest[src*="/espana.png"] { filter: drop-shadow(0 0 6px rgba(248, 113, 113, .78)) drop-shadow(0 0 13px rgba(250, 204, 21, .42)); }
+.team-crest[src*="/estados-unidos.png"], .admin-team-crest[src*="/estados-unidos.png"], .standings-crest[src*="/estados-unidos.png"] { filter: drop-shadow(0 0 6px rgba(248, 113, 113, .78)) drop-shadow(0 0 13px rgba(96, 165, 250, .45)); }
+.team-crest[src*="/francia.png"], .admin-team-crest[src*="/francia.png"], .standings-crest[src*="/francia.png"] { filter: drop-shadow(0 0 6px rgba(96, 165, 250, .8)) drop-shadow(0 0 13px rgba(255, 255, 255, .4)); }
+.team-crest[src*="/inglaterra.png"], .admin-team-crest[src*="/inglaterra.png"], .standings-crest[src*="/inglaterra.png"] { filter: drop-shadow(0 0 6px rgba(248, 113, 113, .75)) drop-shadow(0 0 13px rgba(96, 165, 250, .4)); }
+.team-crest[src*="/alemania.png"], .admin-team-crest[src*="/alemania.png"], .standings-crest[src*="/alemania.png"] { filter: drop-shadow(0 0 6px rgba(250, 204, 21, .78)) drop-shadow(0 0 13px rgba(255, 255, 255, .4)); }
+.team-crest[src*="/marruecos.png"], .admin-team-crest[src*="/marruecos.png"], .standings-crest[src*="/marruecos.png"] { filter: drop-shadow(0 0 6px rgba(248, 113, 113, .72)) drop-shadow(0 0 13px rgba(34, 197, 94, .42)); }
+.team-crest[src*="/mexico.png"], .admin-team-crest[src*="/mexico.png"], .standings-crest[src*="/mexico.png"] { filter: drop-shadow(0 0 6px rgba(34, 197, 94, .78)) drop-shadow(0 0 13px rgba(248, 113, 113, .42)); }
+.team-crest[src*="/noruega.png"], .admin-team-crest[src*="/noruega.png"], .standings-crest[src*="/noruega.png"] { filter: drop-shadow(0 0 6px rgba(248, 113, 113, .8)) drop-shadow(0 0 13px rgba(96, 165, 250, .4)); }
+.team-crest[src*="/portugal.png"], .admin-team-crest[src*="/portugal.png"], .standings-crest[src*="/portugal.png"] { filter: drop-shadow(0 0 6px rgba(248, 113, 113, .75)) drop-shadow(0 0 13px rgba(34, 197, 94, .42)); }
+.team-crest[src*="/qatar.png"], .admin-team-crest[src*="/qatar.png"], .standings-crest[src*="/qatar.png"] { filter: drop-shadow(0 0 6px rgba(216, 70, 102, .8)) drop-shadow(0 0 13px rgba(148, 44, 70, .48)); }
+body:not(.dark-mode) .admin-team-crest--empty { background: #F8FAFC; border-color: #E2E8F0; box-shadow: 0 1px 3px rgba(15, 23, 42, .08); }
+body.dark-mode .admin-team-crest--empty { background: rgba(30, 41, 59, .78); border-color: rgba(71, 85, 105, .62); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06), 0 3px 10px rgba(2, 6, 23, .22); }
 body.dark-mode .admin-team-crest--empty { color: #86EFAC; }
 .team-editor-crest-preview { align-items: center; display: flex; gap: 12px; margin: 4px 0 14px; min-height: 64px; }
 .team-editor-crest-preview .admin-team-crest[hidden] { display: none; }
@@ -1047,10 +1063,6 @@ body.dark-mode.teams-page .team-card {
 body.dark-mode.teams-page .team-card:hover {
   border-color: rgba(52, 211, 153, .35);
   transform: translateY(-2px);
-}
-body.dark-mode.teams-page .team-crest {
-  background: #0F172A;
-  border-color: rgba(255, 255, 255, .08);
 }
 body.dark-mode.teams-page .team-crest--empty {
   background: #334155;

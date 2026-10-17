@@ -9,7 +9,7 @@ const Team = require('../src/models/Team');
 const Player = require('../src/models/Player');
 const { createEquipo } = require('../src/services/gestion.service');
 
-test('el seed Mundialito 2026 contiene equipos, categorías, grados y banderas oficiales', () => {
+test('el seed Mundialito 2026 contiene equipos, categorías, grados y logos transparentes de selecciones', () => {
   assert.equal(teams.length, 15);
   assert.deepEqual(
     teams.reduce((counts, team) => {
@@ -23,11 +23,13 @@ test('el seed Mundialito 2026 contiene equipos, categorías, grados y banderas o
   for (const team of teams) {
     assert.ok(team.grado);
     assert.ok(team.jugadores.length);
-    assert.ok(team.escudoUrl.startsWith('/images/banderas/'));
+    assert.ok(team.escudoUrl.startsWith('/images/selecciones/'));
+    assert.ok(team.escudoUrl.endsWith('.png'));
+    const logo = fs.readFileSync(path.join(__dirname, '..', 'src', 'public', team.escudoUrl.slice(1)));
     assert.equal(
-      fs.existsSync(path.join(__dirname, '..', 'src', 'public', team.escudoUrl.slice(1))),
-      true,
-      `falta la bandera de ${team.nombre}`
+      logo.readUInt8(25),
+      6,
+      `el logo de ${team.nombre} debe ser PNG RGBA con transparencia`
     );
     assert.equal(Object.hasOwn(team, 'posicion'), false);
   }

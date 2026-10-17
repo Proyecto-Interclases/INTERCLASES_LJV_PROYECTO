@@ -166,7 +166,7 @@
         modal.querySelector('#team-editor-shield').value = '';
         const crestPreview = modal.querySelector('#team-editor-crest-preview');
         crestPreview.src = trigger.dataset.teamCrest || '';
-        crestPreview.alt = `Bandera de ${trigger.dataset.teamName || 'equipo'}`;
+        crestPreview.alt = `Escudo de ${trigger.dataset.teamName || 'equipo'}`;
         crestPreview.hidden = !trigger.dataset.teamCrest;
       }
 
@@ -387,7 +387,7 @@
           data-player-goals="${Number(player.goles) || 0}">Editar</button>
           <form action="/admin/jugadores/${escapeHtml(player.id)}/eliminar" method="post"><button class="admin-delete-team" type="submit">Eliminar</button></form></div></td></tr>`).join('');
       return `<article class="result-item admin-team-item" data-team-grade="${escapeHtml(team.gradoPrincipal || '')}" data-team-name="${name}" data-admin-sport="${escapeHtml(team.deporte || 'futbol')}" data-admin-category="${category}" data-search="${escapeHtml(`${team.nombre} ${team.categoria} ${team.capitanNombre || ''}`.toLowerCase())}">
-        <div class="admin-team-heading">${team.escudoUrl ? `<img class="admin-team-crest" src="${escapeHtml(team.escudoUrl)}" alt="Bandera de ${name}" loading="lazy">` : `<span class="admin-team-crest admin-team-crest--empty">${name.slice(0, 1)}</span>`}
+        <div class="admin-team-heading">${team.escudoUrl ? `<img class="admin-team-crest" src="${escapeHtml(team.escudoUrl)}" alt="Escudo de ${name}" loading="lazy">` : `<span class="admin-team-crest admin-team-crest--empty">${name.slice(0, 1)}</span>`}
         <div><strong>${name}${team.gradoPrincipal ? ` <span class="admin-team-primary-grade">· ${escapeHtml(team.gradoPrincipal)}</span>` : ''}</strong><small>${escapeHtml(sportName(team.deporte))} · ${category} · Capitán: ${captain}</small>${team.capitanEmail ? `<small>${escapeHtml(team.capitanEmail)}</small>` : ''}</div></div>
         <div class="admin-team-actions"><button class="admin-change-captain" type="button" data-modal-open="team-editor-modal" data-team-id="${id}" data-team-name="${name}" data-team-category="${category}" data-team-sport="${escapeHtml(team.deporte)}" data-team-crest="${escapeHtml(team.escudoUrl || '')}">Editar equipo</button>
         <button class="admin-change-captain" type="button" data-modal-open="captain-editor-modal" data-team-id="${id}" data-team-name="${name}" data-captain-email="${escapeHtml(team.capitanEmail || '')}">${team.capitanEmail ? 'Cambiar capitán' : 'Asignar capitán'}</button>

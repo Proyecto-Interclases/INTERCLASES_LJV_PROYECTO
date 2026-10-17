@@ -45,7 +45,7 @@
             <article class="team-card" data-team-grade="<%= team.grado %>" data-team-name="<%= team.nombre %>">
               <div class="team-card-top">
                 <% if (team.escudoUrl) { %>
-                  <img class="team-crest" src="<%= team.escudoUrl %>" alt="Bandera de <%= team.nombre %>" loading="lazy">
+                  <img class="team-crest" src="<%= team.escudoUrl %>" alt="Escudo de <%= team.nombre %>" loading="lazy">
                 <% } else { %>
                   <span class="team-crest team-crest--empty" aria-hidden="true"><%= team.nombre.slice(0, 1).toUpperCase() %></span>
                 <% } %>

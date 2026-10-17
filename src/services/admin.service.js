@@ -9,6 +9,7 @@ const TEAM_CATEGORIES = require('../constants/team-categories');
 const { SPORT_IDS, normalizeSport } = require('../constants/sports');
 const { isManagedPlayerPhotoUrl, removePlayerPhoto } = require('./player-photo.service');
 const { sortTeamsByGrade } = require('./team-order.service');
+const { getTeamCrestUrl } = require('./team-crest.service');
 
 const MATCH_STATUSES = ['Por jugar', 'Jugando', 'Finalizado'];
 const ANNOUNCEMENT_TAGS = new Set(['p', 'div', 'br', 'strong', 'b', 'em', 'i', 'u', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'blockquote', 'a']);
@@ -109,9 +110,9 @@ async function updateTeam(teamId, payload) {
   const sport = String(deporte || '').trim().toLowerCase();
   if (!SPORT_IDS.includes(sport)) throw new Error('Selecciona un deporte válido.');
   if (cleanShield && !/^https:\/\/[^\s]+$/i.test(cleanShield)
-    && !/^\/images\/banderas\/[a-z-]+\.svg$/i.test(cleanShield)
+    && !/^\/images\/selecciones\/[a-z-]+\.png$/i.test(cleanShield)
     && !/^data:image\/(?:jpeg|png|webp);base64,[a-z\d+/]+=*$/i.test(cleanShield)) {
-    throw new Error('El escudo debe ser una bandera local válida, una URL HTTPS o una imagen JPG, PNG o WebP válida.');
+    throw new Error('El escudo debe ser un logo local válido, una URL HTTPS o una imagen JPG, PNG o WebP válida.');
   }
 
   const team = await Team.findById(teamId);
@@ -192,6 +193,7 @@ async function listAdminTeams(order = 'desc') {
 
   return sortTeamsByGrade(teams.map((team) => ({
     ...team,
+    escudoUrl: getTeamCrestUrl(team.escudoUrl),
     id: team._id.toString(),
     deporte: normalizeSport(team.deporte),
     gradoPrincipal: getPrimaryTeamGrade(playersByTeam.get(team._id.toString()) || []),
