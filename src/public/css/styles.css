@@ -1853,7 +1853,7 @@ body.dark-mode .calendar-empty p {
 .admin-roster-table { border-collapse: collapse; min-width: 580px; text-align: left; width: 100%; }
 .admin-roster-table th { color: #64748B; font-size: .75rem; font-weight: 800; letter-spacing: .045em; padding: 9px 10px; text-transform: uppercase; }
 .admin-roster-table th:not(:first-child), .admin-roster-table td:not(:first-child) { text-align: center; }
-.admin-roster-table td { border-top: 1px solid rgba(15, 23, 42, .07); color: #334155; font-size: .82rem; padding: 8px 10px; vertical-align: middle; }
+.admin-roster-table td { border-top: 1px solid rgba(15, 23, 42, .07); color: #334155; font-size: .82rem; padding: 4px 8px; vertical-align: middle; }
 .admin-roster-table td:first-child { align-items: center; display: flex; gap: 8px; min-width: 160px; }
 .admin-player-grade { background: #F1F5F9; border: 1px solid #E2E8F0; border-radius: 999px; color: #334155; display: inline-block; font-family: 'Barlow Condensed', sans-serif; font-size: .94rem; font-weight: 700; letter-spacing: .015em; line-height: 1.2; padding: 4px 9px; white-space: nowrap; }
 .admin-roster-table .roster-number { flex: 0 0 28px; height: 28px; width: 28px; }
@@ -1939,11 +1939,19 @@ body.dark-mode .admin-quiet-button:hover { background: #334155; }
   body.dark-mode .admin-roster-table td::before { color: #94A3B8; }
 }
 
-.admin-player-avatar { align-items: center; background: #F1F5F9; border: 1px solid #E2E8F0; border-radius: 50%; color: #64748B; display: inline-flex; flex: 0 0 32px; height: 32px; justify-content: center; width: 32px; }
+.admin-player-avatar { align-items: center; background: #F1F5F9; border: 1px solid #E2E8F0; border-radius: 50%; color: #64748B; display: inline-flex; flex: 0 0 40px; height: 40px; justify-content: center; overflow: hidden; width: 40px; }
 .admin-player-avatar svg { fill: none; height: 18px; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.6; width: 18px; }
+.admin-player-avatar img { border-radius: 50%; height: 100%; object-fit: cover; object-position: center 30%; width: 100%; }
 .admin-roster-table td:first-child { min-width: 200px; }
 .admin-roster-table td:first-child strong { overflow-wrap: anywhere; }
 .admin-player-actions form { display: inline-flex; margin: 0; }
+.admin-roster-table .admin-player-actions { gap: .5rem; }
+.admin-roster-table .admin-player-actions .icon-action { background: rgba(100, 116, 139, .08); border-color: rgba(100, 116, 139, .18); border-radius: 8px; color: #64748B; height: 34px; width: 34px; }
+.admin-roster-table .admin-player-actions .icon-action svg { height: 18px; stroke-width: 1.8; width: 18px; }
+.admin-roster-table .admin-player-actions .icon-action:hover,
+.admin-roster-table .admin-player-actions .icon-action:focus-visible { background: rgba(16, 185, 129, .14); border-color: rgba(16, 185, 129, .42); box-shadow: 0 0 10px rgba(16, 185, 129, .14); color: #059669; }
+.admin-roster-table .admin-player-actions .icon-action--danger:hover,
+.admin-roster-table .admin-player-actions .icon-action--danger:focus-visible { background: rgba(239, 68, 68, .13); border-color: rgba(239, 68, 68, .38); box-shadow: 0 0 10px rgba(239, 68, 68, .12); color: #DC2626; }
 .admin-modal { box-sizing: border-box; overflow: auto; }
 .admin-modal[open] { display: block; }
 .admin-modal__surface { box-sizing: border-box; }

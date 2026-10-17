@@ -492,18 +492,27 @@
       const captain = escapeHtml(team.capitanNombre || 'Sin asignar');
       const players = team.jugadores || [];
       const roster = players.length ? `<input class="admin-player-search" type="search" placeholder="Buscar jugador en ${name}..." aria-label="Buscar jugadores de ${name}" data-roster-search>` : '';
-      const rows = players.map((player) => `
-        <tr><td data-label="Jugador"><span class="admin-player-avatar" aria-hidden="true"></span><strong>${escapeHtml(player.nombre)}</strong></td>
-        <td data-label="Grado / sección"><span class="admin-player-grade">${escapeHtml(player.grado || '')}</span></td><td data-label="Posición">${escapeHtml(player.posicion || '—')}</td>
-        <td data-label="Camiseta"><input class="admin-roster-number" type="number" min="0" max="99" step="1" value="${Number(player.numero_camiseta) || 0}" aria-label="Número de camiseta de ${escapeHtml(player.nombre)}" data-roster-number data-player-id="${escapeHtml(player.id)}" data-initial-value="${Number(player.numero_camiseta) || 0}" required></td>
-        <td data-label="Goles"><form class="goal-update-form" action="/admin/jugadores/${escapeHtml(player.id)}/goles" method="post">
-          <input type="number" name="goles" min="0" step="1" value="${Number(player.goles) || 0}" aria-label="Goles de ${escapeHtml(player.nombre)}" data-roster-goals data-player-id="${escapeHtml(player.id)}" data-initial-value="${Number(player.goles) || 0}" required>
-          <button class="icon-action" type="submit" aria-label="Guardar goles">✓</button></form></td>
-        <td data-label="Acciones"><div class="admin-player-actions"><button class="admin-change-captain" type="button" data-modal-open="player-editor-modal"
-          data-player-id="${escapeHtml(player.id)}" data-team-id="${id}" data-team-name="${name}" data-player-name="${escapeHtml(player.nombre)}"
-          data-player-grade="${escapeHtml(player.grado)}" data-player-position="${escapeHtml(player.posicion)}" data-player-number="${Number(player.numero_camiseta) || 0}"
-          data-player-goals="${Number(player.goles) || 0}" data-player-photo="${escapeHtml(player.fotoUrl || '')}">Editar</button>
-          <form action="/admin/jugadores/${escapeHtml(player.id)}/eliminar" method="post"><button class="admin-delete-team" type="submit">Eliminar</button></form></div></td></tr>`).join('');
+      const rows = players.map((player) => {
+        const playerId = escapeHtml(player.id);
+        const playerName = escapeHtml(player.nombre);
+        const number = Number(player.numero_camiseta) || 0;
+        const goals = Number(player.goles) || 0;
+        const avatar = player.fotoUrl
+          ? `<img src="${escapeHtml(player.fotoUrl)}" alt="Foto de ${playerName}" loading="lazy">`
+          : '<svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><circle cx="32" cy="22" r="12"></circle><path d="M9 59c2-13 10-20 23-20s21 7 23 20"></path></svg>';
+        return `<tr data-roster-player>
+          <td data-label="Jugador"><span class="admin-player-avatar" aria-hidden="true">${avatar}</span><strong>${playerName}</strong></td>
+          <td data-label="Grado / sección"><span class="admin-player-grade">${escapeHtml(player.grado || '')}</span></td>
+          <td data-label="Posición">${escapeHtml(player.posicion || '—')}</td>
+          <td data-label="Camiseta"><input class="admin-roster-number" type="number" min="0" max="99" step="1" value="${number}" aria-label="Número de camiseta de ${playerName}" data-roster-number data-player-id="${playerId}" data-initial-value="${number}" required></td>
+          <td data-label="Goles"><form class="goal-update-form" action="/admin/jugadores/${playerId}/goles" method="post">
+            <input type="number" name="goles" min="0" step="1" value="${goals}" aria-label="Goles de ${playerName}" data-roster-goals data-player-id="${playerId}" data-initial-value="${goals}" required>
+            <button class="icon-action" type="submit" aria-label="Guardar goles de ${playerName}" title="Guardar goles">✓</button></form></td>
+          <td data-label="Acciones"><div class="admin-player-actions"><button class="icon-action" type="button" data-modal-open="player-editor-modal" data-player-id="${playerId}" data-team-id="${id}" data-team-name="${name}" data-player-name="${playerName}"
+            data-player-grade="${escapeHtml(player.grado || '')}" data-player-position="${escapeHtml(player.posicion || '')}" data-player-number="${number}" data-player-goals="${goals}" data-player-photo="${escapeHtml(player.fotoUrl || '')}" aria-label="Editar jugador" title="Editar jugador"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m15 5 4 4M4 20l4.3-.9L19 8.4a2.1 2.1 0 0 0-3-3L5.3 16.1 4 20Z"></path></svg></button>
+            <form action="/admin/jugadores/${playerId}/eliminar" method="post" onsubmit="return confirm('¿Eliminar este jugador de la plantilla?')"><button class="icon-action icon-action--danger" type="submit" aria-label="Eliminar jugador" title="Eliminar jugador"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 7h16M10 11v6m4-6v6M5 7l1 14h12l1-14M9 7V4h6v3"></path></svg></button></form></div></td>
+        </tr>`;
+      }).join('');
       return `<article class="result-item admin-team-item" data-team-grade="${escapeHtml(team.gradoPrincipal || '')}" data-team-name="${name}" data-admin-sport="${escapeHtml(team.deporte || 'futbol')}" data-admin-category="${category}" data-search="${escapeHtml(`${team.nombre} ${team.categoria} ${team.capitanNombre || ''}`.toLowerCase())}">
         <div class="admin-team-heading">${team.escudoUrl ? `<img class="admin-team-crest" src="${escapeHtml(team.escudoUrl)}" alt="Escudo de ${name}" loading="lazy">` : `<span class="admin-team-crest admin-team-crest--empty">${name.slice(0, 1)}</span>`}
         <div><strong>${name}${team.gradoPrincipal ? ` <span class="admin-team-primary-grade">· ${escapeHtml(team.gradoPrincipal)}</span>` : ''}</strong><small>${escapeHtml(sportName(team.deporte))} · ${category} · Capitán: ${captain}</small>${team.capitanEmail ? `<small>${escapeHtml(team.capitanEmail)}</small>` : ''}</div></div>
@@ -592,8 +601,8 @@
     });
     document.querySelectorAll('[data-roster-search]').forEach((input) => {
       const query = input.value.trim().toLocaleLowerCase();
-      input.closest('.admin-roster')?.querySelectorAll('tbody tr').forEach((row) => {
-        row.hidden = !row.textContent.toLocaleLowerCase().includes(query);
+      input.closest('.admin-roster')?.querySelectorAll('[data-roster-player]').forEach((card) => {
+        card.hidden = !card.textContent.toLocaleLowerCase().includes(query);
       });
     });
   }
@@ -683,12 +692,12 @@
     const roster = button.closest('.admin-roster');
     const feedback = roster?.querySelector('[data-roster-feedback]');
     if (!roster || !feedback) return;
-    const rows = Array.from(roster.querySelectorAll('tbody tr'));
+    const cards = Array.from(roster.querySelectorAll('[data-roster-player]'));
     const changedPlayers = [];
 
-    for (const row of rows) {
-      const numberInput = row.querySelector('[data-roster-number]');
-      const goalsInput = row.querySelector('[data-roster-goals]');
+    for (const card of cards) {
+      const numberInput = card.querySelector('[data-roster-number]');
+      const goalsInput = card.querySelector('[data-roster-goals]');
       if (!numberInput || !goalsInput) continue;
       if (!numberInput.checkValidity()) {
         numberInput.reportValidity();

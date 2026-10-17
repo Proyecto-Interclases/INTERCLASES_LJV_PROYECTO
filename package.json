@@ -9,6 +9,7 @@
     "start": "node server.js",
     "seed:admin": "node src/seeds/seedAdminMongo.js",
     "seed:mundialito": "node src/seeds/seedMundialito2026.js",
+    "import:player-photos": "node src/scripts/importPlayerPhotos.js",
     "migrate:sports": "node src/scripts/migrateSportsEnrollment.js",
     "change-pass": "node src/scripts/changePassword.js",
     "list-users": "node src/scripts/listUsers.js",
