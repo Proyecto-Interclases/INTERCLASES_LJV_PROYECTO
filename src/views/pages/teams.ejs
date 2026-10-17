@@ -59,36 +59,45 @@
                 <summary><span data-roster-toggle-label>Desplegar plantilla</span><span class="team-roster-toggle-count"><%= team.jugadores.length %></span></summary>
                 <% const topTeamGoals = team.jugadores.length ? Math.max(...team.jugadores.map((player) => Number(player.goles || 0))) : 0; %>
                 <% if (selectedSport === 'futbol') { %>
-                  <div class="lineup-pitch" role="group" aria-label="Formación de fútbol cinco de <%= team.nombre %>">
-                    <div class="lineup-pitch__markings" aria-hidden="true"></div>
-                    <div class="lineup-pitch__groups">
-                      <% team.alineacion.forEach((line) => { %>
-                        <section class="lineup-line lineup-line--<%= line.id %>" aria-labelledby="lineup-<%= team._id %>-<%= line.id %>">
-                          <h4 id="lineup-<%= team._id %>-<%= line.id %>"><%= line.label %></h4>
-                          <ul class="player-card-row">
-                            <% line.players.forEach((player) => { %>
-                              <li><%- include('../partials/player-card', { player, compact: false, topTeamGoals }) %></li>
-                            <% }) %>
-                          </ul>
-                        </section>
-                      <% }) %>
+                  <%
+                    const fifaStarters = [];
+                    team.alineacion.forEach((line) => {
+                      line.players.forEach((player, index) => {
+                        const fallbackPosition = line.id === 'attack' ? 'Delantero'
+                          : line.id === 'goalkeeper' ? 'Portero'
+                            : index === 0 ? 'Defensa' : 'Mediocampista';
+                        fifaStarters.push({
+                          ...player,
+                          posicion: player.lineupRole && player.lineupRole !== 'Defensa / mediocampista'
+                            ? player.lineupRole
+                            : player.posicion || fallbackPosition,
+                          titular: true
+                        });
+                      });
+                    });
+                    const fifaRoster = [
+                      ...fifaStarters,
+                      ...team.banca.map((player) => ({ ...player, titular: false }))
+                    ];
+                  %>
+                  <section class="fifa-squad" data-fifa-squad="<%= JSON.stringify(fifaRoster) %>" aria-label="Plantilla de <%= team.nombre %>">
+                    <p class="fifa-squad__title">Plantilla · <b>Once titular</b></p>
+                    <div class="fifa-pitch" role="group" aria-label="Cancha de <%= team.nombre %>">
+                      <div class="fifa-pitch__row" data-fifa-row="attack" role="group" aria-label="Delanteros"></div>
+                      <div class="fifa-pitch__row" data-fifa-row="midfield" role="group" aria-label="Defensas y mediocampistas"></div>
+                      <div class="fifa-pitch__row" data-fifa-row="goalkeeper" role="group" aria-label="Portero"></div>
                     </div>
-                  </div>
-                  <% if (team.banca.length) { %>
                     <section class="team-bench" aria-labelledby="bench-<%= team._id %>">
                       <div class="team-bench__heading">
                         <h4 id="bench-<%= team._id %>">Suplentes</h4>
                         <span><%= team.banca.length %></span>
                       </div>
-                      <ul class="player-card-row player-card-row--bench">
-                        <% team.banca.forEach((player) => { %>
-                          <li><%- include('../partials/player-card', { player, compact: true, topTeamGoals }) %></li>
-                        <% }) %>
-                      </ul>
+                      <div class="fifa-bench" data-fifa-bench aria-label="Jugadores suplentes"></div>
                     </section>
-                  <% } else if (!team.jugadores.length) { %>
-                    <p class="roster-empty">Aún no hay jugadores inscritos; las cinco posiciones están disponibles.</p>
-                  <% } %>
+                    <% if (!team.jugadores.length) { %>
+                      <p class="roster-empty">Aún no hay jugadores inscritos; las cinco posiciones están disponibles.</p>
+                    <% } %>
+                  </section>
                 <% } else if (team.jugadores.length) { %>
                   <section class="team-roster__other-sport" aria-label="Plantilla de <%= team.nombre %>">
                     <% team.alineacion.forEach((line) => { if (line.players.length) { %>
@@ -143,5 +152,8 @@
   </main>
 
   <%- include('../partials/accessibility-settings') %>
+  <% if (selectedSport === 'futbol') { %>
+    <script src="/js/fifa-roster.js?v=fifa-roster-formation-20261017" defer></script>
+  <% } %>
 </body>
 </html>

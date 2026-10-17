@@ -239,7 +239,9 @@ async function getTeamsPageData(category, selectedSport = 'futbol', order = 'des
       posicion: player.posicion,
       fotoUrl: isManagedPlayerPhotoUrl(player.fotoUrl) ? player.fotoUrl : '',
       numero_camiseta: player.numero_camiseta || 0,
-      goles: player.goles || 0
+      goles: player.goles || 0,
+      asistencias: player.asistencias || 0,
+      atajadas: player.atajadas || 0
     }));
     const footballLineup = buildFootballLineup(roster);
     return {
