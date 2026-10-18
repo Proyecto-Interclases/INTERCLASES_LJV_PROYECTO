@@ -14,6 +14,13 @@ function requireAuth(req, res, next) {
   return authorize(req, res, next);
 }
 
+function requireEnrollmentAuth(req, res, next) {
+  if (!req.session || !req.session.user) {
+    return res.redirect('/login?error=registrate_para_inscribir');
+  }
+  return next();
+}
+
 function requireRole(allowedRoles) {
   return (req, res, next) => {
     return authorize(req, res, next, allowedRoles);
@@ -24,4 +31,4 @@ function esAdmin(req, res, next) {
   return requireRole(['admin'])(req, res, next);
 }
 
-module.exports = { requireAuth, requireRole, esAdmin };
+module.exports = { requireAuth, requireEnrollmentAuth, requireRole, esAdmin };

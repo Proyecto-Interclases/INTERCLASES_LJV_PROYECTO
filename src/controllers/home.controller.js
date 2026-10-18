@@ -54,9 +54,12 @@ async function showHome(req, res, next) {
 }
 
 function showLogin(req, res) {
+  const enrollmentAuthMessage = req.query.error === 'registrate_para_inscribir'
+    ? 'Debes registrar e iniciar sesión antes de poder inscribir un equipo.'
+    : null;
   res.render('login', {
     title: 'Iniciar sesión | Interclases Lucrecio Jaramillo',
-    error: req.query.error || null,
+    error: enrollmentAuthMessage || req.query.error || null,
     success: req.query.success || null,
     formData: {}
   });

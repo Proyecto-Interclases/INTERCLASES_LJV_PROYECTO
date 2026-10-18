@@ -67,7 +67,7 @@
           <div class="enrollment-card-heading"><span>02</span><div><h2 id="enrollment-contact-title">Persona responsable</h2><p>Usaremos estos datos únicamente para comunicarnos sobre la solicitud.</p></div></div>
           <div class="enrollment-fields">
             <label>Nombre completo *
-              <input type="text" name="responsable" maxlength="100" value="<%= formData.responsable || '' %>" autocomplete="name" required>
+              <input type="text" name="responsable" maxlength="100" data-person-name value="<%= formData.responsable || '' %>" autocomplete="name" required>
             </label>
             <label>Correo electrónico o teléfono *
               <input type="text" name="contacto" maxlength="120" placeholder="nombre@correo.com o 3001234567" value="<%= formData.contacto || '' %>" autocomplete="email" required>
@@ -77,16 +77,16 @@
 
         <section class="enrollment-card" aria-labelledby="enrollment-roster-title">
           <div class="enrollment-card-heading enrollment-roster-heading">
-            <span>03</span><div><h2 id="enrollment-roster-title">Plantilla de jugadores</h2><p>Incluye entre 1 y 30 integrantes. Dorsales permitidos: 0 a 999; se pueden repetir.</p></div>
+            <span>03</span><div><h2 id="enrollment-roster-title">Plantilla de jugadores</h2><p>Incluye entre 5 y 30 integrantes. Dorsales permitidos: 0 a 999; se pueden repetir.</p></div>
             <button type="button" class="enrollment-add-player" data-add-player>+ Agregar jugador</button>
           </div>
           <div class="enrollment-roster-list" data-roster-list>
             <% const submittedNames = Array.isArray(formData.jugadorNombre) ? formData.jugadorNombre : (formData.jugadorNombre ? [formData.jugadorNombre] : []); %>
             <% const submittedNumbers = Array.isArray(formData.jugadorNumero) ? formData.jugadorNumero : (formData.jugadorNumero ? [formData.jugadorNumero] : []); %>
-            <% const rosterRowCount = Math.min(30, Math.max(1, submittedNames.length)); %>
+            <% const rosterRowCount = Math.min(30, Math.max(5, submittedNames.length)); %>
             <% for (let rowIndex = 0; rowIndex < rosterRowCount; rowIndex += 1) { %>
             <div class="enrollment-roster-row">
-              <label>Nombre del jugador *<input type="text" name="jugadorNombre" maxlength="80" value="<%= submittedNames[rowIndex] || '' %>" required></label>
+              <label>Nombre del jugador *<input type="text" name="jugadorNombre" maxlength="80" data-person-name value="<%= submittedNames[rowIndex] || '' %>" required></label>
               <label>Número *<input type="text" name="jugadorNumero" inputmode="numeric" pattern="[0-9]{1,3}" maxlength="3" value="<%= submittedNumbers[rowIndex] || '' %>" required></label>
               <button class="enrollment-remove-player" type="button" data-remove-player aria-label="Quitar jugador" disabled>&times;</button>
             </div>

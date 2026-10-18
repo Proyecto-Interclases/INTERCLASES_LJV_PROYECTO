@@ -8,8 +8,10 @@ const TEAM_CATEGORIES = require('../constants/team-categories');
 const { SPORTS, SPORT_IDS } = require('../constants/sports');
 const { normalizeShirtNumber } = require('./shirt-number.service');
 
+const MIN_ROSTER_SIZE = 5;
 const MAX_ROSTER_SIZE = 30;
 const NAME_PATTERN = /^[\p{L}\p{M}\p{N} .,'’&()-]+$/u;
+const PERSON_NAME_PATTERN = /^(?:\p{L}\p{M}*)+(?: +(?:\p{L}\p{M}*)+)*$/u;
 const DEFAULT_ENABLED_SPORTS = Object.freeze({
   futbol: true,
   baloncesto: true,
@@ -20,6 +22,14 @@ function cleanText(value, maxLength, label) {
   const clean = String(value || '').replace(/[\u0000-\u001f\u007f]/g, '').trim();
   if (!clean || clean.length > maxLength || !NAME_PATTERN.test(clean)) {
     throw new Error(`${label} es obligatorio y debe tener máximo ${maxLength} caracteres válidos.`);
+  }
+  return clean;
+}
+
+function cleanPersonName(value, maxLength, label) {
+  const clean = String(value || '').normalize('NFC').replace(/^ +| +$/g, '');
+  if (!clean || clean.length > maxLength || !PERSON_NAME_PATTERN.test(clean)) {
+    throw new Error(`${label} es obligatorio y solo puede contener letras y espacios (máximo ${maxLength} caracteres).`);
   }
   return clean;
 }
@@ -41,7 +51,7 @@ function validateEnrollmentPayload(payload = {}) {
   const categoria = String(payload.categoria || '').trim();
   if (!TEAM_CATEGORIES.includes(categoria)) throw new Error('Selecciona una categoría válida.');
   const grado = cleanText(payload.grado, 40, 'El grado o sección');
-  const responsable = cleanText(payload.responsable, 100, 'El nombre de la persona responsable');
+  const responsable = cleanPersonName(payload.responsable, 100, 'El nombre de la persona responsable');
   const contacto = String(payload.contacto || '').replace(/[\u0000-\u001f\u007f]/g, '').trim();
   const emailContact = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(contacto) && contacto.length <= 120;
   const phoneDigits = contacto.replace(/[+\s().-]/g, '');
@@ -51,11 +61,11 @@ function validateEnrollmentPayload(payload = {}) {
   }
 
   const roster = normalizeRoster(payload);
-  if (roster.length < 1 || roster.length > MAX_ROSTER_SIZE) {
-    throw new Error(`La plantilla debe incluir entre 1 y ${MAX_ROSTER_SIZE} jugadores.`);
+  if (roster.length < MIN_ROSTER_SIZE || roster.length > MAX_ROSTER_SIZE) {
+    throw new Error(`La plantilla debe incluir entre ${MIN_ROSTER_SIZE} y ${MAX_ROSTER_SIZE} jugadores.`);
   }
   const jugadores = roster.map((player) => {
-    const nombre = cleanText(player?.nombre, 80, 'El nombre de cada jugador');
+    const nombre = cleanPersonName(player?.nombre, 80, 'El nombre de cada jugador');
     const numero_camiseta = normalizeShirtNumber(player?.numero_camiseta ?? player?.numero);
     return { nombre, numero_camiseta };
   });
