@@ -1103,9 +1103,9 @@ body.dark-mode .admin-team-crest--empty { color: #86EFAC; }
 
 .teams-page .scorers-section .team-logo-sm {
   filter: drop-shadow(0 3px 6px rgba(0, 0, 0, .42));
-  flex-basis: 42px;
-  height: 42px;
-  width: 42px;
+  flex-basis: 56px;
+  height: 56px;
+  width: 56px;
 }
 
 .teams-page .scorers-section .goal-badge {

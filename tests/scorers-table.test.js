@@ -37,7 +37,7 @@ test('scorers table has compact aligned mini cards and centered goal styling', (
   assert.match(styles, /\.team-logo-sm\s*\{[^}]*filter:\s*drop-shadow\(0 2px 4px rgba\(0, 0, 0, \.3\)\);[^}]*height:\s*30px;[^}]*object-fit:\s*contain;[^}]*width:\s*30px;/);
   assert.match(styles, /\.teams-page \.scorers-section \.mini-card-thumb\s*\{[^}]*filter:\s*drop-shadow\(0 4px 7px rgba\(0, 0, 0, \.32\)\);[^}]*flex-basis:\s*56px;[^}]*height:\s*78px;[^}]*width:\s*56px;/);
   assert.match(styles, /\.teams-page \.scorers-section \.mini-card-thumb img\s*\{[^}]*height:\s*68px;[^}]*object-fit:\s*cover;[^}]*object-position:\s*center 20%;[^}]*width:\s*50px;/);
-  assert.match(styles, /\.teams-page \.scorers-section \.team-logo-sm\s*\{[^}]*filter:\s*drop-shadow\(0 3px 6px rgba\(0, 0, 0, \.42\)\);[^}]*flex-basis:\s*42px;[^}]*height:\s*42px;[^}]*width:\s*42px;/);
+  assert.match(styles, /\.teams-page \.scorers-section \.team-logo-sm\s*\{[^}]*filter:\s*drop-shadow\(0 3px 6px rgba\(0, 0, 0, \.42\)\);[^}]*flex-basis:\s*56px;[^}]*height:\s*56px;[^}]*width:\s*56px;/);
   assert.match(styles, /\.teams-page \.scorers-table th\.col-goals,[\s\S]*?\.teams-page \.scorers-table td\.col-goals \{\s*text-align:\s*center;/);
   assert.match(styles, /\.teams-page \.scorers-table \.goal-badge\s*\{[^}]*text-align:\s*center;/);
   assert.match(styles, /\.teams-page \.scorers-table th,[\s\S]*?padding:\s*12px 16px;/);
@@ -46,5 +46,5 @@ test('scorers table has compact aligned mini cards and centered goal styling', (
 
 test('team roster page EJS compiles after scorer table changes', () => {
   assert.doesNotThrow(() => ejs.compile(template));
-  assert.match(head, /styles\.css\?v=scorers-table-large-shadows-20261017-1925/);
+  assert.match(head, /styles\.css\?v=scorers-table-logo-size-20261018/);
 });
