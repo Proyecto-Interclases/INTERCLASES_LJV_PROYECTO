@@ -1,29 +1,37 @@
 <% if (player.isPlaceholder) { %>
-  <article class="squad-player-card squad-player-card--empty" role="status" aria-label="Espacio disponible: <%= player.lineupRole %>">
-    <div class="squad-player-card__top"><span>--</span></div>
-    <div class="squad-player-card__portrait" aria-hidden="true"><span class="squad-player-card__empty-mark">+</span></div>
-    <div class="squad-player-card__details">
-      <strong>Vacante</strong>
-      <span><%= player.lineupRole %></span>
+  <article class="fifa-card fifa-card--empty" role="status" aria-label="Espacio disponible: <%= player.lineupRole %>">
+    <div class="fifa-card__shape" aria-hidden="true"></div>
+    <div class="fifa-card__info">
+      <span class="fifa-card__num">0</span>
+      <i aria-hidden="true"></i>
+      <span class="fifa-card__position"><%= player.lineupRole || 'JUG' %></span>
+    </div>
+    <span class="fifa-card__photo-placeholder" aria-hidden="true"></span>
+    <div class="fifa-card__name">VACANTE</div>
+    <div class="fifa-card__stats" aria-hidden="true">
+      <span><b>0</b><span>GOL</span></span>
+      <span><b>0</b><span>AST</span></span>
+      <span><b>0</b><span>ATA</span></span>
     </div>
   </article>
 <% } else { %>
-  <article class="squad-player-card <%= compact ? 'squad-player-card--compact' : '' %> <%= player.goles > 0 ? 'squad-player-card--scorer' : '' %> <%= player.goles > 0 && player.goles === topTeamGoals ? 'squad-player-card--top-scorer' : '' %>">
-    <div class="squad-player-card__top">
-      <span><%= player.numero_camiseta ? `#${player.numero_camiseta}` : 'PLANTEL' %></span>
-      <% if (player.goles > 0) { %><span class="squad-player-card__goals" aria-label="<%= player.goles %> goles">⚽ <%= player.goles %></span><% } %>
+  <article class="fifa-card <%= compact ? 'fifa-card--compact' : '' %> <%= player.goles > 0 ? 'fifa-card--scorer' : '' %> <%= player.goles > 0 && player.goles === topTeamGoals ? 'fifa-card--top-scorer' : '' %>">
+    <div class="fifa-card__shape" aria-hidden="true"></div>
+    <div class="fifa-card__info">
+      <span class="fifa-card__num"><%= player.numero_camiseta || '0' %></span>
+      <i aria-hidden="true"></i>
+      <span class="fifa-card__position"><%= player.posicion || player.lineupRole || 'DEL' %></span>
     </div>
-    <div class="squad-player-card__portrait">
-      <% if (player.fotoUrl) { %>
-        <img src="<%= player.fotoUrl %>" alt="Foto de <%= player.nombre %>" loading="lazy">
-      <% } else { %>
-        <svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><circle cx="32" cy="22" r="12"></circle><path d="M9 59c2-13 10-20 23-20s21 7 23 20"></path></svg>
-      <% } %>
-    </div>
-    <div class="squad-player-card__details">
-      <strong><%= player.nombre %></strong>
-      <span><%= player.lineupRole || player.posicion || 'Jugador' %></span>
-      <small><%= player.grado %></small>
+    <% if (player.fotoUrl) { %>
+      <img class="fifa-card__photo" src="<%= player.fotoUrl %>" alt="Foto de <%= player.nombre %>" loading="lazy">
+    <% } else { %>
+      <span class="fifa-card__photo-placeholder" aria-hidden="true"></span>
+    <% } %>
+    <div class="fifa-card__name"><%= player.nombre ? player.nombre.split(' ').pop() : 'JUGADOR' %></div>
+    <div class="fifa-card__stats" aria-label="Estadísticas de <%= player.nombre %>">
+      <span><b><%= player.goles || 0 %></b><span>GOL</span></span>
+      <span><b><%= player.asistencias || 0 %></b><span>AST</span></span>
+      <span><b><%= player.atajadas || 0 %></b><span>ATA</span></span>
     </div>
   </article>
 <% } %>

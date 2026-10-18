@@ -13,6 +13,7 @@
   const savedFontSize = parseInt(localStorage.getItem('accessibility-font-size'), 10);
 
   document.body.classList.toggle('dark-mode', theme === 'dark');
+  document.body.dataset.theme = theme;
   if (savedContrast) document.body.classList.add('high-contrast');
   if (savedHighlightLinks) document.body.classList.add('highlight-links');
   if (savedReading) document.body.classList.add('reading-mode');
@@ -192,6 +193,7 @@
       themeToggle.addEventListener('change', () => {
         const nextTheme = themeToggle.checked ? 'dark' : 'light';
         document.body.classList.toggle('dark-mode', nextTheme === 'dark');
+        document.body.dataset.theme = nextTheme;
         localStorage.setItem('theme', nextTheme);
       });
     }

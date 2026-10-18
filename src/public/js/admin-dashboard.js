@@ -165,7 +165,7 @@
     if (!card) return;
     previewPanel.querySelector('[data-preview-name]').textContent = name || 'Nombre del jugador';
     previewPanel.querySelector('[data-preview-grade]').textContent = grade || 'Grado o sección';
-    previewPanel.querySelector('[data-preview-number]').textContent = `#${number}`;
+    previewPanel.querySelector('[data-preview-number]').textContent = number;
     previewPanel.querySelector('[data-preview-position]').textContent = abbreviatePlayerPosition(position);
     previewPanel.querySelector('[data-preview-goals]').textContent = String(Number(goals) || 0);
   }

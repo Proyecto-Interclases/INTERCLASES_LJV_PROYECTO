@@ -5200,3 +5200,375 @@ body.dark-mode .player-photo-dropzone input[type="file"]::file-selector-button {
     transform: none;
   }
 }
+
+.teams-page {
+  --page: #e9ecea;
+  --text: #111915;
+  --muted: #5d6a63;
+  --accent: #14a85a;
+  --accent-soft: rgba(20, 168, 90, .15);
+  --pitch-1: #dfe8e2;
+  --pitch-2: #c9d6cd;
+  --line: rgba(0, 0, 0, .12);
+  --card-1: #ffffff;
+  --card-2: #b9c4be;
+  --card-glow: rgba(20, 168, 90, .2);
+  --card-text: #111915;
+  --card-sub: #4d5a53;
+  --rim: rgba(255, 255, 255, .9);
+  --glass: rgba(255, 255, 255, .55);
+  --glass-border: rgba(255, 255, 255, .9);
+  --shadow: 0 10px 30px rgba(0, 0, 0, .14);
+  --fifa-page: var(--page);
+  --fifa-text: var(--text);
+  --fifa-muted: var(--muted);
+  --fifa-accent: var(--accent);
+  --fifa-accent-soft: var(--accent-soft);
+  --fifa-pitch-top: var(--pitch-1);
+  --fifa-pitch-bottom: var(--pitch-2);
+  --fifa-line: var(--line);
+  --fifa-glass: var(--glass);
+  --fifa-glass-border: var(--glass-border);
+  --fifa-card-text: var(--card-text);
+  --fifa-shadow: var(--shadow);
+}
+
+.teams-page.dark-mode,
+.teams-page[data-theme="dark"] {
+  --page: #0b0d0c;
+  --text: #eef2ef;
+  --muted: #8a968f;
+  --accent: #3ddc84;
+  --accent-soft: rgba(61, 220, 132, .18);
+  --pitch-1: #16241c;
+  --pitch-2: #0d1511;
+  --line: rgba(255, 255, 255, .12);
+  --card-1: #4a4f52;
+  --card-2: #15181a;
+  --card-glow: rgba(61, 220, 132, .22);
+  --card-text: #f3f6f4;
+  --card-sub: #aeb9b3;
+  --rim: rgba(255, 255, 255, .28);
+  --glass: rgba(255, 255, 255, .07);
+  --glass-border: rgba(255, 255, 255, .16);
+  --shadow: 0 10px 30px rgba(0, 0, 0, .5);
+}
+
+.teams-page[data-theme="light"] {
+  --page: #e9ecea;
+  --text: #111915;
+  --muted: #5d6a63;
+  --accent: #14a85a;
+  --accent-soft: rgba(20, 168, 90, .15);
+  --pitch-1: #dfe8e2;
+  --pitch-2: #c9d6cd;
+  --line: rgba(0, 0, 0, .12);
+  --card-1: #ffffff;
+  --card-2: #b9c4be;
+  --card-glow: rgba(20, 168, 90, .2);
+  --card-text: #111915;
+  --card-sub: #4d5a53;
+  --rim: rgba(255, 255, 255, .9);
+  --glass: rgba(255, 255, 255, .55);
+  --glass-border: rgba(255, 255, 255, .9);
+  --shadow: 0 10px 30px rgba(0, 0, 0, .14);
+}
+
+@media (prefers-color-scheme: dark) {
+  .teams-page:not(.dark-mode):not(.light-mode):not([data-theme="light"]) {
+    --page: #0b0d0c;
+    --text: #eef2ef;
+    --muted: #8a968f;
+    --accent: #3ddc84;
+    --accent-soft: rgba(61, 220, 132, .18);
+    --pitch-1: #16241c;
+    --pitch-2: #0d1511;
+    --line: rgba(255, 255, 255, .12);
+    --card-1: #4a4f52;
+    --card-2: #15181a;
+    --card-glow: rgba(61, 220, 132, .22);
+    --card-text: #f3f6f4;
+    --card-sub: #aeb9b3;
+    --rim: rgba(255, 255, 255, .28);
+    --glass: rgba(255, 255, 255, .07);
+    --glass-border: rgba(255, 255, 255, .16);
+    --shadow: 0 10px 30px rgba(0, 0, 0, .5);
+  }
+}
+
+.teams-page .fifa-pitch__row { min-height: 212px; }
+.teams-page .fifa-card,
+.teams-page .squad-player-card,
+.player-live-preview .player-preview-card.fifa-card {
+  --card-accent: var(--fifa-accent);
+  animation: none;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  box-sizing: border-box;
+  clip-path: none;
+  color: var(--fifa-card-text);
+  display: block;
+  filter: drop-shadow(0 8px 10px rgba(0, 0, 0, .45));
+  flex: 0 0 132px;
+  height: 198px;
+  min-height: 0;
+  overflow: visible;
+  padding: 0;
+  position: relative;
+  text-align: center;
+  transition: transform .25s ease;
+  width: 132px;
+}
+
+.teams-page .fifa-card::before,
+.player-live-preview .player-preview-card.fifa-card::before,
+.teams-page .squad-player-card::after { content: none; }
+
+.teams-page .fifa-card:hover,
+.teams-page .squad-player-card:hover,
+.player-live-preview .player-preview-card.fifa-card:hover {
+  box-shadow: none;
+  transform: translateY(-6px) scale(1.04);
+}
+
+.teams-page .fifa-card__shape,
+.player-live-preview .fifa-card__shape {
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  background:
+    radial-gradient(circle at 70% 25%, var(--card-glow, var(--fifa-accent-soft)), transparent 55%),
+    linear-gradient(160deg, var(--card-1, var(--fifa-glass)), var(--card-2, var(--fifa-glass)));
+  clip-path: polygon(9% 0, 91% 0, 100% 7%, 100% 78%, 93% 84%, 50% 100%, 7% 84%, 0 78%, 0 7%);
+  inset: 0;
+  position: absolute;
+}
+
+.teams-page .fifa-card__shape::after,
+.player-live-preview .fifa-card__shape::after {
+  border: 1px solid var(--rim, var(--fifa-glass-border));
+  clip-path: inherit;
+  content: "";
+  inset: 4px;
+  opacity: .55;
+  position: absolute;
+}
+
+.teams-page .fifa-card__shape::before,
+.player-live-preview .fifa-card__shape::before {
+  background: var(--card-accent, var(--fifa-accent));
+  border-radius: 0 0 3px 3px;
+  content: "";
+  height: 3px;
+  left: 22%;
+  position: absolute;
+  right: 22%;
+  top: 0;
+}
+
+.teams-page .fifa-card--scorer { --card-accent: #d3a83b; }
+.teams-page .fifa-card--top-scorer { filter: drop-shadow(0 8px 12px rgba(181, 125, 19, .42)); }
+
+.teams-page .fifa-card__info,
+.player-live-preview .fifa-card__info {
+  left: 16px;
+  line-height: 1;
+  position: absolute;
+  text-align: center;
+  top: 24px;
+  z-index: 2;
+}
+
+.teams-page .fifa-card__num,
+.player-live-preview .fifa-card__num {
+  color: var(--fifa-accent);
+  display: block;
+  font-size: 1.55rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.teams-page .fifa-card__info i,
+.player-live-preview .fifa-card__info i {
+  background: var(--fifa-muted);
+  display: block;
+  height: 1px;
+  margin: 6px auto;
+  opacity: .6;
+  width: 16px;
+}
+
+.teams-page .fifa-card__position,
+.player-live-preview .fifa-card__position {
+  color: var(--fifa-muted);
+  display: block;
+  font-size: .62rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  margin-top: 3px;
+}
+
+.teams-page .fifa-card__photo,
+.player-live-preview .fifa-card__photo {
+  background: none;
+  border: 0;
+  border-radius: 0;
+  filter: drop-shadow(0 3px 4px rgba(0, 0, 0, .35));
+  height: 88px;
+  object-fit: contain;
+  object-position: bottom;
+  position: absolute;
+  right: 6px;
+  top: 14px;
+  width: 92px;
+  z-index: 2;
+}
+
+.teams-page .fifa-card__photo-placeholder,
+.player-live-preview .fifa-card__photo-placeholder {
+  background: var(--fifa-muted);
+  border-radius: 50% 50% 35% 35%;
+  height: 28px;
+  opacity: .55;
+  position: absolute;
+  right: 35px;
+  top: 55px;
+  width: 34px;
+  z-index: 2;
+}
+
+.teams-page .fifa-card__photo-placeholder::before,
+.player-live-preview .fifa-card__photo-placeholder::before {
+  background: var(--fifa-muted);
+  border-radius: 50%;
+  content: "";
+  height: 20px;
+  left: 7px;
+  position: absolute;
+  top: -23px;
+  width: 20px;
+}
+
+.teams-page .fifa-card__name,
+.player-live-preview .fifa-card__name {
+  color: var(--fifa-card-text);
+  display: block;
+  font-size: .7rem;
+  font-weight: 800;
+  left: 0;
+  letter-spacing: .05em;
+  overflow: hidden;
+  padding: 0 10px;
+  position: absolute;
+  text-align: center;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  top: 106px;
+  white-space: nowrap;
+  width: 100%;
+  z-index: 2;
+}
+
+.teams-page .fifa-card__stats,
+.player-live-preview .fifa-card__stats {
+  border-top: 1px solid var(--fifa-glass-border);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  left: 20px;
+  margin: 0;
+  padding: 5px 0 0;
+  position: absolute;
+  right: 20px;
+  text-align: center;
+  text-transform: uppercase;
+  top: 124px;
+  z-index: 2;
+}
+
+.teams-page .fifa-card__stats > span,
+.player-live-preview .fifa-card__stats > span {
+  color: var(--fifa-muted);
+  font-size: .5rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  line-height: 1.1;
+  min-width: 0;
+}
+
+.teams-page .fifa-card__stats b,
+.player-live-preview .fifa-card__stats b {
+  color: var(--fifa-card-text);
+  display: block;
+  font-size: .85rem;
+  line-height: 1.1;
+}
+
+.teams-page .fifa-card--empty { opacity: .72; }
+.teams-page .fifa-card--empty .fifa-card__name { color: var(--fifa-muted); }
+.teams-page .fifa-card--bench { flex-basis: 104px; height: 156px; width: 104px; }
+.teams-page .fifa-card--bench .fifa-card__photo { height: 70px; width: 74px; }
+.teams-page .fifa-card--bench .fifa-card__name { top: 88px; }
+.teams-page .fifa-card--bench .fifa-card__stats { left: 14px; right: 14px; top: 106px; }
+
+.teams-page .other-sport-line .squad-player-card { box-shadow: none; }
+.player-live-preview .player-preview-card.fifa-card {
+  --fifa-accent: var(--preview-accent);
+  --fifa-accent-soft: var(--preview-accent-soft);
+  --fifa-muted: var(--preview-muted);
+  --fifa-glass: var(--preview-glass);
+  --fifa-glass-border: var(--preview-glass-border);
+  --fifa-card-text: var(--preview-text);
+  --card-glow: var(--preview-accent-soft);
+  --card-1: var(--preview-glass);
+  --card-2: var(--preview-glass-border);
+  --rim: var(--preview-glass-border);
+  filter: drop-shadow(0 8px 10px rgba(0, 0, 0, .25));
+  margin: 0 auto;
+  width: 178px;
+}
+
+.player-live-preview .fifa-card__num { font-size: 1.3rem; }
+.player-live-preview .fifa-card__name { top: 106px; }
+.player-live-preview .player-preview-grade {
+  color: var(--preview-muted);
+  font-size: .5rem;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 120px;
+  z-index: 2;
+}
+.player-live-preview .fifa-card__stats { top: 140px; }
+
+@media (max-width: 440px) {
+  .teams-page .fifa-card,
+  .teams-page .squad-player-card {
+    flex-basis: 112px;
+    height: 170px;
+    width: 112px;
+  }
+
+  .teams-page .fifa-card__photo { height: 72px; top: 12px; width: 78px; }
+  .teams-page .fifa-card__info { left: 12px; top: 20px; }
+  .teams-page .fifa-card__num { font-size: 1.3rem; }
+  .teams-page .fifa-card__name { font-size: .6rem; top: 88px; }
+  .teams-page .fifa-card__stats { left: 16px; right: 16px; top: 104px; }
+  .teams-page .fifa-card__stats b { font-size: .75rem; }
+  .teams-page .fifa-card__photo-placeholder { right: 29px; top: 48px; }
+  .teams-page .fifa-pitch__row { min-height: 182px; }
+  .teams-page .fifa-card--bench { flex-basis: 96px; height: 146px; width: 96px; }
+}
+
+@media (max-width: 360px) {
+  .teams-page .fifa-pitch__row { min-height: 182px; }
+  .teams-page .fifa-card,
+  .teams-page .squad-player-card { flex-basis: 104px; width: 104px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .teams-page .fifa-card,
+  .teams-page .squad-player-card { transition: none; }
+  .teams-page .fifa-card:hover,
+  .teams-page .squad-player-card:hover { transform: none; }
+}

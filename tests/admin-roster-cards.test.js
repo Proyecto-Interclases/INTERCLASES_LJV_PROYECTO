@@ -48,5 +48,5 @@ test('admin player actions use accessible compact SVG edit and delete icons', ()
   assert.match(script, /aria-label="Eliminar jugador" title="Eliminar jugador"><svg viewBox="0 0 24 24"/);
   assert.doesNotMatch(script, /aria-label="Editar jugador" title="Editar jugador">Editar/);
   assert.doesNotMatch(script, /aria-label="Eliminar jugador" title="Eliminar jugador">Eliminar/);
-  assert.match(template, /admin-dashboard\.js\?v=player-action-icons-20261017/);
+  assert.match(template, /admin-dashboard\.js\?v=fifa-shield-cards-20261017/);
 });

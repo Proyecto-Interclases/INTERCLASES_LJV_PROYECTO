@@ -55,48 +55,57 @@
     const card = document.createElement('article');
     card.className = `fifa-card${isBench ? ' fifa-card--bench' : ''}${player.isPlaceholder ? ' fifa-card--empty' : ''}`;
 
-    const top = document.createElement('div');
-    top.className = 'fifa-card__top';
-    const position = document.createElement('span');
-    position.textContent = abbreviatePosition(getPositionLabel(player));
-    const number = document.createElement('span');
-    number.className = 'fifa-card__number';
-    number.textContent = `#${toCount(player.numero_camiseta)}`;
-    top.append(position, number);
+    const shape = document.createElement('div');
+    shape.className = 'fifa-card__shape';
+    shape.setAttribute('aria-hidden', 'true');
 
-    const portrait = document.createElement('div');
-    portrait.className = 'fifa-card__portrait';
+    const info = document.createElement('div');
+    info.className = 'fifa-card__info';
+    const number = document.createElement('span');
+    number.className = 'fifa-card__num';
+    number.textContent = String(toCount(player.numero_camiseta));
+    const separator = document.createElement('i');
+    separator.setAttribute('aria-hidden', 'true');
+    const position = document.createElement('span');
+    position.className = 'fifa-card__position';
+    position.textContent = abbreviatePosition(getPositionLabel(player));
+    info.append(number, separator, position);
+
+    let photo;
     if (player.fotoUrl && !player.isPlaceholder) {
-      const image = document.createElement('img');
-      image.src = player.fotoUrl;
-      image.alt = `Foto de ${player.nombre || 'jugador'}`;
-      image.loading = 'lazy';
-      image.addEventListener('error', () => {
-        portrait.replaceChildren(createPortraitPlaceholder());
+      photo = document.createElement('img');
+      photo.className = 'fifa-card__photo';
+      photo.src = player.fotoUrl;
+      photo.alt = `Foto de ${player.nombre || 'jugador'}`;
+      photo.loading = 'lazy';
+      photo.addEventListener('error', () => {
+        photo.replaceWith(createPortraitPlaceholder());
       }, { once: true });
-      portrait.append(image);
     } else {
-      portrait.append(createPortraitPlaceholder());
+      photo = createPortraitPlaceholder();
     }
 
     const name = document.createElement('strong');
     name.className = 'fifa-card__name';
-    name.textContent = player.isPlaceholder ? 'Vacante' : player.nombre || 'Jugador';
+    name.textContent = player.isPlaceholder
+      ? 'Vacante'
+      : String(player.nombre || 'Jugador').trim().split(/\s+/).pop();
 
     const stats = document.createElement('div');
     stats.className = 'fifa-card__stats';
+    stats.setAttribute('aria-label', `Estadísticas de ${player.nombre || 'jugador'}`);
     stats.append(
-      createStat('Goles', player.goles),
-      createStat('Asist.', player.asistencias),
-      createStat('Ataj.', player.atajadas)
+      createStat('GOL', player.goles),
+      createStat('AST', player.asistencias),
+      createStat('ATA', player.atajadas)
     );
-    card.append(top, portrait, name, stats);
+    card.append(shape, info, photo, name, stats);
     return card;
   }
 
   function createPortraitPlaceholder() {
     const placeholder = document.createElement('span');
-    placeholder.className = 'fifa-card__portrait-placeholder';
+    placeholder.className = 'fifa-card__photo-placeholder';
     placeholder.setAttribute('aria-hidden', 'true');
     return placeholder;
   }

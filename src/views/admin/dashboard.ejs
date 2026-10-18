@@ -383,11 +383,10 @@
                 <aside class="player-live-preview" id="player-live-preview" data-player-preview-panel aria-label="Vista previa de la tarjeta del jugador" hidden>
                   <p class="eyebrow">VISTA PREVIA</p>
                   <article class="fifa-card player-preview-card">
-                    <div class="fifa-card__top"><span data-preview-position>JUG</span><span class="fifa-card__number" data-preview-number>#0</span></div>
-                    <div class="fifa-card__portrait">
-                      <img data-preview-photo alt="" hidden>
-                      <span class="fifa-card__portrait-placeholder" data-preview-placeholder aria-hidden="true"></span>
-                    </div>
+                    <div class="fifa-card__shape" aria-hidden="true"></div>
+                    <div class="fifa-card__info"><span class="fifa-card__num" data-preview-number>0</span><i aria-hidden="true"></i><span class="fifa-card__position" data-preview-position>JUG</span></div>
+                    <img class="fifa-card__photo" data-preview-photo alt="" hidden>
+                    <span class="fifa-card__photo-placeholder" data-preview-placeholder aria-hidden="true"></span>
                     <strong class="fifa-card__name" data-preview-name>Nombre del jugador</strong>
                     <small class="player-preview-grade" data-preview-grade>Grado o sección</small>
                     <div class="fifa-card__stats">
@@ -578,6 +577,6 @@
       </section>
     </main>
     <%- include('../partials/accessibility-settings') %>
-    <script src="/js/admin-dashboard.js?v=player-action-icons-20261017" defer></script>
+    <script src="/js/admin-dashboard.js?v=fifa-shield-cards-20261017" defer></script>
   </body>
 </html>
