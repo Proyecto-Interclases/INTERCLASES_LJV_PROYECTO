@@ -129,19 +129,41 @@
         </div>
         <span>Top 10</span>
       </div>
-      <div class="sports-table-wrap">
+      <div class="sports-table-wrap table-responsive">
         <table class="sports-table scorers-table">
-          <thead><tr><th scope="col">#</th><th scope="col">Jugador</th><th scope="col">Equipo</th><th scope="col">Goles</th></tr></thead>
+          <thead>
+            <tr>
+              <th class="col-rank" scope="col">#</th>
+              <th class="col-player" scope="col">Jugador</th>
+              <th class="col-team" scope="col">Equipo</th>
+              <th class="col-goals" scope="col">Goles</th>
+            </tr>
+          </thead>
           <tbody>
             <% if (!topScorers.length) { %>
               <tr><td colspan="4" class="sports-empty">Aún no hay goles individuales registrados.</td></tr>
             <% } else { %>
               <% topScorers.forEach((player, index) => { %>
                 <tr>
-                  <td class="standings-rank"><%= String(index + 1).padStart(2, '0') %></td>
-                  <th scope="row"><span class="scorer-number"><%= player.numero_camiseta %></span><%= player.nombre %><small><%= player.grado %></small><% if (player.posicion) { %><small><%= player.posicion %></small><% } %></th>
-                  <td><%= player.equipo %></td>
-                  <td class="standings-points"><%= player.goles %></td>
+                  <td class="col-rank standings-rank"><strong><%= String(index + 1).padStart(2, '0') %></strong></td>
+                  <td class="col-player">
+                    <div class="player-row-item">
+                      <div class="mini-card-thumb">
+                        <% if (player.fotoUrl) { %><img src="<%= player.fotoUrl %>" alt="Foto de <%= player.nombre %>" loading="lazy" decoding="async"><% } %>
+                      </div>
+                      <div class="player-info-text">
+                        <span class="p-name"><%= player.nombre %></span>
+                        <span class="p-grade"><%= player.grado %></span>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="col-team">
+                    <div class="team-cell-content">
+                      <% if (player.escudoUrl) { %><img src="<%= player.escudoUrl %>" alt="Escudo de <%= player.equipo %>" class="team-logo-sm" loading="lazy" decoding="async"><% } %>
+                      <span><%= player.equipo %></span>
+                    </div>
+                  </td>
+                  <td class="col-goals"><span class="goal-badge"><%= player.goles %></span></td>
                 </tr>
               <% }) %>
             <% } %>

@@ -1003,6 +1003,118 @@ body.dark-mode .admin-team-crest--empty { color: #86EFAC; }
 .scorers-number { color: #166534; font-weight: 800; }
 .scorers-table tbody th { min-width: 200px; }
 .scorer-number { margin-right: 9px; vertical-align: middle; }
+.teams-page .scorers-table {
+  border-collapse: collapse;
+  color: var(--text, #111915);
+  font-family: system-ui, sans-serif;
+  min-width: 620px;
+}
+.teams-page .scorers-table th,
+.teams-page .scorers-table td {
+  border-bottom: 1px solid var(--line, rgba(15, 23, 42, .1));
+  padding: 12px 16px;
+  text-align: left;
+  vertical-align: middle;
+}
+.teams-page .scorers-table th {
+  color: var(--muted, #5d6a63);
+  font-size: .75rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.teams-page .scorers-table th.col-goals,
+.teams-page .scorers-table td.col-goals { text-align: center; }
+.teams-page .scorers-table .col-rank { width: 64px; }
+.teams-page .scorers-table .col-team { min-width: 180px; }
+.teams-page .scorers-table .col-goals { width: 104px; }
+.teams-page .scorers-table tbody .col-rank strong {
+  color: var(--muted, #5d6a63);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1.1rem;
+}
+.player-row-item { align-items: center; display: flex; gap: 12px; min-width: 220px; }
+.mini-card-thumb {
+  align-items: center;
+  background: linear-gradient(160deg, var(--card-1, #fff), var(--card-2, #b9c4be));
+  clip-path: polygon(9% 0, 91% 0, 100% 7%, 100% 78%, 93% 84%, 50% 100%, 7% 84%, 0 78%, 0 7%);
+  display: flex;
+  flex: 0 0 46px;
+  height: 64px;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  width: 46px;
+}
+.mini-card-thumb::after {
+  border: 1px solid var(--rim, rgba(15, 23, 42, .16));
+  clip-path: inherit;
+  content: "";
+  inset: 2px;
+  pointer-events: none;
+  position: absolute;
+}
+.mini-card-thumb img {
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .22));
+  height: 56px;
+  object-fit: contain;
+  object-position: center 18%;
+  width: 42px;
+}
+.player-info-text { display: flex; flex-direction: column; min-width: 0; }
+.player-info-text .p-name { color: var(--text, #111915); font-size: .95rem; font-weight: 700; }
+.player-info-text .p-grade { color: var(--muted, #5d6a63); font-size: .75rem; margin-top: 2px; }
+.team-cell-content { align-items: center; display: flex; font-weight: 500; gap: 10px; }
+.team-logo-sm {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .3));
+  flex: 0 0 30px;
+  height: 30px;
+  object-fit: contain;
+  width: 30px;
+}
+.teams-page .scorers-table .goal-badge {
+  color: var(--accent, #14a85a);
+  display: inline-block;
+  font-size: 1.1rem;
+  font-weight: 800;
+  min-width: 32px;
+  text-align: center;
+}
+
+.teams-page .scorers-section .scorers-table th,
+.teams-page .scorers-section .scorers-table td {
+  padding-bottom: 14px;
+  padding-top: 14px;
+}
+
+.teams-page .scorers-section .mini-card-thumb {
+  filter: drop-shadow(0 4px 7px rgba(0, 0, 0, .32));
+  flex-basis: 56px;
+  height: 78px;
+  width: 56px;
+}
+
+.teams-page .scorers-section .mini-card-thumb img {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .3));
+  height: 68px;
+  object-fit: cover;
+  object-position: center 20%;
+  width: 50px;
+}
+
+.teams-page .scorers-section .team-logo-sm {
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, .42));
+  flex-basis: 42px;
+  height: 42px;
+  width: 42px;
+}
+
+.teams-page .scorers-section .goal-badge {
+  color: var(--accent, #14a85a);
+  font-size: 1.25rem;
+  font-weight: 800;
+  text-align: center;
+}
+
 .admin-team-item { align-items: stretch; display: block; }
 .admin-team-heading { align-items: center !important; display: flex !important; gap: 12px !important; }
 .admin-team-heading > div { display: grid !important; gap: 4px !important; }
