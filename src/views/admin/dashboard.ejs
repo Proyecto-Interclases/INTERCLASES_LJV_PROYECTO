@@ -3,9 +3,16 @@
   <%- include('../partials/head', { title }) %>
   <body class="dashboard-page">
     <header class="dashboard-header">
-      <div>
-        <p class="eyebrow">PANEL DE ADMINISTRACIÓN</p>
-        <h1>Interclases Lucrecio Jaramillo</h1>
+      <div class="dashboard-brand">
+        <img
+          class="institution-crest institutional-shield dashboard-brand__logo"
+          src="/images/logo-ljv.png"
+          alt="Logo institucional de Interclases Lucrecio Jaramillo"
+        >
+        <div>
+          <p class="eyebrow">PANEL DE ADMINISTRACIÓN</p>
+          <h1>Interclases Lucrecio Jaramillo</h1>
+        </div>
       </div>
       <div class="header-actions">
         <% const displayName = user.nombre || user.name || ''; %>
@@ -132,7 +139,12 @@
               <% partidos.forEach((partido) => { %>
                 <article class="match-admin-item" data-match-status="<%= partido.estado %>" data-admin-sport="<%= partido.deporte || 'futbol' %>" data-admin-category="<%= partido.categoria || '' %>">
                 <div class="result-item">
-                  <div class="match-admin-teams"><strong><%= partido.equipo_local %></strong><span>vs.</span><strong><%= partido.equipo_visitante %></strong><small><%= partido.goles_local %> - <%= partido.goles_visitante %></small></div>
+                  <div class="match-admin-teams">
+                    <div class="match-admin-team"><% if (partido.equipo_local_escudoUrl) { %><img class="fixture-team-crest" src="<%= partido.equipo_local_escudoUrl %>" alt="Escudo de <%= partido.equipo_local %>" loading="lazy"><% } else { %><span class="fixture-team-crest fixture-team-crest--empty" aria-hidden="true"><%= (partido.equipo_local || 'E').slice(0, 1) %></span><% } %><strong><%= partido.equipo_local %></strong><% if (partido.equipo_local_grado) { %><small class="fixture-team-grade"><%= partido.equipo_local_grado %></small><% } %></div>
+                    <span>vs.</span>
+                    <div class="match-admin-team"><% if (partido.equipo_visitante_escudoUrl) { %><img class="fixture-team-crest" src="<%= partido.equipo_visitante_escudoUrl %>" alt="Escudo de <%= partido.equipo_visitante %>" loading="lazy"><% } else { %><span class="fixture-team-crest fixture-team-crest--empty" aria-hidden="true"><%= (partido.equipo_visitante || 'E').slice(0, 1) %></span><% } %><strong><%= partido.equipo_visitante %></strong><% if (partido.equipo_visitante_grado) { %><small class="fixture-team-grade"><%= partido.equipo_visitante_grado %></small><% } %></div>
+                    <small><%= partido.goles_local %> - <%= partido.goles_visitante %></small>
+                  </div>
                   <span><%= sports.find((sport) => sport.id === partido.deporte)?.name || 'Fútbol' %> · <%= partido.fecha_partido %> · <%= partido.hora_partido %> · <%= partido.cancha %> · <%= partido.estado %></span>
                   <button class="btn btn-secondary dark" type="button" data-modal-open="match-editor-modal"
                     data-match-id="<%= partido.id %>" data-match-home-id="<%= partido.equipo_local_id || '' %>"

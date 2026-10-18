@@ -5684,3 +5684,61 @@ body.dark-mode .player-photo-dropzone input[type="file"]::file-selector-button {
   .teams-page .fifa-card:hover,
   .teams-page .squad-player-card:hover { transform: none; }
 }
+
+/* Match identity and admin brand details */
+.header-login-link--login {
+  background: rgba(255, 255, 255, .08);
+  border-color: rgba(255, 255, 255, .78);
+}
+.header-login-link--register {
+  background: #A3E635;
+  border-color: #A3E635;
+  color: #17351A;
+}
+.header-login-link--login:hover, .header-login-link--login:focus-visible {
+  background: rgba(255, 255, 255, .2);
+}
+.header-login-link--register:hover, .header-login-link--register:focus-visible {
+  background: #BEF264;
+  border-color: #BEF264;
+  color: #102A13;
+}
+.dashboard-brand { align-items: center; display: flex; gap: 16px; min-width: 0; }
+.dashboard-brand > div { min-width: 0; }
+.dashboard-brand__logo { align-self: center; flex: 0 0 64px; height: 64px; object-fit: contain; width: 64px; }
+.fixture-team-crest {
+  align-self: center;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  filter: drop-shadow(0 0 6px rgba(148, 163, 184, .55));
+  flex: 0 0 48px;
+  height: 48px;
+  object-fit: contain;
+  padding: 0;
+  width: 48px;
+}
+.fixture-team-crest--empty {
+  align-items: center;
+  background: #F1F5F9;
+  color: #166534;
+  display: inline-flex;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 800;
+  justify-content: center;
+}
+.match-card__team { align-items: center; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.match-card__team strong { overflow-wrap: anywhere; }
+.fixture-team-grade { color: #64748B; font-size: .78rem; font-weight: 700; line-height: 1.2; }
+.matchup-team .fixture-team-crest, .scoreboard-team .fixture-team-crest { margin-inline: auto; }
+.match-admin-team { align-items: center; display: flex; flex-direction: column; gap: 5px; min-width: 92px; text-align: center; }
+.match-admin-team strong { overflow-wrap: anywhere; }
+.match-admin-teams { align-items: center; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+body.dark-mode .fixture-team-grade { color: #CBD5E1; }
+body.dark-mode .fixture-team-crest--empty { background: #26364B; border-color: #475569; color: #86EFAC; }
+@media (max-width: 650px) {
+  .dashboard-brand { gap: 10px; }
+  .dashboard-brand__logo { flex-basis: 48px; height: 48px; width: 48px; }
+  .fixture-team-crest { flex-basis: 40px; height: 40px; width: 40px; }
+}

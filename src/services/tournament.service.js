@@ -21,6 +21,22 @@ function formatTeamGrades(grades) {
     .join(', ');
 }
 
+function attachMatchTeamDetails(match, teams) {
+  const teamsById = new Map(teams.map((team) => [team.id, team]));
+  const teamsByName = new Map(teams.map((team) => [team.nombre, team]));
+  const home = teamsById.get(match.equipoLocalId?.toString() || match.homeTeamId)
+    || teamsByName.get(match.equipo_a || match.homeTeam);
+  const away = teamsById.get(match.equipoVisitanteId?.toString() || match.awayTeamId)
+    || teamsByName.get(match.equipo_b || match.awayTeam);
+
+  return {
+    homeTeamLogo: home?.escudoUrl || '',
+    awayTeamLogo: away?.escudoUrl || '',
+    homeTeamGrade: home?.grado || '',
+    awayTeamGrade: away?.grado || ''
+  };
+}
+
 async function filterLegacyTeamMatches(matches) {
   const legacyTeams = await Team.find({ categoria: { $nin: TEAM_CATEGORIES } }, '_id nombre').lean();
   if (!legacyTeams.length) return matches;
@@ -134,7 +150,10 @@ async function getTeams(selectedSport = 'futbol') {
 }
 
 async function getMatches(selectedSport = 'futbol') {
-  const rawMatches = await Match.find(sportQuery(selectedSport)).sort({ fecha: 1, hora: 1 }).lean();
+  const [rawMatches, teams] = await Promise.all([
+    Match.find(sportQuery(selectedSport)).sort({ fecha: 1, hora: 1 }).lean(),
+    getTeams(selectedSport)
+  ]);
   const matches = await filterLegacyTeamMatches(rawMatches);
 
   return matches.map((match) => ({
@@ -150,12 +169,16 @@ async function getMatches(selectedSport = 'futbol') {
     awayScore: match.goles_b !== undefined ? match.goles_b : (match.goles_visitante ?? 0),
     homeTeam: match.equipo_a || 'Equipo local',
     awayTeam: match.equipo_b || 'Equipo visitante',
+    ...attachMatchTeamDetails(match, teams),
     result: match.resultado || `${match.equipo_a || 'Equipo local'} ${match.goles_a ?? match.goles_local ?? 0} - ${match.goles_b ?? match.goles_visitante ?? 0} ${match.equipo_b || 'Equipo visitante'}`
   }));
 }
 
 async function getCalendarMatches(selectedSport = 'futbol') {
-  const allMatches = await Match.find(sportQuery(selectedSport)).sort({ fecha: 1, hora: 1 }).lean();
+  const [allMatches, teams] = await Promise.all([
+    Match.find(sportQuery(selectedSport)).sort({ fecha: 1, hora: 1 }).lean(),
+    getTeams(selectedSport)
+  ]);
   const rawMatches = await filterLegacyTeamMatches(allMatches);
 
   const formattedMatches = rawMatches.map((match) => {
@@ -174,6 +197,7 @@ async function getCalendarMatches(selectedSport = 'futbol') {
       deporte: normalizeSport(match.deporte),
       homeTeam,
       awayTeam,
+      ...attachMatchTeamDetails(match, teams),
       homeScore,
       awayScore,
       winner,
@@ -286,4 +310,4 @@ async function getTopScorers(limit = 10, category, selectedSport = 'futbol') {
   }));
 }
 
-module.exports = { getTeams, getMatches, getCalendarMatches, getSummary, getStandings, getTeamsPageData, getTopScorers, buildStandings, formatTeamGrades, sortTeamsByGrade };
+module.exports = { getTeams, getMatches, getCalendarMatches, getSummary, getStandings, getTeamsPageData, getTopScorers, buildStandings, formatTeamGrades, attachMatchTeamDetails, sortTeamsByGrade };

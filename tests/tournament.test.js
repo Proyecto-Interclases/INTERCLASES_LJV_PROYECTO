@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
-const { buildStandings, formatTeamGrades } = require('../src/services/tournament.service');
+const { buildStandings, formatTeamGrades, attachMatchTeamDetails } = require('../src/services/tournament.service');
 const { getTeamCrestUrl } = require('../src/services/team-crest.service');
 
 test('legacy national flags resolve to local transparent federation logos or no image', () => {
@@ -16,6 +16,29 @@ test('formatTeamGrades muestra grados de sección legibles junto al nombre del e
   assert.equal(formatTeamGrades(['9.º 1, 10.º 1 y 11.º 1']), '9-1, 10-1 y 11-1');
   assert.equal(formatTeamGrades(['11.º 1']), '11-1');
   assert.equal(formatTeamGrades([]), '');
+});
+
+test('match team details resolve crests and grade information by team id or legacy name', () => {
+  const teams = [
+    { id: 'team-a', nombre: 'Águilas', escudoUrl: '/images/selecciones/colombia.png', grado: '10-1' },
+    { id: 'team-b', nombre: 'Leones', escudoUrl: '', grado: '9-2' }
+  ];
+
+  assert.deepEqual(attachMatchTeamDetails({
+    equipoLocalId: 'team-a',
+    equipoVisitanteId: 'team-b'
+  }, teams), {
+    homeTeamLogo: '/images/selecciones/colombia.png',
+    awayTeamLogo: '',
+    homeTeamGrade: '10-1',
+    awayTeamGrade: '9-2'
+  });
+  assert.deepEqual(attachMatchTeamDetails({ equipo_a: 'Águilas', equipo_b: 'Leones' }, teams), {
+    homeTeamLogo: '/images/selecciones/colombia.png',
+    awayTeamLogo: '',
+    homeTeamGrade: '10-1',
+    awayTeamGrade: '9-2'
+  });
 });
 
 test('buildStandings calcula puntos y estadísticas solo con partidos finalizados', () => {

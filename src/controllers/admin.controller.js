@@ -62,6 +62,10 @@ async function dashboardData(order = 'desc') {
     if (!homeTeam || !awayTeam) return [];
     return {
       ...partido,
+      equipo_local_escudoUrl: homeTeam.escudoUrl || '',
+      equipo_visitante_escudoUrl: awayTeam.escudoUrl || '',
+      equipo_local_grado: getPrimaryTeamGrade(playersByTeam.get(homeTeam.id) || []),
+      equipo_visitante_grado: getPrimaryTeamGrade(playersByTeam.get(awayTeam.id) || []),
       categoria: homeTeam?.categoria || awayTeam?.categoria || ''
     };
   });
@@ -163,7 +167,14 @@ async function adminOverview(req, res) {
     }).map((match) => {
       const home = teamById.get(match.equipo_local_id) || teamByName.get(match.equipo_local);
       const away = teamById.get(match.equipo_visitante_id) || teamByName.get(match.equipo_visitante);
-      return { ...match, categoria: home?.categoria || away?.categoria || '' };
+      return {
+        ...match,
+        equipo_local_escudoUrl: home.escudoUrl || '',
+        equipo_visitante_escudoUrl: away.escudoUrl || '',
+        equipo_local_grado: getPrimaryTeamGrade(playersByTeam.get(home.id) || []),
+        equipo_visitante_grado: getPrimaryTeamGrade(playersByTeam.get(away.id) || []),
+        categoria: home?.categoria || away?.categoria || ''
+      };
     });
     const posiciones = buildAdminStandings(standingsGroups, sport);
     const goals = players.reduce((total, player) => total + Number(player.goles || 0), 0);
