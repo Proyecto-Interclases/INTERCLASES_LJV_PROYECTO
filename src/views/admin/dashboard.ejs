@@ -154,12 +154,44 @@
                 </div>
                 <div class="result-item">
                   <span>Marcador: <strong><%= partido.resultado %></strong></span>
-                  <form action="/admin/partidos/<%= partido.id %>/resultados" method="post" class="score-form">
-                    <input type="number" name="golesLocal" min="0" value="<%= partido.goles_local ?? 0 %>" required>
-                    <span>-</span>
-                    <input type="number" name="golesVisitante" min="0" value="<%= partido.goles_visitante ?? 0 %>" required>
-                    <button type="submit" class="btn btn-secondary dark">Guardar marcador</button>
-                  </form>
+                  <% if (partido.estado === 'Por jugar') { %>
+                    <form action="/admin/partidos/<%= partido.id %>/en-vivo" method="post">
+                      <button type="submit" class="btn btn-primary">Iniciar en vivo</button>
+                    </form>
+                  <% } else if (partido.estado === 'Jugando') { %>
+                    <div class="live-match-admin-controls">
+                      <form action="/admin/partidos/<%= partido.id %>/goles" method="post" class="live-goal-form">
+                        <input type="hidden" name="side" value="local">
+                        <label>Goleador · <%= partido.equipo_local %>
+                          <select name="playerId" required>
+                            <option value="">Selecciona jugador</option>
+                            <% (partido.equipo_local_jugadores || []).forEach((player) => { %><option value="<%= player.id %>"><%= player.nombre %></option><% }) %>
+                          </select>
+                        </label>
+                        <button type="submit" class="btn btn-primary">+ Gol local</button>
+                      </form>
+                      <form action="/admin/partidos/<%= partido.id %>/goles" method="post" class="live-goal-form">
+                        <input type="hidden" name="side" value="visitante">
+                        <label>Goleador · <%= partido.equipo_visitante %>
+                          <select name="playerId" required>
+                            <option value="">Selecciona jugador</option>
+                            <% (partido.equipo_visitante_jugadores || []).forEach((player) => { %><option value="<%= player.id %>"><%= player.nombre %></option><% }) %>
+                          </select>
+                        </label>
+                        <button type="submit" class="btn btn-primary">+ Gol visitante</button>
+                      </form>
+                      <form action="/admin/partidos/<%= partido.id %>/finalizar" method="post">
+                        <button type="submit" class="btn btn-danger">Finalizar partido</button>
+                      </form>
+                    </div>
+                  <% } else { %>
+                    <form action="/admin/partidos/<%= partido.id %>/resultados" method="post" class="score-form">
+                      <input type="number" name="golesLocal" min="0" value="<%= partido.goles_local ?? 0 %>" required>
+                      <span>-</span>
+                      <input type="number" name="golesVisitante" min="0" value="<%= partido.goles_visitante ?? 0 %>" required>
+                      <button type="submit" class="btn btn-secondary dark">Guardar marcador</button>
+                    </form>
+                  <% } %>
                   <form action="/admin/partidos/<%= partido.id %>/eliminar" method="post"><button type="submit" class="btn btn-danger">Eliminar</button></form>
                 </div>
                 </article>
@@ -183,7 +215,7 @@
                 </div>
                 <div class="field-row">
                   <label>Cancha *<input type="text" name="cancha" id="match-editor-venue" placeholder="Cancha principal" required></label>
-                  <label>Estado<select name="estado" id="match-editor-status"><% estadosPartido.forEach((estado) => { %><option value="<%= estado %>"><%= estado %></option><% }) %></select></label>
+                  <label>Estado<select name="estado" id="match-editor-status"><% estadosPartido.forEach((estado) => { %><option value="<%= estado %>" <%= estado === 'Jugando' ? 'hidden disabled data-live-status-option' : '' %>><%= estado %></option><% }) %></select></label>
                 </div>
                 <div class="admin-modal__actions"><button class="admin-quiet-button" type="button" data-modal-close>Cancelar</button><button type="submit" class="btn btn-primary">Guardar partido</button></div>
               </form>
@@ -589,6 +621,6 @@
       </section>
     </main>
     <%- include('../partials/accessibility-settings') %>
-    <script src="/js/admin-dashboard.js?v=ajax-dashboard-20261018" defer></script>
+    <script src="/js/admin-dashboard.js?v=live-controls-20261018" defer></script>
   </body>
 </html>

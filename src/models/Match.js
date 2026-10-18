@@ -62,4 +62,9 @@ const matchSchema = new mongoose.Schema({
   }
 });
 
+matchSchema.index(
+  { deporte: 1 },
+  { unique: true, partialFilterExpression: { estado: 'Jugando' } }
+);
+
 module.exports = mongoose.model('Match', matchSchema);

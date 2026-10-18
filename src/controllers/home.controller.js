@@ -27,8 +27,8 @@ async function showHome(req, res, next) {
   // Intenta preparar y renderizar la vista.
   try {
     const { sports } = buildSportLinks('/calendario');
-    const [matches, popup, galleryImages] = await Promise.all([
-      tournamentService.getMatches(),
+    const [matchSections, popup, galleryImages] = await Promise.all([
+      tournamentService.getHomeMatchSections(),
       getPopup(),
       listGalleryImages()
     ]);
@@ -38,8 +38,8 @@ async function showHome(req, res, next) {
     res.render('index', {
       // Define el titulo que aparece en el navegador.
       title: 'Interclases Lucrecio Jaramillo',
-      // Entrega la lista de partidos para mostrarla en la vista.
-      matches,
+      liveMatches: matchSections.liveMatches,
+      latestMatches: matchSections.latestMatches,
       sports,
       galleryImages: activeGalleryImages,
       popup,
@@ -50,6 +50,15 @@ async function showHome(req, res, next) {
   } catch (error) {
     // Envia el error al middleware global.
     next(error);
+  }
+}
+
+async function getLiveMatches(req, res, next) {
+  try {
+    const liveMatches = await tournamentService.getLiveMatches();
+    return res.json({ ok: true, liveMatches });
+  } catch (error) {
+    return next(error);
   }
 }
 
@@ -209,4 +218,4 @@ async function submitEnrollment(req, res, next) {
 }
 
 // Exporta el controlador para conectarlo con las rutas web.
-module.exports = { showHome, showLogin, showRegister, showCalendar, showStandings, showTeams, showEnrollments, submitEnrollment, buildSportLinks };
+module.exports = { showHome, getLiveMatches, showLogin, showRegister, showCalendar, showStandings, showTeams, showEnrollments, submitEnrollment, buildSportLinks };

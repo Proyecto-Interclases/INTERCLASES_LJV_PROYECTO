@@ -15,6 +15,13 @@ const { normalizeShirtNumber } = require('./shirt-number.service');
 const MATCH_STATUSES = ['Por jugar', 'Jugando', 'Finalizado'];
 const ANNOUNCEMENT_TAGS = new Set(['p', 'div', 'br', 'strong', 'b', 'em', 'i', 'u', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'blockquote', 'a']);
 
+function matchLiveConflict(error) {
+  if (error?.code === 11000 && error?.keyPattern?.deporte) {
+    return new Error('Ya hay un partido en vivo para este deporte. Finalízalo antes de iniciar otro.');
+  }
+  return error;
+}
+
 function requirePayload(payload, label) {
   if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
     throw new Error(`${label} no se recibieron correctamente.`);
@@ -453,6 +460,15 @@ async function updateMatch(payload) {
   if (!match) {
     throw new Error('No existe ese partido.');
   }
+  if (estado === 'Jugando' && match.estado !== 'Jugando') {
+    throw new Error('Inicia el partido con el control «Iniciar en vivo».');
+  }
+  if (match.estado === 'Jugando'
+    && (estado !== 'Jugando'
+      || String(match.equipoLocalId) !== String(equipoLocalId)
+      || String(match.equipoVisitanteId) !== String(equipoVisitanteId))) {
+    throw new Error('Finaliza el partido en vivo con sus controles y conserva los equipos registrados.');
+  }
 
   const local = await Team.findById(equipoLocalId);
   const visitante = await Team.findById(equipoVisitanteId);
@@ -476,12 +492,92 @@ async function updateMatch(payload) {
   match.hora = horaPartido;
   match.cancha = String(cancha).trim();
   match.estado = estado;
-  await match.save();
+  try {
+    await match.save();
+  } catch (error) {
+    throw matchLiveConflict(error);
+  }
 
   return match.toObject();
 }
 
+async function startMatchLive(matchId) {
+  if (!mongoose.isValidObjectId(matchId)) throw new Error('El partido seleccionado no es válido.');
+  const match = await Match.findById(matchId);
+  if (!match) throw new Error('No existe ese partido.');
+  if (match.estado !== 'Por jugar') throw new Error('Solo se puede iniciar un partido que esté por jugar.');
+  if (await Match.exists({ deporte: match.deporte, estado: 'Jugando' })) {
+    throw new Error('Ya hay un partido en vivo para este deporte. Finalízalo antes de iniciar otro.');
+  }
+
+  try {
+    const started = await Match.findOneAndUpdate(
+      { _id: matchId, estado: 'Por jugar' },
+      { $set: { estado: 'Jugando', resultado: null } },
+      { new: true, runValidators: true }
+    );
+    if (!started) throw new Error('El partido ya no está disponible para iniciar.');
+    return started.toObject();
+  } catch (error) {
+    throw matchLiveConflict(error);
+  }
+}
+
+async function addMatchGoal({ matchId, side, playerId }) {
+  if (!mongoose.isValidObjectId(matchId) || !mongoose.isValidObjectId(playerId)) {
+    throw new Error('Selecciona un partido y un jugador válidos.');
+  }
+  if (!['local', 'visitante'].includes(side)) throw new Error('Selecciona un equipo válido para el gol.');
+
+  const session = await mongoose.startSession();
+  let updatedMatch;
+  try {
+    await session.withTransaction(async () => {
+      const match = await Match.findOne({ _id: matchId, estado: 'Jugando' }).session(session);
+      if (!match) throw new Error('Solo puedes registrar goles en un partido que esté en vivo.');
+      const teamId = side === 'local' ? match.equipoLocalId : match.equipoVisitanteId;
+      if (!teamId) throw new Error('El equipo seleccionado no está asociado correctamente al partido.');
+
+      const player = await Player.findOne({ _id: playerId, equipo_id: teamId }).session(session);
+      if (!player) throw new Error('El jugador seleccionado no pertenece al equipo elegido.');
+
+      player.goles = (Number(player.goles) || 0) + 1;
+      await player.save({ session });
+      if (side === 'local') match.goles_a = (Number(match.goles_a) || 0) + 1;
+      else match.goles_b = (Number(match.goles_b) || 0) + 1;
+      await match.save({ session });
+      updatedMatch = match.toObject();
+    });
+  } finally {
+    await session.endSession();
+  }
+  return updatedMatch;
+}
+
+async function finishMatchLive(matchId) {
+  if (!mongoose.isValidObjectId(matchId)) throw new Error('El partido seleccionado no es válido.');
+  const session = await mongoose.startSession();
+  let finishedMatch;
+  try {
+    await session.withTransaction(async () => {
+      const match = await Match.findOne({ _id: matchId, estado: 'Jugando' }).session(session);
+      if (!match) throw new Error('Solo puedes finalizar un partido que esté en vivo.');
+
+      match.estado = 'Finalizado';
+      match.resultado = `${match.equipo_a} ${match.goles_a} - ${match.goles_b} ${match.equipo_b}`;
+      await match.save({ session });
+      finishedMatch = match.toObject();
+    });
+  } finally {
+    await session.endSession();
+  }
+  return finishedMatch;
+}
+
 async function deleteMatch(matchId) {
+  if (await Match.exists({ _id: matchId, estado: 'Jugando' })) {
+    throw new Error('Finaliza el partido en vivo antes de eliminarlo.');
+  }
   const match = await Match.findByIdAndDelete(matchId);
   if (!match) throw new Error('No existe ese partido.');
   return match;
@@ -513,6 +609,9 @@ module.exports = {
   listUsers,
   resetUserPassword,
   updateMatch,
+  startMatchLive,
+  addMatchGoal,
+  finishMatchLive,
   deleteMatch,
   deletePlayer
 };

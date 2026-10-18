@@ -2,7 +2,7 @@ const Match = require('../models/Match');
 const Team = require('../models/Team');
 const Player = require('../models/Player');
 const TEAM_CATEGORIES = require('../constants/team-categories');
-const { normalizeSport, sportQuery } = require('../constants/sports');
+const { normalizeSport, sportQuery, SPORT_IDS } = require('../constants/sports');
 const { isManagedPlayerPhotoUrl } = require('./player-photo.service');
 const { groupPlayersByPosition, buildFootballLineup } = require('./player-lineup.service');
 const { sortTeamsByGrade } = require('./team-order.service');
@@ -34,6 +34,25 @@ function attachMatchTeamDetails(match, teams) {
     awayTeamLogo: away?.escudoUrl || '',
     homeTeamGrade: home?.grado || '',
     awayTeamGrade: away?.grado || ''
+  };
+}
+
+function formatMatch(match, teams) {
+  return {
+    id: match._id.toString(),
+    deporte: normalizeSport(match.deporte),
+    homeTeamId: match.equipoLocalId ? match.equipoLocalId.toString() : null,
+    awayTeamId: match.equipoVisitanteId ? match.equipoVisitanteId.toString() : null,
+    date: match.fecha,
+    time: match.hora,
+    field: match.cancha,
+    status: normalizeMatchStatus(match.estado),
+    homeScore: match.goles_a !== undefined ? match.goles_a : (match.goles_local ?? 0),
+    awayScore: match.goles_b !== undefined ? match.goles_b : (match.goles_visitante ?? 0),
+    homeTeam: match.equipo_a || 'Equipo local',
+    awayTeam: match.equipo_b || 'Equipo visitante',
+    ...attachMatchTeamDetails(match, teams),
+    result: match.resultado || `${match.equipo_a || 'Equipo local'} ${match.goles_a ?? match.goles_local ?? 0} - ${match.goles_b ?? match.goles_visitante ?? 0} ${match.equipo_b || 'Equipo visitante'}`
   };
 }
 
@@ -156,22 +175,31 @@ async function getMatches(selectedSport = 'futbol') {
   ]);
   const matches = await filterLegacyTeamMatches(rawMatches);
 
-  return matches.map((match) => ({
-    id: match._id.toString(),
-    deporte: normalizeSport(match.deporte),
-    homeTeamId: match.equipoLocalId ? match.equipoLocalId.toString() : null,
-    awayTeamId: match.equipoVisitanteId ? match.equipoVisitanteId.toString() : null,
-    date: match.fecha,
-    time: match.hora,
-    field: match.cancha,
-    status: normalizeMatchStatus(match.estado),
-    homeScore: match.goles_a !== undefined ? match.goles_a : (match.goles_local ?? 0),
-    awayScore: match.goles_b !== undefined ? match.goles_b : (match.goles_visitante ?? 0),
-    homeTeam: match.equipo_a || 'Equipo local',
-    awayTeam: match.equipo_b || 'Equipo visitante',
-    ...attachMatchTeamDetails(match, teams),
-    result: match.resultado || `${match.equipo_a || 'Equipo local'} ${match.goles_a ?? match.goles_local ?? 0} - ${match.goles_b ?? match.goles_visitante ?? 0} ${match.equipo_b || 'Equipo visitante'}`
+  return matches.map((match) => formatMatch(match, teams));
+}
+
+async function getHomeMatchSections() {
+  const matchesBySport = await Promise.all(SPORT_IDS.map((sport) => getMatches(sport)));
+  const matches = matchesBySport.flat();
+  const liveMatches = matches.filter((match) => match.status === 'Jugando');
+  const latestMatches = matches
+    .filter((match) => match.status === 'Finalizado')
+    .sort((first, second) => `${second.date} ${second.time}`.localeCompare(`${first.date} ${first.time}`))
+    .slice(0, 3);
+
+  return { liveMatches, latestMatches };
+}
+
+async function getLiveMatches() {
+  const matchesBySport = await Promise.all(SPORT_IDS.map(async (sport) => {
+    const [matches, teams] = await Promise.all([
+      Match.find({ ...sportQuery(sport), estado: { $in: ['Jugando', 'En Vivo', 'En vivo'] } }).sort({ fecha: 1, hora: 1 }).lean(),
+      getTeams(sport)
+    ]);
+    const filteredMatches = await filterLegacyTeamMatches(matches);
+    return filteredMatches.map((match) => formatMatch(match, teams));
   }));
+  return matchesBySport.flat();
 }
 
 async function getCalendarMatches(selectedSport = 'futbol') {
@@ -310,4 +338,4 @@ async function getTopScorers(limit = 10, category, selectedSport = 'futbol') {
   }));
 }
 
-module.exports = { getTeams, getMatches, getCalendarMatches, getSummary, getStandings, getTeamsPageData, getTopScorers, buildStandings, formatTeamGrades, attachMatchTeamDetails, sortTeamsByGrade };
+module.exports = { getTeams, getMatches, getHomeMatchSections, getLiveMatches, getCalendarMatches, getSummary, getStandings, getTeamsPageData, getTopScorers, buildStandings, formatTeamGrades, attachMatchTeamDetails, sortTeamsByGrade };

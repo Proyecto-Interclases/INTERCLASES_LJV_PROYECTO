@@ -18,6 +18,7 @@ router.get('/', homeController.showHome);
 calendarRoutes.forEach((route) => router.get(route, homeController.showCalendar));
 router.get('/posiciones', homeController.showStandings);
 router.get('/equipos', homeController.showTeams);
+router.get('/api/partidos-en-vivo', homeController.getLiveMatches);
 router.get('/inscripciones', requireEnrollmentAuth, homeController.showEnrollments);
 router.post('/inscripciones', requireEnrollmentAuth, homeController.submitEnrollment);
 loginRoutes.forEach((route) => router.get(route, homeController.showLogin));

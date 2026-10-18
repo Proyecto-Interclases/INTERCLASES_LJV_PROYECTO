@@ -5,31 +5,43 @@
   <%- include('partials/navbar', { user }) %>
 
   <main class="container">
-    <section class="home-sports" aria-labelledby="home-sports-title">
-      <div class="home-sports__heading">
-        <p class="eyebrow section-eyebrow">Interclases Lucrecio Jaramillo</p>
-        <h2 id="home-sports-title">Tres deportes, una comunidad</h2>
-        <p>Consulta la actividad y acompaña a los equipos de fútbol, baloncesto y voleibol.</p>
+    <section class="live-match-section" id="live-matches" data-live-section aria-labelledby="live-match-title" <%= liveMatches.length ? '' : 'hidden' %>>
+      <div class="live-match-section__heading">
+        <p class="eyebrow">ENCUENTRO EN DIRECTO</p>
+        <h2 id="live-match-title">Partido en vivo</h2>
       </div>
-      <div class="home-sports__grid">
-        <% sports.forEach((sport) => { %>
-          <a class="home-sport-card" href="<%= sport.href %>">
-            <span class="home-sport-card__icon" aria-hidden="true"><%= sport.id === 'futbol' ? '⚽' : sport.id === 'baloncesto' ? '🏀' : '🏐' %></span>
-            <span><%= sport.name %></span>
-            <span class="home-sport-card__action">Ver calendario <span aria-hidden="true">→</span></span>
-          </a>
+      <div class="live-match-list" data-live-matches aria-live="polite">
+        <% liveMatches.forEach((match) => { %>
+          <article class="live-match-card" data-live-match-id="<%= match.id %>">
+            <span class="live-match-card__sport"><%= sports.find((sport) => sport.id === match.deporte)?.name || match.deporte %> · <%= match.field %></span>
+            <div class="live-match-card__scoreboard">
+              <div class="live-match-team">
+                <% if (match.homeTeamLogo) { %><img class="fixture-team-crest" src="<%= match.homeTeamLogo %>" alt="Escudo de <%= match.homeTeam %>" loading="lazy"><% } else { %><span class="fixture-team-crest fixture-team-crest--empty" aria-hidden="true"><%= (match.homeTeam || 'E').slice(0, 1) %></span><% } %>
+                <strong><%= match.homeTeam %></strong>
+                <% if (match.homeTeamGrade) { %><small class="fixture-team-grade"><%= match.homeTeamGrade %></small><% } %>
+              </div>
+              <div class="live-match-score" aria-label="Marcador">
+                <strong data-live-home-score><%= match.homeScore %></strong>
+                <span>–</span>
+                <strong data-live-away-score><%= match.awayScore %></strong>
+              </div>
+              <div class="live-match-team">
+                <% if (match.awayTeamLogo) { %><img class="fixture-team-crest" src="<%= match.awayTeamLogo %>" alt="Escudo de <%= match.awayTeam %>" loading="lazy"><% } else { %><span class="fixture-team-crest fixture-team-crest--empty" aria-hidden="true"><%= (match.awayTeam || 'E').slice(0, 1) %></span><% } %>
+                <strong><%= match.awayTeam %></strong>
+                <% if (match.awayTeamGrade) { %><small class="fixture-team-grade"><%= match.awayTeamGrade %></small><% } %>
+              </div>
+            </div>
+            <span class="live-match-card__badge"><span class="live-dot" aria-hidden="true"></span> EN VIVO</span>
+          </article>
         <% }) %>
       </div>
     </section>
 
     <section class="match-carousel" id="match-carousel" aria-labelledby="match-carousel-title">
-      <% if (error) { %>
-        <div class="auth-alert error"><%= error %></div>
-      <% } %>
       <div class="match-carousel__heading">
         <div>
-          <p class="eyebrow section-eyebrow">Jornada en juego</p>
-          <h2 id="match-carousel-title">Proximos partidos</h2>
+          <p class="eyebrow section-eyebrow">Resultados recientes</p>
+          <h2 id="match-carousel-title">Últimos partidos</h2>
         </div>
         <div class="match-carousel__controls" aria-label="Navegacion de partidos">
           <button class="match-carousel__arrow" type="button" data-carousel-prev aria-label="Partido anterior">&#8592;</button>
@@ -39,13 +51,13 @@
 
       <div class="match-carousel__viewport" data-carousel-viewport tabindex="0">
         <div class="match-carousel__track" data-carousel-track>
-          <% if (matches.length === 0) { %>
+          <% if (latestMatches.length === 0) { %>
             <article class="match-card match-card--empty" data-carousel-slide>
-              <strong>No hay partidos programados</strong>
-              <span>Los proximos encuentros apareceran aqui cuando sean registrados.</span>
+              <strong>Aún no hay partidos finalizados</strong>
+              <span>Los resultados más recientes aparecerán aquí al terminar los encuentros.</span>
             </article>
           <% } else { %>
-            <% matches.forEach((match) => { %>
+            <% latestMatches.forEach((match) => { %>
               <article class="match-card" data-carousel-slide>
                 <div class="match-card__topline">
                   <time datetime="<%= match.date %>T<%= match.time %>"><%= match.date %> · <%= match.time %></time>
@@ -109,6 +121,25 @@
           <h2>La galería se está preparando</h2>
         </div>
       <% } %>
+    </section>
+
+    <section class="home-sports" aria-labelledby="home-sports-title">
+      <% if (error) { %><div class="auth-alert error" role="alert"><%= error %></div><% } %>
+      <div class="home-sports__heading">
+        <p class="eyebrow section-eyebrow">Temporada 2026</p>
+        <h2 id="home-sports-title">Inscripciones</h2>
+        <p>Registra tu equipo para participar en las Interclases o consulta la información de cada deporte.</p>
+        <a class="home-enrollment-cta" href="/inscripciones">Inscribir mi equipo <span aria-hidden="true">→</span></a>
+      </div>
+      <div class="home-sports__grid">
+        <% sports.forEach((sport) => { %>
+          <a class="home-sport-card" href="<%= sport.href %>">
+            <span class="home-sport-card__icon" aria-hidden="true"><%= sport.id === 'futbol' ? '⚽' : sport.id === 'baloncesto' ? '🏀' : '🏐' %></span>
+            <span><%= sport.name %></span>
+            <span class="home-sport-card__action">Ver calendario <span aria-hidden="true">→</span></span>
+          </a>
+        <% }) %>
+      </div>
     </section>
 
   </main>
@@ -219,6 +250,7 @@
   </script>
   <script src="/js/match-carousel.js" defer></script>
   <script src="/js/gallery-carousel.js" defer></script>
+  <script src="/js/live-match.js?v=live-match-20261018" defer></script>
   <%- include('partials/accessibility-settings') %>
 </body>
 </html>

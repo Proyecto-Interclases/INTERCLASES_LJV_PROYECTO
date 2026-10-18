@@ -1,5 +1,5 @@
 const { createEquipo, addJugador, createPartido, actualizarResultadoPartido, listarPartidos } = require('../services/gestion.service');
-const { listAdminTeams, MATCH_STATUSES, getPopup, updatePopup, listPlayers, getPrimaryTeamGrade, updatePlayerStatsBatch, listUsers, resetUserPassword, updateTeamStats, updateTeamCaptain, updateTeam, deleteTeam, updateMatch, updatePlayerGoals, updatePlayerData, deleteMatch, deletePlayer } = require('../services/admin.service');
+const { listAdminTeams, MATCH_STATUSES, getPopup, updatePopup, listPlayers, getPrimaryTeamGrade, updatePlayerStatsBatch, listUsers, resetUserPassword, updateTeamStats, updateTeamCaptain, updateTeam, deleteTeam, updateMatch, startMatchLive, addMatchGoal, finishMatchLive, updatePlayerGoals, updatePlayerData, deleteMatch, deletePlayer } = require('../services/admin.service');
 const { listGalleryImages, saveGalleryImages, deleteGalleryImage, toggleGalleryImage } = require('../services/gallery.service');
 const { saveAnnouncementImages, removeAnnouncementImage } = require('../services/announcement-image.service');
 const tournamentService = require('../services/tournament.service');
@@ -66,6 +66,8 @@ async function dashboardData(order = 'desc') {
       equipo_visitante_escudoUrl: awayTeam.escudoUrl || '',
       equipo_local_grado: getPrimaryTeamGrade(playersByTeam.get(homeTeam.id) || []),
       equipo_visitante_grado: getPrimaryTeamGrade(playersByTeam.get(awayTeam.id) || []),
+      equipo_local_jugadores: (playersByTeam.get(homeTeam.id) || []).map(({ id, nombre }) => ({ id, nombre })),
+      equipo_visitante_jugadores: (playersByTeam.get(awayTeam.id) || []).map(({ id, nombre }) => ({ id, nombre })),
       categoria: homeTeam?.categoria || awayTeam?.categoria || ''
     };
   });
@@ -173,6 +175,8 @@ async function adminOverview(req, res) {
         equipo_visitante_escudoUrl: away.escudoUrl || '',
         equipo_local_grado: getPrimaryTeamGrade(playersByTeam.get(home.id) || []),
         equipo_visitante_grado: getPrimaryTeamGrade(playersByTeam.get(away.id) || []),
+        equipo_local_jugadores: (playersByTeam.get(home.id) || []).map(({ id, nombre }) => ({ id, nombre })),
+        equipo_visitante_jugadores: (playersByTeam.get(away.id) || []).map(({ id, nombre }) => ({ id, nombre })),
         categoria: home?.categoria || away?.categoria || ''
       };
     });
@@ -270,6 +274,29 @@ const guardarResultado = (req, res) => runDashboardAction(
       golesVisitante: req.body.golesVisitante
   }),
   (resultado) => `Resultado actualizado: ${resultado.resultado}`
+);
+
+const iniciarPartidoEnVivo = (req, res) => runDashboardAction(
+  req,
+  res,
+  () => startMatchLive(req.params.id),
+  'El partido está en vivo.',
+  { requireBody: false }
+);
+
+const registrarGolEnVivo = (req, res) => runDashboardAction(
+  req,
+  res,
+  () => addMatchGoal({ matchId: req.params.id, side: req.body.side, playerId: req.body.playerId }),
+  (match) => `Gol registrado. Marcador: ${match.goles_a} - ${match.goles_b}.`
+);
+
+const finalizarPartidoEnVivo = (req, res) => runDashboardAction(
+  req,
+  res,
+  () => finishMatchLive(req.params.id),
+  (match) => `Partido finalizado: ${match.resultado}.`,
+  { requireBody: false }
 );
 
 const guardarEquipo = (req, res) => runDashboardAction(
@@ -463,6 +490,9 @@ module.exports = {
   editarPartido,
   eliminarPartido,
   guardarResultado,
+  iniciarPartidoEnVivo,
+  registrarGolEnVivo,
+  finalizarPartidoEnVivo,
   guardarEquipo,
   editarEquipo,
   eliminarEquipo,

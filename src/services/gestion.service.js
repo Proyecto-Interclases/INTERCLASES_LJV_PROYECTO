@@ -136,6 +136,9 @@ async function createPartido(payload) {
   if (!MATCH_STATUSES.includes(estado)) {
     throw new Error('El estado del partido no es válido.');
   }
+  if (estado === 'Jugando') {
+    throw new Error('Programa el partido y luego inícialo con el control «Iniciar en vivo».');
+  }
 
   const local = await Team.findById(equipoLocalId);
   const visitante = await Team.findById(equipoVisitanteId);
@@ -187,6 +190,9 @@ async function actualizarResultadoPartido(payload) {
 
   if (!partido) {
     throw new Error('No existe ese partido.');
+  }
+  if (partido.estado === 'Jugando') {
+    throw new Error('Un partido en vivo debe finalizarse con los controles del marcador en directo.');
   }
 
   const resultado = `${partido.equipo_a} ${homeScore} - ${awayScore} ${partido.equipo_b}`;

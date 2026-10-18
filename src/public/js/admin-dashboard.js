@@ -265,7 +265,12 @@
         modal.querySelector('#match-editor-date').value = trigger.dataset.matchDate || '';
         modal.querySelector('#match-editor-time').value = trigger.dataset.matchTime || '';
         modal.querySelector('#match-editor-venue').value = trigger.dataset.matchVenue || '';
-        modal.querySelector('#match-editor-status').value = trigger.dataset.matchStatus || 'Por jugar';
+        const statusSelect = modal.querySelector('#match-editor-status');
+        const liveStatusOption = statusSelect.querySelector('[data-live-status-option]');
+        const isLive = trigger.dataset.matchStatus === 'Jugando';
+        liveStatusOption.hidden = !isLive;
+        liveStatusOption.disabled = !isLive;
+        statusSelect.value = trigger.dataset.matchStatus || 'Por jugar';
       }
 
       if (modal.id === 'captain-editor-modal') {
@@ -537,11 +542,39 @@
       ${logo ? `<img class="fixture-team-crest" src="${escapeHtml(logo)}" alt="Escudo de ${escapeHtml(name)}" loading="lazy">` : `<span class="fixture-team-crest fixture-team-crest--empty" aria-hidden="true">${escapeHtml((name || 'E').slice(0, 1))}</span>`}
       <strong>${escapeHtml(name)}</strong>${grade ? `<small class="fixture-team-grade">${escapeHtml(grade)}</small>` : ''}
     </div>`;
+    const renderGoalForm = (match, side, teamName, players) => `<form action="/admin/partidos/${escapeHtml(match.id)}/goles" method="post" class="live-goal-form">
+      <input type="hidden" name="side" value="${side}">
+      <label>Goleador · ${escapeHtml(teamName)}
+        <select name="playerId" required>
+          <option value="">Selecciona jugador</option>
+          ${(players || []).map((player) => `<option value="${escapeHtml(player.id)}">${escapeHtml(player.nombre)}</option>`).join('')}
+        </select>
+      </label>
+      <button type="submit" class="btn btn-primary">+ Gol ${side === 'local' ? 'local' : 'visitante'}</button>
+    </form>`;
+    const renderLiveControls = (match) => {
+      if (match.estado === 'Por jugar') {
+        return `<form action="/admin/partidos/${escapeHtml(match.id)}/en-vivo" method="post"><button type="submit" class="btn btn-primary">Iniciar en vivo</button></form>`;
+      }
+      if (match.estado === 'Jugando') {
+        return `<div class="live-match-admin-controls">
+          ${renderGoalForm(match, 'local', match.equipo_local, match.equipo_local_jugadores)}
+          ${renderGoalForm(match, 'visitante', match.equipo_visitante, match.equipo_visitante_jugadores)}
+          <form action="/admin/partidos/${escapeHtml(match.id)}/finalizar" method="post"><button type="submit" class="btn btn-danger">Finalizar partido</button></form>
+        </div>`;
+      }
+      return `<form action="/admin/partidos/${escapeHtml(match.id)}/resultados" method="post" class="score-form">
+        <input type="number" name="golesLocal" min="0" value="${Number(match.goles_local) || 0}" required><span>-</span>
+        <input type="number" name="golesVisitante" min="0" value="${Number(match.goles_visitante) || 0}" required>
+        <button type="submit" class="btn btn-secondary dark">Guardar marcador</button>
+      </form>`;
+    };
     matchList.innerHTML = matches.map((match) => `<article class="match-admin-item" data-match-status="${escapeHtml(match.estado)}" data-admin-sport="${escapeHtml(match.deporte)}" data-admin-category="${escapeHtml(match.categoria)}" data-search="${escapeHtml(`${match.equipo_local} ${match.equipo_visitante} ${match.cancha || ''}`.toLowerCase())}">
       <div class="result-item"><div class="match-admin-teams">${renderMatchTeam(match.equipo_local, match.equipo_local_escudoUrl, match.equipo_local_grado)}<span>vs.</span>${renderMatchTeam(match.equipo_visitante, match.equipo_visitante_escudoUrl, match.equipo_visitante_grado)}<small>${Number(match.goles_local) || 0} - ${Number(match.goles_visitante) || 0}</small></div>
       <span>${escapeHtml(sportName(match.deporte))} · ${escapeHtml(match.fecha_partido)} · ${escapeHtml(match.hora_partido)} · ${escapeHtml(match.cancha || '')} · ${escapeHtml(match.estado)}</span>
       <button class="btn btn-secondary dark" type="button" data-modal-open="match-editor-modal" data-match-id="${escapeHtml(match.id)}" data-match-home-id="${escapeHtml(match.equipo_local_id || '')}" data-match-away-id="${escapeHtml(match.equipo_visitante_id || '')}" data-match-date="${escapeHtml(match.fecha_partido)}" data-match-time="${escapeHtml(match.hora_partido)}" data-match-venue="${escapeHtml(match.cancha || '')}" data-match-status="${escapeHtml(match.estado)}">Editar partido</button></div>
-      <div class="result-item"><span>Marcador: <strong>${escapeHtml(match.resultado || '')}</strong></span><form action="/admin/partidos/${escapeHtml(match.id)}/resultados" method="post" class="score-form"><input type="number" name="golesLocal" min="0" value="${Number(match.goles_local) || 0}" required><span>-</span><input type="number" name="golesVisitante" min="0" value="${Number(match.goles_visitante) || 0}" required><button type="submit" class="btn btn-secondary dark">Guardar marcador</button></form>
+      <div class="result-item"><span>Marcador: <strong>${escapeHtml(match.resultado || `${match.equipo_local} ${Number(match.goles_local) || 0} - ${Number(match.goles_visitante) || 0} ${match.equipo_visitante}`)}</strong></span>
+      ${renderLiveControls(match)}
       <form action="/admin/partidos/${escapeHtml(match.id)}/eliminar" method="post"><button type="submit" class="btn btn-danger">Eliminar</button></form></div></article>`).join('');
   }
 

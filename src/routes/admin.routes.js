@@ -32,5 +32,8 @@ router.post('/partidos', adminController.guardarPartido);
 router.post('/partidos/:id/editar', adminController.editarPartido);
 router.post('/partidos/:id/eliminar', adminController.eliminarPartido);
 router.post('/partidos/:id/resultados', adminController.guardarResultado);
+router.post('/partidos/:id/en-vivo', adminController.iniciarPartidoEnVivo);
+router.post('/partidos/:id/goles', adminController.registrarGolEnVivo);
+router.post('/partidos/:id/finalizar', adminController.finalizarPartidoEnVivo);
 
 module.exports = router;

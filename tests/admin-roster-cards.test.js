@@ -48,7 +48,7 @@ test('admin player actions use accessible compact SVG edit and delete icons', ()
   assert.match(script, /aria-label="Eliminar jugador" title="Eliminar jugador"><svg viewBox="0 0 24 24"/);
   assert.doesNotMatch(script, /aria-label="Editar jugador" title="Editar jugador">Editar/);
   assert.doesNotMatch(script, /aria-label="Eliminar jugador" title="Eliminar jugador">Eliminar/);
-  assert.match(template, /admin-dashboard\.js\?v=ajax-dashboard-20261018/);
+  assert.match(template, /admin-dashboard\.js\?v=live-controls-20261018/);
 });
 
 test('admin dashboard saves forms without reloading and refreshes tournament data in place', () => {
@@ -58,4 +58,13 @@ test('admin dashboard saves forms without reloading and refreshes tournament dat
   assert.match(script, /loadScope\(\{ updateUrl: false \}\)/);
   assert.match(script, /data-admin-ajax-notification/);
   assert.match(script, /window\.scrollTo\(0, scrollPosition\)/);
+});
+
+test('admin match cards include live start, player goal and finish controls', () => {
+  assert.match(template, /\/admin\/partidos\/<%= partido\.id %>\/en-vivo/);
+  assert.match(template, /name="playerId" required/);
+  assert.match(template, /\/admin\/partidos\/<%= partido\.id %>\/finalizar/);
+  assert.match(script, /\/admin\/partidos\/\$\{escapeHtml\(match\.id\)\}\/goles/);
+  assert.match(script, /equipo_local_jugadores/);
+  assert.match(script, /equipo_visitante_jugadores/);
 });
