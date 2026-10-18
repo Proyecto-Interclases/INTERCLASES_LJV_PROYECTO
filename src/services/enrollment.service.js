@@ -6,6 +6,7 @@ const Team = require('../models/Team');
 const Player = require('../models/Player');
 const TEAM_CATEGORIES = require('../constants/team-categories');
 const { SPORTS, SPORT_IDS } = require('../constants/sports');
+const { normalizeShirtNumber } = require('./shirt-number.service');
 
 const MAX_ROSTER_SIZE = 30;
 const NAME_PATTERN = /^[\p{L}\p{M}\p{N} .,'’&()-]+$/u;
@@ -53,15 +54,9 @@ function validateEnrollmentPayload(payload = {}) {
   if (roster.length < 1 || roster.length > MAX_ROSTER_SIZE) {
     throw new Error(`La plantilla debe incluir entre 1 y ${MAX_ROSTER_SIZE} jugadores.`);
   }
-  const seenNumbers = new Set();
   const jugadores = roster.map((player) => {
     const nombre = cleanText(player?.nombre, 80, 'El nombre de cada jugador');
-    const numero_camiseta = Number(player?.numero_camiseta ?? player?.numero);
-    if (!Number.isInteger(numero_camiseta) || numero_camiseta < 1 || numero_camiseta > 99) {
-      throw new Error('Cada número de camiseta debe ser un entero entre 1 y 99.');
-    }
-    if (seenNumbers.has(numero_camiseta)) throw new Error('No se pueden repetir números de camiseta en la plantilla.');
-    seenNumbers.add(numero_camiseta);
+    const numero_camiseta = normalizeShirtNumber(player?.numero_camiseta ?? player?.numero);
     return { nombre, numero_camiseta };
   });
 

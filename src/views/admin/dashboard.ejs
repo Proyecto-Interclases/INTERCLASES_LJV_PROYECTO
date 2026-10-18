@@ -309,7 +309,7 @@
                                 </td>
                                 <td data-label="Grado / sección"><span class="admin-player-grade"><%= jugador.grado %></span></td>
                                 <td data-label="Posición"><%= jugador.posicion || '—' %></td>
-                                <td data-label="Camiseta"><input class="admin-roster-number" type="number" min="0" max="99" step="1" value="<%= jugador.numero_camiseta %>" aria-label="Número de camiseta de <%= jugador.nombre %>" data-roster-number data-player-id="<%= jugador.id %>" data-initial-value="<%= jugador.numero_camiseta %>" required></td>
+                                <td data-label="Camiseta"><input class="admin-roster-number" type="text" inputmode="numeric" pattern="[0-9]{1,3}" maxlength="3" value="<%= jugador.numero_camiseta %>" aria-label="Número de camiseta de <%= jugador.nombre %>" data-roster-number data-player-id="<%= jugador.id %>" data-initial-value="<%= jugador.numero_camiseta %>" required></td>
                                 <td data-label="Goles">
                                   <form class="goal-update-form" action="/admin/jugadores/<%= jugador.id %>/goles" method="post">
                                     <input type="number" name="goles" min="0" step="1" value="<%= jugador.goles %>" aria-label="Goles de <%= jugador.nombre %>" data-roster-goals data-player-id="<%= jugador.id %>" data-initial-value="<%= jugador.goles %>" required>
@@ -357,7 +357,7 @@
                   <label>Jugador *<input type="text" name="nombre" id="player-editor-name" required></label>
                   <label>Grado o sección *<input type="text" name="grado" id="player-editor-grade" required></label>
                   <div class="field-row">
-                    <label>Número de camiseta *<input type="number" name="numero_camiseta" id="player-editor-number" min="0" max="99" value="0" required></label>
+                    <label>Número de camiseta *<input type="text" inputmode="numeric" pattern="[0-9]{1,3}" maxlength="3" name="numero_camiseta" id="player-editor-number" value="0" required></label>
                     <label>Posición<input type="text" name="posicion" id="player-editor-position" placeholder="Defensa, delantero..."></label>
                   </div>
                   <label>Goles<input type="number" name="goles" id="player-editor-goals" min="0" value="0"></label>
@@ -577,6 +577,6 @@
       </section>
     </main>
     <%- include('../partials/accessibility-settings') %>
-    <script src="/js/admin-dashboard.js?v=fifa-shield-cards-20261017" defer></script>
+    <script src="/js/admin-dashboard.js?v=ajax-dashboard-20261018" defer></script>
   </body>
 </html>

@@ -10,6 +10,7 @@ const { SPORT_IDS, normalizeSport } = require('../constants/sports');
 const { isManagedPlayerPhotoUrl, removePlayerPhoto } = require('./player-photo.service');
 const { sortTeamsByGrade } = require('./team-order.service');
 const { getTeamCrestUrl } = require('./team-crest.service');
+const { normalizeShirtNumber } = require('./shirt-number.service');
 
 const MATCH_STATUSES = ['Por jugar', 'Jugando', 'Finalizado'];
 const ANNOUNCEMENT_TAGS = new Set(['p', 'div', 'br', 'strong', 'b', 'em', 'i', 'u', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'blockquote', 'a']);
@@ -269,7 +270,7 @@ async function listPlayers() {
     grado: player.grado || '',
     posicion: player.posicion,
     fotoUrl: isManagedPlayerPhotoUrl(player.fotoUrl) ? player.fotoUrl : '',
-    numero_camiseta: player.numero_camiseta || 0,
+    numero_camiseta: String(player.numero_camiseta ?? '0'),
     goles: player.goles || 0,
     equipo_nombre: player.equipo_id ? player.equipo_id.nombre : null
   }));
@@ -312,15 +313,13 @@ function validatePlayerStatsBatch(updates) {
 
     const isIntegerInput = (value) => (typeof value === 'number' && Number.isSafeInteger(value))
       || (typeof value === 'string' && /^\d+$/.test(value.trim()));
-    if (!isIntegerInput(update.numero_camiseta) || !isIntegerInput(update.goles)) {
+    if ((!isIntegerInput(update.numero_camiseta) && typeof update.numero_camiseta !== 'string')
+      || !isIntegerInput(update.goles)) {
       throw new Error('Completa el número de camiseta y los goles de cada jugador.');
     }
 
-    const shirtNumber = Number(update.numero_camiseta);
+    const shirtNumber = normalizeShirtNumber(update.numero_camiseta);
     const goalCount = Number(update.goles);
-    if (!Number.isSafeInteger(shirtNumber) || shirtNumber < 0 || shirtNumber > 99) {
-      throw new Error('El número de camiseta debe ser un entero entre 0 y 99.');
-    }
     if (!Number.isSafeInteger(goalCount) || goalCount < 0) {
       throw new Error('Los goles deben ser un número entero no negativo.');
     }
@@ -340,21 +339,6 @@ async function updatePlayerStatsBatch(updates) {
   if (players.some((player) => player.equipo_id.toString() !== teamId)) {
     throw new Error('Solo puedes actualizar jugadores de un mismo equipo a la vez.');
   }
-
-  const shirtNumbers = new Set();
-  cleanUpdates.forEach((update) => {
-    if (shirtNumbers.has(update.numero_camiseta)) {
-      throw new Error('No se puede repetir el número de camiseta dentro del equipo.');
-    }
-    shirtNumbers.add(update.numero_camiseta);
-  });
-
-  const duplicate = await Player.findOne({
-    equipo_id: players[0].equipo_id,
-    numero_camiseta: { $in: [...shirtNumbers] },
-    _id: { $nin: playerIds }
-  }).select('numero_camiseta');
-  if (duplicate) throw new Error(`El número de camiseta ${duplicate.numero_camiseta} ya está asignado en el equipo.`);
 
   await Player.bulkWrite(cleanUpdates.map((update) => ({
     updateOne: {
@@ -388,13 +372,10 @@ async function updatePlayerData(playerId, payload) {
 
   const cleanName = String(nombre || '').trim();
   const cleanGrade = String(grado || '').trim();
-  const shirtNumber = Number(numero_camiseta);
+  const shirtNumber = normalizeShirtNumber(numero_camiseta);
   const goalCount = Number(goles);
 
   if (!cleanName || !cleanGrade) throw new Error('El nombre completo y el grado o sección del jugador son obligatorios.');
-  if (!Number.isInteger(shirtNumber) || shirtNumber < 0 || shirtNumber > 99) {
-    throw new Error('El número de camiseta debe ser un entero entre 0 y 99.');
-  }
   if (!Number.isInteger(goalCount) || goalCount < 0) {
     throw new Error('Los goles deben ser un número entero no negativo.');
   }
@@ -408,13 +389,6 @@ async function updatePlayerData(playerId, payload) {
   ]);
 
   if (!player || !team) throw new Error('No se encontró el jugador o el equipo seleccionado.');
-  const duplicateNumber = await Player.exists({
-    equipo_id: team._id,
-    numero_camiseta: shirtNumber,
-    _id: { $ne: player._id }
-  });
-  if (duplicateNumber) throw new Error('Ese número de camiseta ya está asignado en el equipo.');
-
   const previousPhotoUrl = player.fotoUrl;
   player.equipo_id = team._id;
   player.nombre = cleanName;

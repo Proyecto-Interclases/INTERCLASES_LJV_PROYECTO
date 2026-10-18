@@ -93,12 +93,16 @@ test('primary team grade uses the most common roster grade and formats it next t
   assert.equal(getPrimaryTeamGrade([]), '');
 });
 
-test('batch player stats validation rejects invalid, duplicate, and oversized changes', () => {
+test('batch player stats validation preserves double zero and rejects out-of-range values', () => {
   const validId = new mongoose.Types.ObjectId().toString();
   assert.deepEqual(validatePlayerStatsBatch([
     { id: validId, numero_camiseta: '12', goles: '3' }
-  ]), [{ id: validId, numero_camiseta: 12, goles: 3 }]);
-  assert.throws(() => validatePlayerStatsBatch([{ id: validId, numero_camiseta: 100, goles: 0 }]), /entre 0 y 99/);
+  ]), [{ id: validId, numero_camiseta: '12', goles: 3 }]);
+  assert.deepEqual(validatePlayerStatsBatch([
+    { id: validId, numero_camiseta: '00', goles: 0 },
+    { id: new mongoose.Types.ObjectId().toString(), numero_camiseta: '999', goles: 0 }
+  ]).map(({ numero_camiseta }) => numero_camiseta), ['00', '999']);
+  assert.throws(() => validatePlayerStatsBatch([{ id: validId, numero_camiseta: 1000, goles: 0 }]), /entre 0 y 999/);
   assert.throws(() => validatePlayerStatsBatch([{ id: validId, numero_camiseta: 1, goles: -1 }]), /entero no negativo/);
   assert.throws(() => validatePlayerStatsBatch([{ id: validId, numero_camiseta: true, goles: 0 }]), /Completa el número/);
   assert.throws(() => validatePlayerStatsBatch([
@@ -108,7 +112,7 @@ test('batch player stats validation rejects invalid, duplicate, and oversized ch
   assert.throws(() => validatePlayerStatsBatch(Array(101).fill({ id: validId, numero_camiseta: 1, goles: 0 })), /entre 1 y 100/);
 });
 
-test('batch player stats persist shirt number and goals and reject duplicate shirt numbers without partial edits', async () => {
+test('batch player stats persist extended, duplicate and double-zero shirt numbers', async () => {
   const runId = randomUUID();
   const teamName = `Roster batch ${runId}`;
   testTeamNames.push(teamName);
@@ -125,17 +129,28 @@ test('batch player stats persist shirt number and goals and reject duplicate shi
   ]);
   assert.equal(result.updated, 2);
   const saved = await Player.find({ _id: { $in: [first._id, second._id] } }).sort({ numero_camiseta: 1 }).lean();
-  assert.deepEqual(saved.map(({ numero_camiseta, goles }) => [numero_camiseta, goles]), [[10, 4], [11, 5]]);
+  assert.deepEqual(saved.map(({ numero_camiseta, goles }) => [numero_camiseta, goles]), [['10', 4], ['11', 5]]);
 
-  await assert.rejects(updatePlayerStatsBatch([
-    { id: first._id.toString(), numero_camiseta: 20, goles: 8 },
-    { id: second._id.toString(), numero_camiseta: 20, goles: 9 }
-  ]), /No se puede repetir/);
-  await assert.rejects(updatePlayerStatsBatch([
-    { id: first._id.toString(), numero_camiseta: 3, goles: 8 }
-  ]), /ya está asignado/);
+  await updatePlayerStatsBatch([
+    { id: first._id.toString(), numero_camiseta: '00', goles: 8 },
+    { id: second._id.toString(), numero_camiseta: '999', goles: 9 },
+    { id: third._id.toString(), numero_camiseta: '999', goles: 2 }
+  ]);
+  const duplicateShirts = await Player.find({ _id: { $in: [first._id, second._id, third._id] } }).lean();
+  assert.deepEqual(
+    duplicateShirts.map(({ numero_camiseta }) => numero_camiseta).sort(),
+    ['00', '999', '999']
+  );
+
+  await updatePlayerData(first._id.toString(), {
+    equipo_id: team._id.toString(),
+    nombre: 'Jugadora Uno',
+    grado: '7.º 2',
+    numero_camiseta: '999',
+    goles: 8
+  });
 
   const unchanged = await Player.findById(first._id).lean();
-  assert.deepEqual([unchanged.numero_camiseta, unchanged.goles], [10, 4]);
+  assert.deepEqual([unchanged.numero_camiseta, unchanged.goles], ['999', 8]);
   assert.ok(third);
 });

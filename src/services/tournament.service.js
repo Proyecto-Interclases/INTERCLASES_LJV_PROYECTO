@@ -226,7 +226,7 @@ async function getTeamsPageData(category, selectedSport = 'futbol', order = 'des
   const teamIds = await Team.find(filter).distinct('_id');
   const [teams, players] = await Promise.all([
     Team.find(filter).sort({ categoria: 1, nombre: 1 }).lean(),
-    Player.find({ equipo_id: { $in: teamIds } }).populate('equipo_id').sort({ numero_camiseta: 1, nombre: 1 }).lean()
+    Player.find({ equipo_id: { $in: teamIds } }).populate('equipo_id').sort({ nombre: 1 }).lean()
   ]);
 
   const teamsWithRoster = teams.map((team) => {
@@ -238,7 +238,7 @@ async function getTeamsPageData(category, selectedSport = 'futbol', order = 'des
       grado: player.grado || '',
       posicion: player.posicion,
       fotoUrl: isManagedPlayerPhotoUrl(player.fotoUrl) ? player.fotoUrl : '',
-      numero_camiseta: player.numero_camiseta || 0,
+      numero_camiseta: String(player.numero_camiseta ?? '0'),
       goles: player.goles || 0,
       asistencias: player.asistencias || 0,
       atajadas: player.atajadas || 0
@@ -279,7 +279,7 @@ async function getTopScorers(limit = 10, category, selectedSport = 'futbol') {
     grado: player.grado || '',
     posicion: player.posicion,
     fotoUrl: isManagedPlayerPhotoUrl(player.fotoUrl) ? player.fotoUrl : '',
-    numero_camiseta: player.numero_camiseta || 0,
+    numero_camiseta: String(player.numero_camiseta ?? '0'),
     goles: player.goles || 0,
     equipo: player.equipo_id ? player.equipo_id.nombre : 'Sin equipo',
     escudoUrl: player.equipo_id ? getTeamCrestUrl(player.equipo_id.escudoUrl) : ''

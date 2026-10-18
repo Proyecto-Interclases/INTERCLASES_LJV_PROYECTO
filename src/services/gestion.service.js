@@ -6,6 +6,7 @@ const User = require('../models/User');
 const mongoose = require('mongoose');
 const TEAM_CATEGORIES = require('../constants/team-categories');
 const { normalizeSport, SPORT_IDS } = require('../constants/sports');
+const { normalizeShirtNumber } = require('./shirt-number.service');
 
 const MATCH_STATUSES = ['Por jugar', 'Jugando', 'Finalizado'];
 
@@ -86,15 +87,13 @@ async function addJugador(payload) {
   const trimmedNombre = String(nombre || '').trim();
   const trimmedGrade = String(grado || '').trim();
   const trimmedPosicion = String(posicion || '').trim();
-  const shirtNumber = Number(numero_camiseta ?? numeroCamiseta ?? 0);
+  const shirtNumber = normalizeShirtNumber(numero_camiseta ?? numeroCamiseta ?? 0);
   const goalCount = Number(goles);
 
   if (!mongoose.isValidObjectId(teamId) || !trimmedNombre || !trimmedGrade) {
     throw new Error('Selecciona un equipo e ingresa el nombre completo y el grado o sección del jugador.');
   }
-  if (!Number.isInteger(shirtNumber) || shirtNumber < 0 || shirtNumber > 99 || !Number.isInteger(goalCount) || goalCount < 0) {
-    throw new Error('El número de camiseta debe estar entre 0 y 99 y los goles deben ser un entero no negativo.');
-  }
+  if (!Number.isInteger(goalCount) || goalCount < 0) throw new Error('Los goles deben ser un entero no negativo.');
   if (fotoUrl && !isManagedPlayerPhotoUrl(fotoUrl)) {
     throw new Error('La foto del jugador debe cargarse como una imagen JPG, PNG o WebP.');
   }
@@ -104,10 +103,6 @@ async function addJugador(payload) {
   if (!equipo) {
     throw new Error('No existe ese equipo.');
   }
-  if (await Player.exists({ equipo_id: equipo._id, numero_camiseta: shirtNumber })) {
-    throw new Error('Ese número de camiseta ya está asignado en el equipo.');
-  }
-
   const jugador = await Player.create({
     equipo_id: equipo._id,
     nombre: trimmedNombre,

@@ -135,7 +135,7 @@ test('closed enrollment is rejected and submitted roster fields are validated', 
     jugadorNombre: ['Ana Pérez'],
     jugadorNumero: ['8']
   }), /correo válido o un teléfono/i);
-  assert.throws(() => validateEnrollmentPayload({
+  const duplicateNumbers = validateEnrollmentPayload({
     deporte: 'futbol',
     nombreEquipo: 'Equipo',
     categoria: 'Categoría A',
@@ -144,7 +144,28 @@ test('closed enrollment is rejected and submitted roster fields are validated', 
     contacto: '3001234567',
     jugadorNombre: ['Ana Pérez', 'Luis Pérez'],
     jugadorNumero: ['8', '8']
-  }), /no se pueden repetir/i);
+  });
+  assert.deepEqual(duplicateNumbers.jugadores.map(({ numero_camiseta }) => numero_camiseta), ['8', '8']);
+  assert.deepEqual(validateEnrollmentPayload({
+    deporte: 'futbol',
+    nombreEquipo: 'Equipo',
+    categoria: 'Categoría A',
+    grado: '8.º 2',
+    responsable: 'Persona Responsable',
+    contacto: '3001234567',
+    jugadorNombre: ['Cero Doble', 'Dorsal Alto'],
+    jugadorNumero: ['00', '999']
+  }).jugadores.map(({ numero_camiseta }) => numero_camiseta), ['00', '999']);
+  assert.throws(() => validateEnrollmentPayload({
+    deporte: 'futbol',
+    nombreEquipo: 'Equipo',
+    categoria: 'Categoría A',
+    grado: '8.º 2',
+    responsable: 'Persona Responsable',
+    contacto: '3001234567',
+    jugadorNombre: ['Fuera de rango'],
+    jugadorNumero: ['1000']
+  }), /entre 0 y 999/i);
   assert.throws(() => validateEnrollmentPayload({
     deporte: 'futbol',
     nombreEquipo: 'Equipo',
@@ -172,7 +193,7 @@ test('validated public enrollment maps sport, grade and shirt numbers to the app
   assert.equal(mapped.team.deporte, 'voleibol');
   assert.equal(mapped.team.capitanEmail, null);
   assert.deepEqual(mapped.players.map(({ equipo_id, grado, numero_camiseta }) => [equipo_id, grado, numero_camiseta]), [
-    ['team-id', '9.º 1', 7],
-    ['team-id', '9.º 1', 12]
+    ['team-id', '9.º 1', '7'],
+    ['team-id', '9.º 1', '12']
   ]);
 });

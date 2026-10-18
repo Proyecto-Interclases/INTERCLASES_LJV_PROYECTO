@@ -63,7 +63,7 @@
     info.className = 'fifa-card__info';
     const number = document.createElement('span');
     number.className = 'fifa-card__num';
-    number.textContent = String(toCount(player.numero_camiseta));
+    number.textContent = String(player.numero_camiseta ?? '0');
     const separator = document.createElement('i');
     separator.setAttribute('aria-hidden', 'true');
     const position = document.createElement('span');

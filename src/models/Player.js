@@ -17,10 +17,12 @@ const playerSchema = new mongoose.Schema({
     trim: true
   },
   numero_camiseta: {
-    type: Number,
-    default: 0,
-    min: 0,
-    max: 99
+    type: String,
+    default: '0',
+    validate: {
+      validator: (value) => /^\d{1,3}$/.test(value) && Number(value) <= 999,
+      message: 'El número de camiseta debe ser un entero entre 0 y 999.'
+    }
   },
   posicion: {
     type: String,

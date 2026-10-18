@@ -495,7 +495,7 @@
       const rows = players.map((player) => {
         const playerId = escapeHtml(player.id);
         const playerName = escapeHtml(player.nombre);
-        const number = Number(player.numero_camiseta) || 0;
+        const number = String(player.numero_camiseta ?? '0');
         const goals = Number(player.goles) || 0;
         const avatar = player.fotoUrl
           ? `<img src="${escapeHtml(player.fotoUrl)}" alt="Foto de ${playerName}" loading="lazy">`
@@ -504,7 +504,7 @@
           <td data-label="Jugador"><span class="admin-player-avatar" aria-hidden="true">${avatar}</span><strong>${playerName}</strong></td>
           <td data-label="Grado / sección"><span class="admin-player-grade">${escapeHtml(player.grado || '')}</span></td>
           <td data-label="Posición">${escapeHtml(player.posicion || '—')}</td>
-          <td data-label="Camiseta"><input class="admin-roster-number" type="number" min="0" max="99" step="1" value="${number}" aria-label="Número de camiseta de ${playerName}" data-roster-number data-player-id="${playerId}" data-initial-value="${number}" required></td>
+          <td data-label="Camiseta"><input class="admin-roster-number" type="text" inputmode="numeric" pattern="[0-9]{1,3}" maxlength="3" value="${number}" aria-label="Número de camiseta de ${playerName}" data-roster-number data-player-id="${playerId}" data-initial-value="${number}" required></td>
           <td data-label="Goles"><form class="goal-update-form" action="/admin/jugadores/${playerId}/goles" method="post">
             <input type="number" name="goles" min="0" step="1" value="${goals}" aria-label="Goles de ${playerName}" data-roster-goals data-player-id="${playerId}" data-initial-value="${goals}" required>
             <button class="icon-action" type="submit" aria-label="Guardar goles de ${playerName}" title="Guardar goles">✓</button></form></td>
@@ -662,6 +662,13 @@
     }
   }
 
+  document.addEventListener('admin:refresh-scope', () => {
+    const scrollPosition = window.scrollY;
+    loadScope({ updateUrl: false }).finally(() => {
+      window.requestAnimationFrame(() => window.scrollTo(0, scrollPosition));
+    });
+  });
+
   sportChoices.forEach((choice) => choice.addEventListener('click', () => {
     if (currentSport === choice.dataset.adminSportChoice) return;
     currentSport = choice.dataset.adminSportChoice;
@@ -759,6 +766,8 @@
       });
       feedback.classList.add('is-success');
       feedback.textContent = result.message || 'Se guardaron los cambios de la plantilla.';
+      document.dispatchEvent(new Event('admin:refresh-scope'));
+      document.dispatchEvent(new CustomEvent('admin:notify', { detail: { message: feedback.textContent } }));
     } catch (error) {
       feedback.classList.add('is-error');
       feedback.setAttribute('role', 'alert');
@@ -969,8 +978,68 @@
 })();
 
 (function initializeAdminAjaxForms() {
+  const dashboardContent = document.querySelector('.dashboard-content');
+
+  function showNotification(message, isError = false) {
+    if (!dashboardContent) return;
+    let notification = dashboardContent.querySelector('[data-admin-ajax-notification]');
+    if (!notification) {
+      notification = document.createElement('div');
+      notification.dataset.adminAjaxNotification = '';
+      notification.setAttribute('role', 'status');
+      notification.setAttribute('aria-live', 'polite');
+      dashboardContent.prepend(notification);
+    }
+    notification.className = `auth-alert ${isError ? 'error' : 'success'}`;
+    notification.setAttribute('role', isError ? 'alert' : 'status');
+    notification.textContent = message;
+  }
+
+  document.addEventListener('admin:notify', (event) => {
+    showNotification(event.detail?.message || 'Cambios guardados correctamente.', event.detail?.isError);
+  });
+
+  function updateLocalCard(form) {
+    const pathname = new URL(form.action).pathname;
+    const enrollmentAction = pathname.match(/\/inscripciones\/[^/]+\/(aprobar|rechazar|eliminar)$/);
+    if (enrollmentAction) {
+      const card = form.closest('.enrollment-request-card');
+      if (enrollmentAction[1] === 'eliminar') {
+        card?.remove();
+      } else if (card) {
+        const state = enrollmentAction[1] === 'aprobar' ? 'aprobada' : 'rechazada';
+        const status = card.querySelector('.enrollment-status');
+        if (status) {
+          status.className = `enrollment-status enrollment-status--${state}`;
+          status.textContent = state;
+        }
+        card.querySelector('.enrollment-request-actions')?.remove();
+        const count = document.querySelector('.enrollment-requests-heading > span');
+        if (count) {
+          const pending = Math.max(0, Number.parseInt(count.textContent, 10) - 1);
+          count.textContent = `${pending} pendientes`;
+        }
+      }
+    }
+
+    if (/\/galeria\/[^/]+\/eliminar$/.test(pathname)) {
+      form.closest('.gallery-admin-card')?.remove();
+    } else if (/\/galeria\/[^/]+\/estado$/.test(pathname)) {
+      const card = form.closest('.gallery-admin-card');
+      const active = form.querySelector('input[name="activo"]')?.value === '1';
+      const button = form.querySelector('button[type="submit"]');
+      const details = card?.querySelector('.gallery-admin-card__details small');
+      if (button) button.textContent = active ? 'Ocultar' : 'Mostrar';
+      if (details) details.textContent = details.textContent.replace(/·\s*(Visible|Oculta)$/, `· ${active ? 'Visible' : 'Oculta'}`);
+      const hiddenState = form.querySelector('input[name="activo"]');
+      if (hiddenState) hiddenState.value = active ? '0' : '1';
+    }
+  }
+
   document.addEventListener('submit', async (event) => {
-      const form = event.target.closest('.dashboard-content form[method="post"]:not([data-enrollment-toggle])');
+      const form = event.target instanceof HTMLFormElement
+        ? event.target.closest('.dashboard-content form[method="post"]:not([data-enrollment-toggle])')
+        : null;
       if (!form) return;
       if (event.defaultPrevented) return;
       event.preventDefault();
@@ -989,6 +1058,8 @@
       }
       feedback.className = 'admin-form-feedback';
       feedback.textContent = 'Guardando…';
+      const submitButton = event.submitter || form.querySelector('button[type="submit"], input[type="submit"]');
+      if (submitButton) submitButton.disabled = true;
 
       try {
         const formData = new FormData(form);
@@ -1018,15 +1089,31 @@
           feedback.classList.add('is-error');
           feedback.setAttribute('role', 'alert');
           feedback.textContent = result.message || 'No se pudo guardar la información.';
+          showNotification(feedback.textContent, true);
           return;
         }
         feedback.classList.add('is-success');
-        feedback.textContent = result.message;
-        window.setTimeout(() => window.location.reload(), 650);
+        feedback.textContent = result.message || 'Cambios guardados correctamente.';
+        updateLocalCard(form);
+
+        const pathname = new URL(form.action).pathname;
+        const refreshTournament = /\/(?:equipos|jugadores|partidos)(?:\/|$)/.test(pathname)
+          || /\/inscripciones\/[^/]+\/aprobar$/.test(pathname);
+        if (refreshTournament) document.dispatchEvent(new Event('admin:refresh-scope'));
+
+        const modal = form.closest('dialog');
+        if (modal) {
+          form.reset();
+          modal.close();
+        }
+        showNotification(feedback.textContent);
       } catch (error) {
         feedback.classList.add('is-error');
         feedback.setAttribute('role', 'alert');
-        feedback.textContent = 'No se pudo completar la solicitud. Verifica tu conexión e inténtalo de nuevo.';
+        feedback.textContent = error.message || 'No se pudo completar la solicitud. Verifica tu conexión e inténtalo de nuevo.';
+        showNotification(feedback.textContent, true);
+      } finally {
+        if (submitButton) submitButton.disabled = false;
       }
   });
 })();

@@ -66,8 +66,31 @@ test('un estudiante registra equipo y jugadores y se guarda el resultado del par
 
   assert.equal(jugador.nombre, 'Carlos Torres');
   assert.equal(jugador.grado, '6.º 1');
-  assert.equal(jugador.numero_camiseta, 9);
+  assert.equal(jugador.numero_camiseta, '9');
   assert.equal(jugador.goles, 0);
+
+  const jugadorDobleCero = await addJugador({
+    equipo_id: equipoLocal.id,
+    nombre: 'Jugador Doble Cero',
+    grado: '6.º 1',
+    numero_camiseta: '00'
+  });
+  const jugadorMismoDorsal = await addJugador({
+    equipo_id: equipoLocal.id,
+    nombre: 'Jugador Mismo Dorsal',
+    grado: '6.º 1',
+    numero_camiseta: '00'
+  });
+  const jugadorDorsalAlto = await addJugador({
+    equipo_id: equipoLocal.id,
+    nombre: 'Jugador Dorsal Alto',
+    grado: '6.º 1',
+    numero_camiseta: 999
+  });
+  assert.deepEqual(
+    [jugadorDobleCero.numero_camiseta, jugadorMismoDorsal.numero_camiseta, jugadorDorsalAlto.numero_camiseta],
+    ['00', '00', '999']
+  );
 
   const partido = await createPartido({
     equipoLocalId: equipoLocal.id,

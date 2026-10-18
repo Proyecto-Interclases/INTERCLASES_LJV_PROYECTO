@@ -5,7 +5,14 @@ const LEGACY_TEAM_CATEGORIES = require('../constants/legacy-team-categories');
 
 const rosterPlayerSchema = new mongoose.Schema({
   nombre: { type: String, required: true, trim: true, maxlength: 80 },
-  numero_camiseta: { type: Number, required: true, min: 1, max: 99 }
+  numero_camiseta: {
+    type: String,
+    required: true,
+    validate: {
+      validator: (value) => /^\d{1,3}$/.test(value) && Number(value) <= 999,
+      message: 'El número de camiseta debe ser un entero entre 0 y 999.'
+    }
+  }
 }, { _id: false });
 
 const enrollmentRequestSchema = new mongoose.Schema({
