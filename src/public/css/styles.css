@@ -5773,3 +5773,72 @@ body.dark-mode .live-match-section { background: #080F1D; border-color: #1E293B;
   .live-match-admin-controls, .live-goal-form { align-items: stretch; flex-direction: column; width: 100%; }
   .live-goal-form label, .live-goal-form select { max-width: none; width: 100%; }
 }
+
+.dashboard-page-heading { margin: 0 auto; max-width: 1440px; padding: 24px 24px 0; }
+.dashboard-page-heading .eyebrow { margin-bottom: 5px; }
+.dashboard-page-heading h1 { color: #0F172A; font-size: clamp(1.8rem, 3vw, 2.5rem); line-height: 1; }
+.profile-trigger { font-size: .82rem; line-height: 1.1; min-height: 40px; padding: 7px 11px; }
+.profile-trigger .profile-icon { flex: 0 0 18px; height: 18px; width: 18px; }
+.profile-trigger .profile-name--full { max-width: 175px; }
+.profile-trigger .profile-name--first { font-weight: 600; }
+@media (min-width: 1024px) {
+  .site-header { padding: 14px clamp(20px, 3vw, 40px); }
+  .site-nav {
+    align-items: center;
+    column-gap: 28px;
+    display: grid;
+    grid-template-areas: "brand actions" "links links";
+    grid-template-columns: minmax(0, 1fr) auto;
+    max-width: 1500px;
+    row-gap: 12px;
+  }
+  .site-brand { grid-area: brand; gap: 14px; max-width: 100%; min-width: 0; }
+  .site-brand .site-logo { flex: 0 0 64px; height: 64px; width: 64px; }
+  .site-brand > div { min-width: 0; }
+  .site-brand h1 { font-size: clamp(1.45rem, 2vw, 1.8rem); line-height: 1.05; overflow-wrap: normal; }
+  .site-brand p { font-size: .75rem; }
+  .nav-toggle { display: none; }
+  .nav-menu {
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
+    display: contents;
+    margin: 0;
+    max-height: none;
+    opacity: 1;
+    overflow: visible;
+    padding: 0;
+    transform: none;
+    visibility: visible;
+  }
+  .nav-links {
+    align-items: center;
+    border-top: 1px solid rgba(255, 255, 255, .2);
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px 12px;
+    grid-area: links;
+    justify-content: center;
+    min-width: 0;
+    padding-top: 10px;
+  }
+  .nav-links a { border: 0; border-radius: 8px; color: #FFFFFF; font-size: .88rem; line-height: 1.2; padding: 9px 11px; white-space: nowrap; }
+  .nav-links a:hover, .nav-links a:focus-visible { background: rgba(255, 255, 255, .14); border: 0; color: #FFFFFF; }
+  .nav-links .admin-nav-link { color: #D9F99D; font-weight: 700; }
+  .header-actions { align-items: center; flex-direction: row; gap: 10px; grid-area: actions; justify-content: flex-end; }
+  .profile-trigger { max-width: min(26vw, 245px); }
+}
+@media (min-width: 1440px) {
+  .site-nav {
+    column-gap: clamp(24px, 2.5vw, 40px);
+    grid-template-areas: "brand links actions";
+    grid-template-columns: minmax(300px, .9fr) minmax(0, 1.5fr) auto;
+    row-gap: 0;
+  }
+  .site-brand { gap: 16px; }
+  .site-brand .site-logo { flex-basis: 72px; height: 72px; width: 72px; }
+  .site-brand h1 { font-size: clamp(1.5rem, 1.7vw, 1.9rem); }
+  .nav-links { border-top: 0; flex-wrap: nowrap; gap: 2px; justify-content: flex-end; padding-top: 0; }
+  .nav-links a { font-size: .84rem; padding: 9px 8px; }
+  .profile-trigger { max-width: 245px; }
+}
