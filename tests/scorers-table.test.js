@@ -46,5 +46,5 @@ test('scorers table has compact aligned mini cards and centered goal styling', (
 
 test('team roster page EJS compiles after scorer table changes', () => {
   assert.doesNotThrow(() => ejs.compile(template));
-  assert.match(head, /styles\.css\?v=privacy-policy-view-20261019/);
+  assert.match(head, /styles\.css\?v=enrollment-submit-style-20261019/);
 });

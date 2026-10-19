@@ -93,10 +93,10 @@
             <% } %>
           </div>
         </section>
-        <p class="enrollment-privacy">Al enviar esta solicitud confirmas que la información es correcta. Enviar una solicitud no crea cuentas de usuario ni garantiza la aprobación del equipo. <a href="#" id="open-privacy-policy">Consultar política en una ventana</a></p>
+        <p class="enrollment-privacy">Al enviar esta solicitud confirmas que la información es correcta. Enviar una solicitud no crea cuentas de usuario ni garantiza la aprobación del equipo.</p>
         <label class="enrollment-consent">
           <input type="checkbox" name="aceptoPoliticaDatos" value="true" <%= formData.aceptoPoliticaDatos === true || formData.aceptoPoliticaDatos === 'true' ? 'checked' : '' %> required>
-          <span>Acepto la <a href="/politica-de-datos">política de tratamiento de datos</a>.</span>
+          <span>Acepto la <a href="#" id="open-privacy-policy">política de tratamiento de datos</a> de la I.E. Lucrecio Jaramillo Vélez.</span>
         </label>
         <button class="btn btn-primary enrollment-submit" type="submit">Enviar solicitud de inscripción</button>
       </form>
