@@ -1,6 +1,22 @@
 @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=DM+Sans:wght@400;500;700&display=swap');
 
-:root { --ink: #1F2937; --green: #2E7D32; --lime: #c9e85a; --paper: #F8F9FA; --line: #E5E7EB; }
+:root {
+  --ink: #1F2937;
+  --green: #2E7D32;
+  --lime: #c9e85a;
+  --paper: #F8F9FA;
+  --line: #E5E7EB;
+  --live-surface: #F0FDF4;
+  --live-border: #BBF7D0;
+  --live-card-surface: #FFFFFF;
+  --live-card-border: #D1D5DB;
+  --live-text: #111827;
+  --live-muted: #475569;
+  --live-score: #14532D;
+  --live-accent: #166534;
+  --live-status-surface: #FEE2E2;
+  --live-status-text: #B91C1C;
+}
 *, *::before, *::after { -webkit-tap-highlight-color: transparent; }
 * { box-sizing: border-box; }
 .btn-primary:active, button[type="submit"]:active {
@@ -330,6 +346,16 @@ body.dark-mode {
   --ink: #F8FAFC;
   --line: #334155;
   --paper: #0B1120;
+  --live-surface: #0F172A;
+  --live-border: #334155;
+  --live-card-surface: #1E293B;
+  --live-card-border: #475569;
+  --live-text: #F8FAFC;
+  --live-muted: #CBD5E1;
+  --live-score: #FFFFFF;
+  --live-accent: #86EFAC;
+  --live-status-surface: #7F1D1D;
+  --live-status-text: #FECACA;
   background-color: #0B1120 !important;
   color: #F8FAFC !important;
 }
@@ -399,7 +425,7 @@ body.dark-mode .match-card--empty strong {
 }
 
 body.dark-mode .match-card--empty span {
-  color: #64748B !important;
+  color: #CBD5E1 !important;
 }
 
 /* 4. Controles del carrusel */
@@ -1628,7 +1654,7 @@ body.dark-mode.teams-page .team-roster summary:focus-visible {
 .calendar-card__status-hint {
   font-size: 0.74rem;
   font-weight: 600;
-  color: #9CA3AF;
+  color: #64748B;
   text-transform: uppercase;
 }
 
@@ -1853,7 +1879,7 @@ body.dark-mode .calendar-empty h3 {
 }
 
 body.dark-mode .calendar-empty p {
-  color: #64748B !important;
+  color: #CBD5E1 !important;
 }
 
 /* Responsividad para móviles */
@@ -5743,19 +5769,19 @@ body.dark-mode .fixture-team-crest--empty { background: #26364B; border-color: #
   .fixture-team-crest { flex-basis: 40px; height: 40px; width: 40px; }
 }
 
-.live-match-section { background: #0F172A; border: 1px solid #1E293B; border-radius: 18px; color: #F8FAFC; margin: 12px 0 28px; overflow: hidden; padding: clamp(18px, 4vw, 30px); }
+.live-match-section { background: var(--live-surface); border: 1px solid var(--live-border); border-radius: 18px; color: var(--live-text); margin: 12px 0 28px; overflow: hidden; padding: clamp(18px, 4vw, 30px); }
 .live-match-section__heading { align-items: center; display: flex; gap: 12px; margin-bottom: 18px; }
-.live-match-section__heading .eyebrow { color: #86EFAC; margin: 0; }
-.live-match-section__heading h2 { color: #FFFFFF; font-size: clamp(1.8rem, 4vw, 2.6rem); }
+.live-match-section__heading .eyebrow { color: var(--live-accent); margin: 0; }
+.live-match-section__heading h2 { color: var(--live-text); font-size: clamp(1.8rem, 4vw, 2.6rem); }
 .live-match-list { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr)); }
-.live-match-card { align-items: center; background: #1E293B; border: 1px solid #334155; border-radius: 14px; display: grid; gap: 12px; grid-template-columns: 1fr auto; padding: 16px; }
-.live-match-card__sport { color: #CBD5E1; font-size: .8rem; font-weight: 600; grid-column: 1 / -1; }
+.live-match-card { align-items: center; background: var(--live-card-surface); border: 1px solid var(--live-card-border); border-radius: 14px; display: grid; gap: 12px; grid-template-columns: 1fr auto; padding: 16px; }
+.live-match-card__sport { color: var(--live-muted); font-size: .8rem; font-weight: 600; grid-column: 1 / -1; }
 .live-match-card__scoreboard { align-items: center; display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); }
 .live-match-team { align-items: center; display: flex; flex-direction: column; gap: 6px; min-width: 0; text-align: center; }
-.live-match-team strong { color: #F8FAFC; font-family: 'Barlow Condensed', sans-serif; font-size: 1.2rem; overflow-wrap: anywhere; text-transform: uppercase; }
-.live-match-score { align-items: center; color: #FFFFFF; display: flex; font-family: 'Barlow Condensed', sans-serif; font-size: clamp(2rem, 6vw, 3rem); font-weight: 800; gap: 8px; }
-.live-match-score span { color: #86EFAC; font-size: 1.5rem; }
-.live-match-card__badge { align-items: center; color: #FCA5A5; display: inline-flex; font-size: .72rem; font-weight: 800; gap: 6px; letter-spacing: .08em; white-space: nowrap; }
+.live-match-team strong { color: var(--live-text); font-family: 'Barlow Condensed', sans-serif; font-size: 1.2rem; overflow-wrap: anywhere; text-transform: uppercase; }
+.live-match-score { align-items: center; color: var(--live-score); display: flex; font-family: 'Barlow Condensed', sans-serif; font-size: clamp(2rem, 6vw, 3rem); font-weight: 800; gap: 8px; }
+.live-match-score span { color: var(--live-accent); font-size: 1.5rem; }
+.live-match-card__badge { align-items: center; background: var(--live-status-surface); border-radius: 999px; color: var(--live-status-text); display: inline-flex; font-size: .72rem; font-weight: 800; gap: 6px; letter-spacing: .08em; padding: 5px 9px; white-space: nowrap; }
 .live-match-card__badge .live-dot { animation: live-score-pulse 1.2s ease-in-out infinite; background: #EF4444; border-radius: 50%; height: 8px; width: 8px; }
 @keyframes live-score-pulse { 50% { opacity: .4; } }
 .home-enrollment-cta { background: #166534; border-radius: 10px; color: #FFFFFF; display: inline-flex; font-weight: 700; gap: 10px; margin-top: 14px; padding: 12px 18px; text-decoration: none; }
@@ -5764,7 +5790,6 @@ body.dark-mode .fixture-team-crest--empty { background: #26364B; border-color: #
 .live-goal-form { align-items: end; display: flex; flex-wrap: wrap; gap: 8px; }
 .live-goal-form label { color: #475569; display: grid; font-size: .78rem; font-weight: 700; gap: 5px; }
 .live-goal-form select { max-width: 220px; min-height: 40px; }
-body.dark-mode .live-match-section { background: #080F1D; border-color: #1E293B; }
 @media (max-width: 650px) {
   .live-match-section__heading { align-items: flex-start; flex-direction: column; }
   .live-match-card { grid-template-columns: 1fr; }
@@ -5777,6 +5802,7 @@ body.dark-mode .live-match-section { background: #080F1D; border-color: #1E293B;
 .dashboard-page-heading { margin: 0 auto; max-width: 1440px; padding: 24px 24px 0; }
 .dashboard-page-heading .eyebrow { margin-bottom: 5px; }
 .dashboard-page-heading h1 { color: #0F172A; font-size: clamp(1.8rem, 3vw, 2.5rem); line-height: 1; }
+body.dark-mode .dashboard-page-heading h1 { color: #F8FAFC !important; }
 .profile-trigger { font-size: .82rem; line-height: 1.1; min-height: 40px; padding: 7px 11px; }
 .profile-trigger .profile-icon { flex: 0 0 18px; height: 18px; width: 18px; }
 .profile-trigger .profile-name--full { max-width: 175px; }
