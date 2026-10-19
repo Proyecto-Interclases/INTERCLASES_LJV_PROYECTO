@@ -22,7 +22,7 @@
 
     <% if (!inscripcionesAbiertas || !activeSports.length) { %>
       <section class="enrollment-unavailable" aria-live="polite">
-        <span aria-hidden="true">🏆</span>
+        <span class="enrollment-unavailable__icon"><%- include('../partials/ui-icon', { name: 'trophy', className: 'ui-icon--feature' }) %></span>
         <h2>Inscripciones temporalmente cerradas</h2>
         <p>En este momento no hay deportes con inscripciones disponibles. Consulta nuevamente más adelante.</p>
       </section>
@@ -42,7 +42,7 @@
               <div class="enrollment-sports__list">
                 <% activeSports.forEach((sport) => { %>
                   <span class="enrollment-sport">
-                    <span aria-hidden="true"><%= sport.id === 'futbol' ? '⚽' : sport.id === 'baloncesto' ? '🏀' : '🏐' %></span>
+                    <span class="enrollment-sport__icon"><%- include('../partials/ui-icon', { name: sport.id, className: 'ui-icon--sport' }) %></span>
                     <%= sport.name %>
                   </span>
                 <% }) %>

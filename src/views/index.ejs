@@ -134,7 +134,7 @@
       <div class="home-sports__grid">
         <% sports.forEach((sport) => { %>
           <a class="home-sport-card" href="<%= sport.href %>">
-            <span class="home-sport-card__icon" aria-hidden="true"><%= sport.id === 'futbol' ? '⚽' : sport.id === 'baloncesto' ? '🏀' : '🏐' %></span>
+            <span class="home-sport-card__icon"><%- include('partials/ui-icon', { name: sport.id, className: 'ui-icon--sport' }) %></span>
             <span><%= sport.name %></span>
             <span class="home-sport-card__action">Ver calendario <span aria-hidden="true">→</span></span>
           </a>

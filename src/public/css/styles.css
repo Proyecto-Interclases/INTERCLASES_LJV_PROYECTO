@@ -91,12 +91,16 @@ h2 { font-size: clamp(2rem, 4vw, 3.3rem); line-height: .95; }
 .home-sports__grid { display: grid; gap: 12px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .home-sport-card { align-items: center; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 14px; color: #17212B; display: grid; gap: 8px; min-height: 150px; padding: 18px; text-decoration: none; transition: border-color .2s ease, transform .2s ease, box-shadow .2s ease; }
 .home-sport-card:hover, .home-sport-card:focus-visible { border-color: #2E7D32; box-shadow: 0 8px 20px rgba(22, 101, 52, .1); transform: translateY(-2px); }
-.home-sport-card__icon { font-size: 2rem; line-height: 1; }
+.home-sport-card__icon { color: var(--green); display: inline-flex; line-height: 1; }
+.ui-icon { display: inline-block; flex: 0 0 auto; height: 1.2em; vertical-align: middle; width: 1.2em; }
+.ui-icon--sport { height: 2rem; width: 2rem; }
+.ui-icon--feature { height: 44px; width: 44px; }
 .home-sport-card > span:nth-child(2) { font-family: 'Barlow Condensed', sans-serif; font-size: 1.45rem; font-weight: 700; text-transform: uppercase; }
 .home-sport-card__action { color: #166534; font-size: .82rem; font-weight: 700; }
 body.dark-mode .home-sports { background: #111827; border-color: #334155; }
 body.dark-mode .home-sports__heading > p:last-child { color: #94A3B8; }
 body.dark-mode .home-sport-card { background: #1E293B; border-color: #475569; color: #F8FAFC; }
+body.dark-mode .home-sport-card__icon { color: #86EFAC; }
 body.dark-mode .home-sport-card__action { color: #86EFAC; }
 .stats { display: grid; gap: 16px; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 28px 0; }
 .stats article { align-items: center; background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 16px; box-shadow: 0 2px 8px rgba(0, 0, 0, .04); display: flex; flex-direction: column; justify-content: center; min-height: 150px; padding: 24px; text-align: center; }
@@ -1659,15 +1663,21 @@ body.dark-mode.teams-page .team-roster summary:focus-visible {
 }
 
 .winner-label {
+  align-items: center;
   color: #166534;
+  display: inline-flex;
   font-size: 0.78rem;
   font-weight: 600;
+  gap: .35em;
 }
 
 .draw-label {
+  align-items: center;
   color: #4B5563;
+  display: inline-flex;
   font-size: 0.78rem;
   font-weight: 600;
+  gap: .35em;
 }
 
 /* Estado vacío (Empty State) */
@@ -3906,6 +3916,7 @@ body.dark-mode .sport-tab.is-active { background: #166534; border-color: #166534
 .enrollment-sports__label { color: #64748B; font-size: .78rem; font-weight: 700; }
 .enrollment-sports__list { display: flex; flex-wrap: wrap; gap: 8px; }
 .enrollment-sport { align-items: center; background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 999px; color: #166534; display: inline-flex; font-size: .82rem; font-weight: 700; gap: 6px; min-height: 40px; padding: 7px 12px; }
+.enrollment-sport__icon { display: inline-flex; }
 .enrollment-roster-heading { align-items: center; }
 .enrollment-roster-heading > div { flex: 1; }
 .enrollment-add-player, .enrollment-remove-player {
@@ -3930,7 +3941,7 @@ body.dark-mode .sport-tab.is-active { background: #166534; border-color: #166534
 .enrollment-message--success { background: #ECFDF3; border: 1px solid #86EFAC; color: #166534; display: grid; gap: 4px; }
 .enrollment-message--error { background: #FEF2F2; border: 1px solid #FCA5A5; color: #991B1B; }
 .enrollment-unavailable { margin: 28px auto; max-width: 650px; padding: 38px 24px; text-align: center; }
-.enrollment-unavailable > span { display: block; font-size: 2.6rem; margin-bottom: 12px; }
+.enrollment-unavailable__icon { color: #166534; display: inline-flex; margin-bottom: 12px; }
 .enrollment-unavailable p { color: #64748B; line-height: 1.6; }
 .enrollment-admin-settings { display: grid; gap: 10px; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 18px 0 34px; }
 .enrollment-admin-setting { align-items: end; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; display: grid; gap: 10px; padding: 14px; }
@@ -3959,6 +3970,7 @@ body.dark-mode .enrollment-fields label, body.dark-mode .enrollment-roster-row l
 body.dark-mode .enrollment-fields input, body.dark-mode .enrollment-fields select, body.dark-mode .enrollment-roster-row input { background: #0F172A; border-color: #475569; color: #F8FAFC; }
 body.dark-mode .enrollment-sports__label { color: #94A3B8; }
 body.dark-mode .enrollment-sport { background: #052E16; border-color: #166534; color: #BBF7D0; }
+body.dark-mode .enrollment-unavailable__icon { color: #86EFAC; }
 body.dark-mode .enrollment-add-player, body.dark-mode .enrollment-remove-player { background: #1E293B; border-color: #4ADE80; color: #4ADE80; }
 body.dark-mode .enrollment-admin-setting, body.dark-mode .enrollment-request-card { background: #0F172A; border-color: #334155; }
 body.dark-mode .enrollment-admin-setting strong, body.dark-mode .enrollment-request-card details { color: #E2E8F0; }

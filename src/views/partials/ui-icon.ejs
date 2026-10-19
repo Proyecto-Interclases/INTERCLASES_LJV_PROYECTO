@@ -1,0 +1,49 @@
+<svg class="ui-icon ui-icon--<%= name %> <%= typeof className === 'string' ? className : '' %>" viewBox="<%= ['futbol', 'baloncesto', 'voleibol'].includes(name) ? '0 0 200 200' : '0 0 24 24' %>" aria-hidden="true" focusable="false">
+  <% if (name === 'futbol') { %>
+    <defs>
+      <clipPath id="football-ball-clip"><circle cx="100" cy="100" r="92"></circle></clipPath>
+      <polygon id="football-outer-panel" points="100,38 75.3,20 84.7,-9 115.3,-9 124.7,20"></polygon>
+    </defs>
+    <circle cx="100" cy="100" r="92" fill="#FFFFFF"></circle>
+    <g clip-path="url(#football-ball-clip)" fill="#1B1B1B" stroke="#1B1B1B" stroke-width="3" stroke-linejoin="round">
+      <polygon points="100,74 124.7,92 115.3,121 84.7,121 75.3,92"></polygon>
+      <path d="M100 74V34M124.7 92 162.8 79.6M115.3 121 138.8 153.4M84.7 121 61.2 153.4M75.3 92 37.2 79.6" fill="none" stroke-linecap="round"></path>
+      <use href="#football-outer-panel"></use>
+      <use href="#football-outer-panel" transform="rotate(72 100 100)"></use>
+      <use href="#football-outer-panel" transform="rotate(144 100 100)"></use>
+      <use href="#football-outer-panel" transform="rotate(216 100 100)"></use>
+      <use href="#football-outer-panel" transform="rotate(288 100 100)"></use>
+    </g>
+    <circle cx="100" cy="100" r="92" fill="none" stroke="#1B1B1B" stroke-width="4"></circle>
+  <% } else if (name === 'baloncesto') { %>
+    <defs><clipPath id="basketball-ball-clip"><circle cx="100" cy="100" r="92"></circle></clipPath></defs>
+    <circle cx="100" cy="100" r="92" fill="#E8742A"></circle>
+    <g clip-path="url(#basketball-ball-clip)" fill="none" stroke="#1B1B1B" stroke-width="4" stroke-linecap="round">
+      <path d="M100 8V192M8 100H192M34 28Q84 100 34 172M166 28Q116 100 166 172"></path>
+    </g>
+    <circle cx="100" cy="100" r="92" fill="none" stroke="#1B1B1B" stroke-width="4"></circle>
+  <% } else if (name === 'voleibol') { %>
+    <defs>
+      <clipPath id="volleyball-ball-clip"><circle cx="100" cy="100" r="92"></circle></clipPath>
+      <path id="volleyball-band" d="M100 100C100 60 72 30 20 28L34 6C84 12 118 48 126 100Z"></path>
+    </defs>
+    <circle cx="100" cy="100" r="92" fill="#F6E27A"></circle>
+    <g clip-path="url(#volleyball-ball-clip)" stroke="#1B1B1B" stroke-width="3" stroke-linejoin="round">
+      <use href="#volleyball-band" fill="#2F6FC4"></use>
+      <use href="#volleyball-band" fill="#2F6FC4" transform="rotate(120 100 100)"></use>
+      <use href="#volleyball-band" fill="#2F6FC4" transform="rotate(240 100 100)"></use>
+    </g>
+    <circle cx="100" cy="100" r="92" fill="none" stroke="#1B1B1B" stroke-width="4"></circle>
+  <% } else if (name === 'trophy') { %>
+    <path d="M8 3.5h8v6a4 4 0 0 1-8 0v-6Z" fill="#F4BC3F" stroke="#9A5B13" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
+    <path d="M8 5H4.5v2.5A4 4 0 0 0 9 11.4M16 5h3.5v2.5a4 4 0 0 1-4.5 3.9" fill="#E6A52E" stroke="#9A5B13" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
+    <path d="M10 13v4h4v-4m-5 4h6l1 2H8l1-2Zm-2 2h10v2H7v-2Z" fill="#C47A22" stroke="#8A5118" stroke-linejoin="round" stroke-width=".8"></path>
+    <path d="m12 5 .65 1.3 1.45.2-1.05 1 .25 1.45L12 8.25l-1.3.7.25-1.45-1.05-1 1.45-.2L12 5Z" fill="#FFF3C4"></path>
+  <% } else if (name === 'draw') { %>
+    <path d="M5 8.5h14M5 15.5h14" fill="none" stroke="#3975A5" stroke-linecap="round" stroke-width="2"></path>
+    <circle cx="5" cy="8.5" r="1.25" fill="#67A6D1"></circle>
+    <circle cx="19" cy="15.5" r="1.25" fill="#67A6D1"></circle>
+  <% } else if (name === 'check') { %>
+    <path d="m5 12.5 4.5 4.5L19 7" fill="none" stroke="#21834A" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+  <% } %>
+</svg>

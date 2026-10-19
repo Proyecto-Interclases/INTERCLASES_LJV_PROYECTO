@@ -244,11 +244,11 @@
 
                 <div class="calendar-card__result-status">
                   <% if (match.winner === 'home') { %>
-                    <span class="winner-label">🏆 Ganador: <strong><%= match.homeTeam %></strong></span>
+                    <span class="winner-label"><%- include('../partials/ui-icon', { name: 'trophy' }) %> Ganador: <strong><%= match.homeTeam %></strong></span>
                   <% } else if (match.winner === 'away') { %>
-                    <span class="winner-label">🏆 Ganador: <strong><%= match.awayTeam %></strong></span>
+                    <span class="winner-label"><%- include('../partials/ui-icon', { name: 'trophy' }) %> Ganador: <strong><%= match.awayTeam %></strong></span>
                   <% } else { %>
-                    <span class="draw-label">🤝 Empate</span>
+                    <span class="draw-label"><%- include('../partials/ui-icon', { name: 'draw' }) %> Empate</span>
                   <% } %>
                 </div>
               </div>
