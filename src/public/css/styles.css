@@ -44,6 +44,7 @@ body { margin: 0; background: #F8F9FA; color: #1F2937; font-family: 'DM Sans', s
 @media (prefers-reduced-motion: reduce) { .institutional-shield { transition: none; } }
 .site-brand > div { min-width: 0; }
 .site-brand h1 { color: #FFFFFF; font-size: 1.7rem; line-height: .92; }
+.site-brand__institution-name { font-size: clamp(1.35rem, 1.65vw, 1.85rem) !important; line-height: .98 !important; }
 .site-brand p { font-size: .78rem; margin: 4px 0 0; }
 h1, h2, h3 { color: #111827; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; letter-spacing: -.02em; margin: 0; text-transform: uppercase; }
 h1 { font-size: clamp(2.7rem, 7vw, 5.8rem); line-height: .9; max-width: 620px; }
