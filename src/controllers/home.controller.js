@@ -82,6 +82,13 @@ function showRegister(req, res) {
   });
 }
 
+function showPrivacyPolicy(req, res) {
+  res.render('pages/privacy-policy', {
+    title: 'Política de Tratamiento de Datos | Interclases Lucrecio Jaramillo',
+    user: req.session?.user || null
+  });
+}
+
 // Atiende la solicitud del calendario de partidos.
 async function showCalendar(req, res, next) {
   try {
@@ -218,4 +225,4 @@ async function submitEnrollment(req, res, next) {
 }
 
 // Exporta el controlador para conectarlo con las rutas web.
-module.exports = { showHome, getLiveMatches, showLogin, showRegister, showCalendar, showStandings, showTeams, showEnrollments, submitEnrollment, buildSportLinks };
+module.exports = { showHome, getLiveMatches, showLogin, showRegister, showPrivacyPolicy, showCalendar, showStandings, showTeams, showEnrollments, submitEnrollment, buildSportLinks };

@@ -93,12 +93,17 @@
             <% } %>
           </div>
         </section>
-        <p class="enrollment-privacy">Al enviar esta solicitud confirmas que la información es correcta. Enviar una solicitud no crea cuentas de usuario ni garantiza la aprobación del equipo.</p>
+        <p class="enrollment-privacy">Al enviar esta solicitud confirmas que la información es correcta. Enviar una solicitud no crea cuentas de usuario ni garantiza la aprobación del equipo. <a href="#" id="open-privacy-policy">Consultar política en una ventana</a></p>
+        <label class="enrollment-consent">
+          <input type="checkbox" name="aceptoPoliticaDatos" value="true" <%= formData.aceptoPoliticaDatos === true || formData.aceptoPoliticaDatos === 'true' ? 'checked' : '' %> required>
+          <span>Acepto la <a href="/politica-de-datos">política de tratamiento de datos</a>.</span>
+        </label>
         <button class="btn btn-primary enrollment-submit" type="submit">Enviar solicitud de inscripción</button>
       </form>
+      <%- include('../partials/privacy-policy-modal') %>
     <% } %>
   </main>
   <%- include('../partials/accessibility-settings') %>
-  <script src="/js/enrollment-form.js?v=shirt-numbers-20261018" defer></script>
+  <script src="/js/enrollment-form.js?v=privacy-policy-consent-20261019" defer></script>
 </body>
 </html>

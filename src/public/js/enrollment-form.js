@@ -1,4 +1,18 @@
 (() => {
+  const privacyLink = document.getElementById('open-privacy-policy');
+  const privacyDialog = document.getElementById('privacy-policy-modal');
+
+  if (privacyLink && privacyDialog && typeof privacyDialog.showModal === 'function') {
+    privacyLink.addEventListener('click', (event) => {
+      event.preventDefault();
+      privacyDialog.showModal();
+    });
+
+    privacyDialog.addEventListener('click', (event) => {
+      if (event.target === privacyDialog) privacyDialog.close();
+    });
+  }
+
   const list = document.querySelector('[data-roster-list]');
   const addButton = document.querySelector('[data-add-player]');
   if (!list || !addButton) return;

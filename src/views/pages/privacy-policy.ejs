@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="es">
+<%- include('../partials/head', { title }) %>
+<body class="sports-page privacy-policy-page">
+  <%- include('../partials/navbar', { user }) %>
+  <main class="container privacy-policy-page__main" id="main-content">
+    <article class="privacy-policy-page__surface">
+      <header class="privacy-policy-page__heading">
+        <p class="eyebrow section-eyebrow">Torneo Interclases LJV</p>
+        <h1>Política de Tratamiento y Protección de Datos Personales (Provisional)</h1>
+        <p>Institución Educativa Lucrecio Jaramillo Vélez</p>
+      </header>
+      <div class="privacy-policy-modal__content">
+        <%- include('../partials/privacy-policy-content') %>
+      </div>
+      <a class="btn btn-primary privacy-policy-page__back" href="/inscripciones">Volver a inscripciones</a>
+    </article>
+  </main>
+  <%- include('../partials/accessibility-settings') %>
+</body>
+</html>

@@ -70,7 +70,11 @@ function validateEnrollmentPayload(payload = {}) {
     return { nombre, numero_camiseta };
   });
 
-  return { deporte, nombreEquipo, categoria, grado, responsable, contacto, jugadores };
+  if (payload.aceptoPoliticaDatos !== 'true' && payload.aceptoPoliticaDatos !== true) {
+    throw new Error('Debes aceptar la política de tratamiento de datos para continuar.');
+  }
+
+  return { deporte, nombreEquipo, categoria, grado, responsable, contacto, jugadores, aceptoPoliticaDatos: true };
 }
 
 function mapEnrollmentToTeamAndPlayers(request, teamId) {
@@ -136,7 +140,7 @@ async function submitEnrollment(payload) {
     estado: { $in: ['pendiente', 'procesando', 'aprobada'] }
   });
   if (duplicateRequest) throw new Error('Ya existe una solicitud con ese nombre de equipo.');
-  return EnrollmentRequest.create(request);
+  return EnrollmentRequest.create({ ...request, politicaDatosAceptadaEn: new Date() });
 }
 
 async function listEnrollmentRequests() {

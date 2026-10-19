@@ -23,6 +23,8 @@ const enrollmentRequestSchema = new mongoose.Schema({
   responsable: { type: String, required: true, trim: true, maxlength: 100 },
   contacto: { type: String, required: true, trim: true, maxlength: 120 },
   jugadores: { type: [rosterPlayerSchema], required: true, validate: [(players) => players.length >= 1 && players.length <= 30, 'La plantilla debe tener entre 1 y 30 jugadores.'] },
+  aceptoPoliticaDatos: { type: Boolean, default: false },
+  politicaDatosAceptadaEn: { type: Date, default: null },
   estado: { type: String, enum: ['pendiente', 'procesando', 'aprobada', 'rechazada'], default: 'pendiente' },
   equipoCreadoId: { type: mongoose.Schema.Types.ObjectId, ref: 'Team', default: null }
 }, { timestamps: { createdAt: 'creado_en', updatedAt: 'actualizado_en' } });

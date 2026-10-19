@@ -187,6 +187,7 @@ test('closed enrollment is rejected and submitted roster fields are validated', 
     grado: '8.º 2',
     responsable: 'Persona Responsable',
     contacto: '3001234567',
+    aceptoPoliticaDatos: true,
     ...fivePlayers,
     jugadorNumero: ['8', '8', '10', '11', '12']
   });
@@ -198,6 +199,7 @@ test('closed enrollment is rejected and submitted roster fields are validated', 
     grado: '8.º 2',
     responsable: 'Persona Responsable',
     contacto: '3001234567',
+    aceptoPoliticaDatos: true,
     jugadorNombre: ['Cero Doble', 'Dorsal Alto', 'Jugador Tres', 'Jugador Cuatro', 'Jugador Cinco'],
     jugadorNumero: ['00', '999', '0', '1', '2']
   }).jugadores.map(({ numero_camiseta }) => numero_camiseta), ['00', '999', '0', '1', '2']);
@@ -231,6 +233,7 @@ test('validated public enrollment maps sport, grade and shirt numbers to the app
     grado: '9.º 1',
     responsable: 'María Pérez',
     contacto: 'maria@example.edu',
+    aceptoPoliticaDatos: true,
     jugadorNombre: ['Ana Pérez', 'Lucía Gómez', 'María Ruiz', 'José Díaz', 'Eva León'],
     jugadorNumero: ['7', '12', '13', '14', '15']
   });
@@ -244,4 +247,30 @@ test('validated public enrollment maps sport, grade and shirt numbers to the app
     ['team-id', '9.º 1', '14'],
     ['team-id', '9.º 1', '15']
   ]);
+});
+
+test('public enrollment requires explicit privacy-policy acceptance', () => {
+  assert.throws(() => validateEnrollmentPayload({
+    deporte: 'futbol',
+    nombreEquipo: 'Equipo',
+    categoria: 'Categoría A',
+    grado: '8.º 2',
+    responsable: 'Persona Responsable',
+    contacto: '3001234567',
+    jugadorNombre: ['Ana Pérez', 'Luis Pérez', 'María Gómez', 'José Díaz', 'Lucía Ruiz'],
+    jugadorNumero: ['8', '9', '10', '11', '12']
+  }), /aceptar la política de tratamiento de datos/i);
+
+  const request = validateEnrollmentPayload({
+    deporte: 'futbol',
+    nombreEquipo: 'Equipo',
+    categoria: 'Categoría A',
+    grado: '8.º 2',
+    responsable: 'Persona Responsable',
+    contacto: '3001234567',
+    aceptoPoliticaDatos: 'true',
+    jugadorNombre: ['Ana Pérez', 'Luis Pérez', 'María Gómez', 'José Díaz', 'Lucía Ruiz'],
+    jugadorNumero: ['8', '9', '10', '11', '12']
+  });
+  assert.equal(request.aceptoPoliticaDatos, true);
 });

@@ -3936,6 +3936,63 @@ body.dark-mode .sport-tab.is-active { background: #166534; border-color: #166534
 .enrollment-remove-player { border-color: #CBD5E1; color: #64748B; font-size: 1.35rem; line-height: 1; padding: 4px; }
 .enrollment-remove-player:disabled { cursor: not-allowed; opacity: .35; }
 .enrollment-privacy { color: #64748B; font-size: .8rem; line-height: 1.55; margin: 0; }
+.enrollment-privacy a { color: #166534; font-weight: 700; text-underline-offset: 3px; }
+.enrollment-privacy a:hover, .enrollment-privacy a:focus-visible { color: #14532D; }
+.privacy-policy-modal {
+  --privacy-surface: #FFFFFF;
+  --privacy-border: #D8E0E5;
+  --privacy-divider: #E2E8F0;
+  --privacy-modal-text: #17212B;
+  --privacy-text: #334155;
+  --privacy-muted: #52616F;
+  --privacy-heading: #14532D;
+  --privacy-close-bg: #F1F5F9;
+  --privacy-close-border: #CBD5E1;
+  --privacy-close-text: #334155;
+  background: transparent;
+  border: 0;
+  inset: 0;
+  margin: auto;
+  max-height: 92dvh;
+  max-width: none;
+  overflow: visible;
+  padding: 0;
+  width: min(760px, 94vw);
+}
+.privacy-policy-modal::backdrop { backdrop-filter: blur(3px); background: rgba(15, 23, 42, .68); }
+.privacy-policy-modal__surface { background: var(--privacy-surface); border: 1px solid var(--privacy-border); border-radius: 16px; box-shadow: 0 16px 48px rgba(15, 23, 42, .24); color: var(--privacy-modal-text); max-height: 92dvh; overflow-y: auto; padding: clamp(20px, 4vw, 32px); width: 100%; }
+.privacy-policy-modal__heading { align-items: flex-start; border-bottom: 1px solid var(--privacy-divider); display: flex; gap: 18px; justify-content: space-between; padding-bottom: 18px; }
+.privacy-policy-modal__heading > div { min-width: 0; }
+.privacy-policy-modal__heading .eyebrow { margin-bottom: 8px; }
+.privacy-policy-modal__heading h2 { font-size: clamp(1.55rem, 4vw, 2.1rem); line-height: 1; }
+.privacy-policy-modal__heading p:last-child { color: var(--privacy-muted); font-size: .9rem; font-weight: 600; margin: 8px 0 0; }
+.privacy-policy-modal__close { align-items: center; background: var(--privacy-close-bg); border: 1px solid var(--privacy-close-border); border-radius: 9px; color: var(--privacy-close-text); cursor: pointer; display: inline-flex; flex: 0 0 42px; font-size: 1.65rem; height: 42px; justify-content: center; line-height: 1; }
+.privacy-policy-modal__close:hover, .privacy-policy-modal__close:focus-visible { background: #E2E8F0; outline: 3px solid rgba(46, 125, 50, .25); outline-offset: 2px; }
+.privacy-policy-modal__content { color: var(--privacy-text); font-size: .92rem; line-height: 1.65; padding-top: 18px; }
+.privacy-policy-modal__content section + section { margin-top: 18px; }
+.privacy-policy-modal__content h3 { color: var(--privacy-heading); font-family: 'DM Sans', sans-serif; font-size: 1rem; letter-spacing: 0; margin-bottom: 6px; text-transform: none; }
+.privacy-policy-modal__content p { margin: 0; }
+.privacy-policy-modal__content ul { margin: 7px 0 0; padding-left: 22px; }
+.privacy-policy-page {
+  --privacy-surface: #FFFFFF;
+  --privacy-border: #D8E0E5;
+  --privacy-divider: #E2E8F0;
+  --privacy-modal-text: #17212B;
+  --privacy-text: #334155;
+  --privacy-muted: #52616F;
+  --privacy-heading: #14532D;
+}
+.privacy-policy-page__main { max-width: 920px; }
+.privacy-policy-page__surface { background: var(--privacy-surface); border: 1px solid var(--privacy-border); border-radius: 16px; box-shadow: 0 8px 24px rgba(15, 23, 42, .08); color: var(--privacy-modal-text); padding: clamp(22px, 5vw, 42px); }
+.privacy-policy-page__heading { border-bottom: 1px solid var(--privacy-divider); margin-bottom: 22px; padding-bottom: 20px; }
+.privacy-policy-page__heading h1 { font-size: clamp(2.2rem, 6vw, 4.1rem); line-height: .98; max-width: 780px; }
+.privacy-policy-page__heading > p:last-child { color: var(--privacy-muted); font-weight: 600; margin: 12px 0 0; }
+.privacy-policy-page__surface .privacy-policy-modal__content { color: var(--privacy-text); font-size: 1rem; }
+.privacy-policy-page__back { display: inline-flex; margin-top: 26px; min-height: 44px; }
+.enrollment-consent { align-items: flex-start; color: #334155; display: flex; font-size: .88rem; gap: 10px; line-height: 1.5; }
+.enrollment-consent input { accent-color: #166534; flex: 0 0 auto; height: 18px; margin: 2px 0 0; width: 18px; }
+.enrollment-consent a { color: #166534; font-weight: 700; text-underline-offset: 3px; }
+.enrollment-consent a:hover, .enrollment-consent a:focus-visible { color: #14532D; }
 .enrollment-submit { justify-self: start; min-height: 48px; padding: 12px 22px; }
 .enrollment-message { border-radius: 12px; line-height: 1.55; margin: 0 0 20px; padding: 16px 18px; }
 .enrollment-message--success { background: #ECFDF3; border: 1px solid #86EFAC; color: #166534; display: grid; gap: 4px; }
@@ -3971,11 +4028,71 @@ body.dark-mode .enrollment-fields input, body.dark-mode .enrollment-fields selec
 body.dark-mode .enrollment-sports__label { color: #94A3B8; }
 body.dark-mode .enrollment-sport { background: #052E16; border-color: #166534; color: #BBF7D0; }
 body.dark-mode .enrollment-unavailable__icon { color: #86EFAC; }
+body.dark-mode .enrollment-privacy a { color: #86EFAC; }
+body.dark-mode .enrollment-privacy a:hover, body.dark-mode .enrollment-privacy a:focus-visible { color: #BBF7D0; }
+body.dark-mode .enrollment-consent { color: #CBD5E1; }
+body.dark-mode .enrollment-consent a { color: #86EFAC; }
+body.dark-mode .enrollment-consent a:hover, body.dark-mode .enrollment-consent a:focus-visible { color: #BBF7D0; }
 body.dark-mode .enrollment-add-player, body.dark-mode .enrollment-remove-player { background: #1E293B; border-color: #4ADE80; color: #4ADE80; }
 body.dark-mode .enrollment-admin-setting, body.dark-mode .enrollment-request-card { background: #0F172A; border-color: #334155; }
 body.dark-mode .enrollment-admin-setting strong, body.dark-mode .enrollment-request-card details { color: #E2E8F0; }
 body.dark-mode .enrollment-admin-setting select { background: #1E293B; border-color: #475569; color: #F8FAFC; }
 body.dark-mode .enrollment-request-card > p { color: #CBD5E1; }
+body.enrollment-page.dark-mode .privacy-policy-modal,
+body.enrollment-page[data-theme="dark"] .privacy-policy-modal,
+body.privacy-policy-page.dark-mode,
+body.privacy-policy-page[data-theme="dark"] {
+  --privacy-surface: #1E293B;
+  --privacy-border: #475569;
+  --privacy-divider: #475569;
+  --privacy-modal-text: #E2E8F0;
+  --privacy-text: #CBD5E1;
+  --privacy-muted: #CBD5E1;
+  --privacy-heading: #86EFAC;
+  --privacy-close-bg: #0F172A;
+  --privacy-close-border: #475569;
+  --privacy-close-text: #E2E8F0;
+}
+body.enrollment-page.dark-mode .privacy-policy-modal__close:hover,
+body.enrollment-page.dark-mode .privacy-policy-modal__close:focus-visible,
+body.enrollment-page[data-theme="dark"] .privacy-policy-modal__close:hover,
+body.enrollment-page[data-theme="dark"] .privacy-policy-modal__close:focus-visible { background: #334155; }
+body.privacy-policy-page.dark-mode .privacy-policy-page__surface,
+body.privacy-policy-page[data-theme="dark"] .privacy-policy-page__surface { background: var(--privacy-surface); border-color: var(--privacy-border); color: var(--privacy-modal-text); }
+body.privacy-policy-page.dark-mode .privacy-policy-page__heading,
+body.privacy-policy-page[data-theme="dark"] .privacy-policy-page__heading { border-color: var(--privacy-divider); }
+body.privacy-policy-page.dark-mode .privacy-policy-page__heading > p:last-child,
+body.privacy-policy-page[data-theme="dark"] .privacy-policy-page__heading > p:last-child { color: var(--privacy-muted); }
+body.privacy-policy-page.dark-mode .privacy-policy-page__surface .privacy-policy-modal__content,
+body.privacy-policy-page[data-theme="dark"] .privacy-policy-page__surface .privacy-policy-modal__content { color: var(--privacy-text); }
+body.privacy-policy-page.dark-mode .privacy-policy-page__surface .privacy-policy-modal__content h3,
+body.privacy-policy-page[data-theme="dark"] .privacy-policy-page__surface .privacy-policy-modal__content h3 { color: var(--privacy-heading); }
+@media (prefers-color-scheme: dark) {
+  body.enrollment-page:not(.dark-mode):not(.light-mode):not([data-theme="light"]) .privacy-policy-modal {
+    --privacy-surface: #1E293B;
+    --privacy-border: #475569;
+    --privacy-divider: #475569;
+    --privacy-modal-text: #E2E8F0;
+    --privacy-text: #CBD5E1;
+    --privacy-muted: #CBD5E1;
+    --privacy-heading: #86EFAC;
+    --privacy-close-bg: #0F172A;
+    --privacy-close-border: #475569;
+    --privacy-close-text: #E2E8F0;
+  }
+  body.privacy-policy-page:not(.dark-mode):not(.light-mode):not([data-theme="light"]) {
+    --privacy-surface: #1E293B;
+    --privacy-border: #475569;
+    --privacy-divider: #475569;
+    --privacy-modal-text: #E2E8F0;
+    --privacy-text: #CBD5E1;
+    --privacy-muted: #CBD5E1;
+    --privacy-heading: #86EFAC;
+  }
+  body.enrollment-page:not(.dark-mode):not(.light-mode):not([data-theme="light"]) .privacy-policy-modal__close:hover,
+  body.enrollment-page:not(.dark-mode):not(.light-mode):not([data-theme="light"]) .privacy-policy-modal__close:focus-visible { background: #334155; }
+  body.enrollment-page:not(.dark-mode):not(.light-mode):not([data-theme="light"]) .enrollment-privacy a { color: #86EFAC; }
+}
 body.dark-mode .player-item:hover,
 body.dark-mode .team-card:hover,
 body.dark-mode .team-roster li:hover,
